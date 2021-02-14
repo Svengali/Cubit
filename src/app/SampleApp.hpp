@@ -27,9 +27,11 @@
 
 #pragma once
 
+/*
 #include <vector>
 #include <string>
 #include <memory>
+*/
 
 #include "Win32AppBase.hpp"
 #include "RefCntAutoPtr.hpp"
@@ -46,11 +48,11 @@ namespace Diligent
 
 class ImGuiImplDiligent;
 
-class SampleApp : public Win32AppBase
+class App : public Win32AppBase
 {
 public:
-    SampleApp();
-    ~SampleApp();
+    App();
+    ~App();
     virtual void        ProcessCommandLine(const char* CmdLine) override final;
     virtual const char* GetAppTitle() const override final { return m_AppTitle.c_str(); }
     virtual void        Update(double CurrTime, double ElapsedTime) override;

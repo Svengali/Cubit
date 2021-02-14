@@ -85,7 +85,7 @@ if(WIN32)
     copy_required_dlls(Cubit)
 
 else()
-    message(FATAL_ERROR "Unsupported platform")2
+    message(FATAL_ERROR "Unsupported platform")
 endif()
 
 target_include_directories(Cubit

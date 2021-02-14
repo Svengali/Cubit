@@ -25,10 +25,12 @@
 *  of the possibility of such damages.
 */
 
+/*
 #include <sstream>
 #include <iomanip>
 #include <cstdlib>
 #include <cmath>
+*/
 
 #include "PlatformDefinitions.h"
 #include "SampleApp.hpp"
@@ -65,13 +67,13 @@
 namespace Diligent
 {
 
-SampleApp::SampleApp() :
+App::App() :
     m_TheSample{CreateSample()},
     m_AppTitle{m_TheSample->GetSampleName()}
 {
 }
 
-SampleApp::~SampleApp()
+App::~App()
 {
     m_pImGui.reset();
     m_TheSample.reset();
@@ -85,7 +87,7 @@ SampleApp::~SampleApp()
 }
 
 
-void SampleApp::InitializeDiligentEngine(const NativeWindow* pWindow)
+void App::InitializeDiligentEngine(const NativeWindow* pWindow)
 {
     if (m_ScreenCaptureInfo.AllowCapture)
         m_SwapChainInitDesc.Usage |= SWAP_CHAIN_USAGE_COPY_SOURCE;
@@ -407,7 +409,7 @@ void SampleApp::InitializeDiligentEngine(const NativeWindow* pWindow)
     }
 }
 
-void SampleApp::InitializeSample()
+void App::InitializeSample()
 {
 #if PLATFORM_WIN32
     if (!m_DisplayModes.empty())
@@ -451,7 +453,7 @@ void SampleApp::InitializeSample()
     m_TheSample->WindowResize(SCDesc.Width, SCDesc.Height);
 }
 
-void SampleApp::UpdateAdaptersDialog()
+void App::UpdateAdaptersDialog()
 {
 #if PLATFORM_WIN32 || PLATFORM_LINUX
     const auto& SCDesc = m_pSwapChain->GetDesc();
@@ -583,7 +585,7 @@ std::string GetArgument(const char*& pos, const char* ArgName)
 //
 //     magick convert  -delay 6  -loop 0 -layers Optimize -compress LZW -strip -resize 240x180   frame*.png   Animation.gif
 //
-void SampleApp::ProcessCommandLine(const char* CmdLine)
+void App::ProcessCommandLine(const char* CmdLine)
 {
     const auto* pos = strchr(CmdLine, '-');
     while (pos != nullptr)
@@ -766,7 +768,7 @@ void SampleApp::ProcessCommandLine(const char* CmdLine)
     m_TheSample->ProcessCommandLine(CmdLine);
 }
 
-void SampleApp::WindowResize(int width, int height)
+void App::WindowResize(int width, int height)
 {
     if (m_pSwapChain)
     {
@@ -778,7 +780,7 @@ void SampleApp::WindowResize(int width, int height)
     }
 }
 
-void SampleApp::Update(double CurrTime, double ElapsedTime)
+void App::Update(double CurrTime, double ElapsedTime)
 {
     m_CurrentTime = CurrTime;
 
@@ -798,7 +800,7 @@ void SampleApp::Update(double CurrTime, double ElapsedTime)
     }
 }
 
-void SampleApp::Render()
+void App::Render()
 {
     if (!m_pImmediateContext || !m_pSwapChain)
         return;
@@ -825,7 +827,7 @@ void SampleApp::Render()
     }
 }
 
-void SampleApp::CompareGoldenImage(const std::string& FileName, ScreenCapture::CaptureInfo& Capture)
+void App::CompareGoldenImage(const std::string& FileName, ScreenCapture::CaptureInfo& Capture)
 {
     RefCntAutoPtr<Image> pGoldenImg;
     CreateImageFromFile(FileName.c_str(), &pGoldenImg, nullptr);
@@ -875,7 +877,7 @@ void SampleApp::CompareGoldenImage(const std::string& FileName, ScreenCapture::C
     }
 }
 
-void SampleApp::SaveScreenCapture(const std::string& FileName, ScreenCapture::CaptureInfo& Capture)
+void App::SaveScreenCapture(const std::string& FileName, ScreenCapture::CaptureInfo& Capture)
 {
     MappedTextureSubresource TexData;
     m_pImmediateContext->MapTextureSubresource(Capture.pTexture, 0, 0, MAP_READ, MAP_FLAG_DO_NOT_WAIT, nullptr, TexData);
@@ -913,7 +915,7 @@ void SampleApp::SaveScreenCapture(const std::string& FileName, ScreenCapture::Ca
     }
 }
 
-void SampleApp::Present()
+void App::Present()
 {
     if (!m_pSwapChain)
         return;

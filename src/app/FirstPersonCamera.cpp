@@ -26,7 +26,6 @@
  */
 
 #include "FirstPersonCamera.hpp"
-#include <algorithm>
 
 namespace Diligent
 {

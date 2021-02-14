@@ -31,10 +31,12 @@
 namespace Diligent
 {
 
+/*
 SampleBase* CreateSample()
 {
     return new ImguiDemo();
 }
+*/
 
 ImguiDemo::~ImguiDemo()
 {

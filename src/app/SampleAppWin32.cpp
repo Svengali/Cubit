@@ -25,7 +25,7 @@
 *  of the possibility of such damages.
 */
 
-#include <limits>
+//#include <limits>
 
 
 #include "SampleApp.hpp"
@@ -120,7 +120,7 @@ INT_PTR CALLBACK SelectDeviceTypeDialogProc(HWND   hwndDlg,
 namespace Diligent
 {
 
-class SampleAppWin32 final : public SampleApp
+class SampleAppWin32 final : public App
 {
 public:
     virtual LRESULT HandleWin32Message(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) override final
@@ -267,7 +267,7 @@ protected:
             // We must exit full screen window first.
             ToggleFullscreenWindow();
         }
-        SampleApp::SetFullscreenMode(DisplayMode);
+        App::SetFullscreenMode(DisplayMode);
     }
 
     virtual void SetWindowedMode() override
@@ -277,7 +277,7 @@ protected:
             // Exit full screen window
             ToggleFullscreenWindow();
         }
-        SampleApp::SetWindowedMode();
+        App::SetWindowedMode();
     }
 
     virtual void SelectDeviceType() override final
