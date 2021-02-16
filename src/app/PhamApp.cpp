@@ -9,6 +9,8 @@
 #include "PhamApp.h"
 #include "imgui.h"
 
+#include "res/ResDGLayout.h"
+
 namespace Diligent
 {
 SampleBase *CreateSample()
@@ -44,6 +46,23 @@ void PhamApp::GetEngineInitializationAttribs( dg::RENDER_DEVICE_TYPE DeviceType,
 void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 {
 	dg::SampleBase::Initialize( InitInfo );
+
+
+
+	VertPosUV verts;
+
+	std::vector<dg::LayoutElement> layout;
+
+	StructToLayout( verts, &layout );
+
+
+
+
+
+
+
+
+
 
 
 }

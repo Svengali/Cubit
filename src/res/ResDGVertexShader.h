@@ -27,7 +27,12 @@ public:
 		REFLECT( m_shaderCI );
 		//REFLECT( m_vs );
 	REFLECT_END();
-	
+
+	dg::RefCntAutoPtr<dg::IShader> VS()
+	{
+		return m_vs;
+	}
+
 
 private:
 	dg::ShaderCreateInfo m_shaderCI;

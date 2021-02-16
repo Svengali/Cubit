@@ -19,6 +19,8 @@
 #include "cblib/File.h"
 #include "cblib/FileUtil.h"
 #include "cblib/Link.h"
+#include "cblib/Vec2.h"
+#include "cblib/Vec2i.h"
 #include "cblib/Vec3.h"
 #include "cblib/Vec3i.h"
 #include "cblib/Frame3.h"

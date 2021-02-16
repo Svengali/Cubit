@@ -6,6 +6,8 @@
 
 #include "../stdafx.h"
 
+#include "ResDGBuffer.h"
+
 #include "ResDGVertexShader.h"
 #include "ResDGPixelShader.h"
 
@@ -13,9 +15,9 @@
 #include "./ResDGPipelineState.h"
 
 
-ResDGPipelineStatePtr ResDGPipelineState::create( const ResDGVertexShaderPtr &vs, const ResDGPixelShaderPtr &ps )
+ResDGPipelineStatePtr ResDGPipelineState::create( const ResDGVertexShaderPtr &vs, const ResDGPixelShaderPtr &ps, const ResDGBufferPtr &constants )
 {
-#if 0
+
 	// Pipeline state object encompasses configuration of all GPU stages
 	dg::PipelineStateCreateInfo PSOCreateInfo;
 	dg::PipelineStateDesc &PSODesc = PSOCreateInfo.PSODesc;
@@ -46,6 +48,7 @@ ResDGPipelineStatePtr ResDGPipelineState::create( const ResDGVertexShaderPtr &vs
 
 	// Define vertex shader input layout
 	//TODO CONFIG
+	//*
 	dg::LayoutElement LayoutElems[] =
 	{
 			// Attribute 0 - vertex position
@@ -53,15 +56,13 @@ ResDGPipelineStatePtr ResDGPipelineState::create( const ResDGVertexShaderPtr &vs
 			// Attribute 1 - texture coordinates
 			dg::LayoutElement{1, 0, 2, dg::VT_FLOAT32, dg::False}
 	};
+	//*/
 
-	//TODO CONFIG	
-	PSODesc.GraphicsPipeline.pVS = nullptr; //pVS;
-
-	//TODO CONFIG	
-	PSODesc.GraphicsPipeline.pPS = nullptr; //pPS;
+	PSODesc.GraphicsPipeline.pVS = vs->VS();
+	PSODesc.GraphicsPipeline.pPS = ps->PS();
 
 	//TODO CONFIG
-	dg::CreateUniformBuffer( dg::App::Info().Device(), sizeof( dg::float4x4 ), "VS constants CB", &m_VSConstants );
+	//dg::CreateUniformBuffer( dg::App::Info().Device(), sizeof( dg::float4x4 ), "VS constants CB", &m_VSConstants );
 
 
 	//TODO CONFIG	
@@ -97,27 +98,30 @@ ResDGPipelineStatePtr ResDGPipelineState::create( const ResDGVertexShaderPtr &vs
 	PSODesc.ResourceLayout.StaticSamplers    = StaticSamplers;
 	PSODesc.ResourceLayout.NumStaticSamplers = _countof( StaticSamplers );
 
-	dg::App::Info().Device()->CreatePipelineState( PSOCreateInfo, &m_pPSO );
+
+	dg::RefCntAutoPtr<dg::IPipelineState> pso;
+
+	dg::App::Info().Device()->CreatePipelineState( PSOCreateInfo, &pso );
 
 	// Since we did not explcitly specify the type for 'Constants' variable, default
 	// type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables
 	// never change and are bound directly through the pipeline state object.
-	m_pPSO->GetStaticVariableByName( dg::SHADER_TYPE_VERTEX, "Constants" )->Set( m_VSConstants );
+	pso->GetStaticVariableByName( dg::SHADER_TYPE_VERTEX, "Constants" )->Set( constants->Buffer() );
 
+	/*
 	// Since we are using mutable variable, we must create a shader resource binding object
 	// http://diligentgraphics.com/2016/03/23/resource-binding-model-in-diligent-engine-2-0/
 	m_pPSO->CreateShaderResourceBinding( &m_SRB, true );
+	*/
 
-#endif
-	return nullptr; //ResDGPipelineStatePtr( new ResDGPipelineState( ShaderCI, pPS ) );
+	return ResDGPipelineStatePtr( new ResDGPipelineState( pso ) );
 }
 
 
 
-ResDGPipelineState::ResDGPipelineState( const dg::ShaderCreateInfo &shaderCI, const dg::RefCntAutoPtr<dg::IShader> &ps )
+ResDGPipelineState::ResDGPipelineState( const dg::RefCntAutoPtr<dg::IPipelineState> &pso )
 	:
-	m_shaderCI( shaderCI ),
-	m_ps( ps )
+	m_pso( pso )
 {
 }
 

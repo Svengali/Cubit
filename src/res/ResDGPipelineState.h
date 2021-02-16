@@ -16,9 +16,9 @@ class ResDGPipelineState: public Resource
 public:
 	CLASS( ResDGPipelineState, Resource );
 
-	static ResDGPipelineStatePtr create( const ResDGVertexShaderPtr &vs, const ResDGPixelShaderPtr &ps );
+	static ResDGPipelineStatePtr create( const ResDGVertexShaderPtr &vs, const ResDGPixelShaderPtr &ps, const ResDGBufferPtr &constants );
 
-	ResDGPipelineState( const dg::ShaderCreateInfo &shaderCI, const dg::RefCntAutoPtr<dg::IShader> &ps );
+	ResDGPipelineState( const dg::RefCntAutoPtr<dg::IPipelineState> &pso );
 	virtual ~ResDGPipelineState();
 
 
@@ -27,11 +27,16 @@ public:
 
 	REFLECT_BEGIN( ResDGPipelineState, Resource )
 	REFLECT_END();
-	
+
+
+	dg::RefCntAutoPtr<dg::IPipelineState> &PSO()
+	{
+		return m_pso;
+	}
+
 
 private:
-	dg::ShaderCreateInfo m_shaderCI;
-	dg::RefCntAutoPtr<dg::IShader> m_ps;
+	dg::RefCntAutoPtr<dg::IPipelineState> m_pso;
 
 };
 
