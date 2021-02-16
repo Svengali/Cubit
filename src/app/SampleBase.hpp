@@ -80,6 +80,13 @@ public:
         m_pSwapChain = pNewSwapChain;
     }
 
+    const RefCntAutoPtr<IEngineFactory>&              EngineFactory()  { return m_pEngineFactory; }
+    const RefCntAutoPtr<IRenderDevice>&               Device()         { return m_pDevice; }
+    const RefCntAutoPtr<IDeviceContext>&              ImmContext()     { return m_pImmediateContext; }
+    const RefCntAutoPtr<ISwapChain>&                  SwapChain() { return m_pSwapChain; }
+    const std::vector<RefCntAutoPtr<IDeviceContext>>& DeferredContexts() { return m_pDeferredContexts; }
+
+
 protected:
     // Returns projection matrix adjusted to the current screen orientation
     float4x4 GetAdjustedProjectionMatrix(float FOV, float NearPlane, float FarPlane) const;

@@ -6,20 +6,14 @@
 
 #pragma once
 
-#include "verse/verse.h"
+#include "res/Factory.h"
 
-namespace verse
-{
 
-class FacDiligent : public Factory
+class FacDiligent : public res::Factory
 {
 public:
-	virtual GeometryPtr convert( const grx::SimpleMesh *const pMesh ) override;
+	//virtual GeometryPtr convert( const grx::SimpleMesh *const pMesh ) override;
 
 };
 
 
-
-
-
-}

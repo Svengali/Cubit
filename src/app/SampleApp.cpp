@@ -67,10 +67,20 @@
 namespace Diligent
 {
 
+static App *s_pApp = nullptr;
+
+App &App::Info()
+{
+  return *s_pApp;
+}
+
+
+
 App::App() :
     m_TheSample{CreateSample()},
     m_AppTitle{m_TheSample->GetSampleName()}
 {
+  s_pApp = this;
 }
 
 App::~App()

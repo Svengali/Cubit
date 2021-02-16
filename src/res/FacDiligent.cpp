@@ -1,0 +1,13 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+//   D i l i g e n t
+//
+// copyright 2005-2017 Marc Hernandez
+
+#include "../stdafx.h"
+
+
+
+#include "FacDiligent.h"
+
+

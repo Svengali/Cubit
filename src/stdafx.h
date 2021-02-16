@@ -33,3 +33,20 @@
 #include "cblib_includes.h"
 
 #include "pham_core.h"
+
+//Basic Diligent includes
+#include "EngineFactory.h"
+#include "RefCntAutoPtr.hpp"
+#include "RenderDevice.h"
+#include "DeviceContext.h"
+#include "SwapChain.h"
+//#include "InputController.hpp"
+#include "BasicMath.hpp"
+#include "GraphicsUtilities.h"
+#include "TextureUtilities.h"
+
+//Mostly frozen diligent things
+#include "app/SampleApp.hpp"
+
+
+namespace dg = Diligent;

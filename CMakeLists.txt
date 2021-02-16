@@ -47,10 +47,10 @@ set_source_files_properties(src/stdafx.cpp
 )
 
 
-
-
 set(SHADERS
+    src/assets/shaders/BasicStructures.fxh
 )
+
 
 set(ASSETS
 )
@@ -70,6 +70,7 @@ set_source_files_properties(${SHADERS} PROPERTIES
 set_source_files_properties(${PIXEL_SHADERS} PROPERTIES VS_SHADER_TYPE Pixel)
 set_source_files_properties(${VERTEX_SHADERS} PROPERTIES VS_SHADER_TYPE Vertex)
 set_source_files_properties(src/cubit_ps.hlsl PROPERTIES VS_SHADER_MODEL 5.1)
+
 
 
 if(WIN32)
@@ -135,6 +136,14 @@ if(MSVC)
     # - w4238: nonstandard extension used: class rvalue used as lvalue
     target_compile_options(Asteroids PRIVATE /wd4201 /wd4324 /wd4238)
 endif()
+
+
+set_source_files_properties(${SHADERS} PROPERTIES
+    VS_DEPLOYMENT_LOCATION "shaders"
+)
+
+source_group("src\\assets\\shaders" FILES ${SHADERS})
+
 
 
 #source_group("src" FILES ${CUBIT_SRC})

@@ -11,7 +11,10 @@
 #include "./GeoDiligent.h"
 #include "./RCDiligent.h"
 
+
 #include "grx/RenderContext.h"
+
+
 
 SERIALIZABLE( GeoDiligent );
 
@@ -19,6 +22,10 @@ GeoDiligent::GeoDiligent()
 {
 	//Do Nothing.
 }
+
+
+
+
 
 
 GeoDiligent::GeoDiligent( const char * const pMesh )
@@ -38,9 +45,9 @@ void GeoDiligent::load( const char *const pFilename )
 
 void GeoDiligent::render( const RenderContextPtr &rcon, const cb::Frame3 &frame )
 {
-	std::shared_ptr<RCDiligent> rcPtr = std::dynamic_pointer_cast<RCDiligent>(rcon);
+	//std::shared_ptr<RCDiligent> rcPtr = std::dynamic_pointer_cast<RCDiligent>(rcon);
 
-	renderDiligent( rcPtr, frame );
+	//renderDiligent( rcPtr, frame );
 }
 
 
