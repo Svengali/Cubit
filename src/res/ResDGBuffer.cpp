@@ -10,18 +10,11 @@
 
 #include "./ResDGBuffer.h"
 
-/*
-RefCntAutoPtr<IBuffer> buffer;
-CreateUniformBuffer( dg::App::Info().Device(), sizeof( float4x4 ), "VS constants CB", &buffer );
-*/
-
 
 ResDGBufferPtr ResDGBuffer::create( dg::RefCntAutoPtr<dg::IBuffer> &buffer )
 {
 	return ResDGBufferPtr( new ResDGBuffer( buffer ) );
 }
-
-
 
 ResDGBuffer::ResDGBuffer( const dg::RefCntAutoPtr<dg::IBuffer> &buffer )
 	:
@@ -39,7 +32,8 @@ void ResDGBuffer::load( const char *const pFilename )
 }
 
 
-ResDGBufVertexPtr ResDGBufVertex::create( const u32 dataSize, void * const pData )
+// V e r t e x
+ResDGBufVertexPtr ResDGBufVertex::create( const u32 dataSize, void *const pData )
 {
 
 	dg::BufferDesc VertBuffDesc;
@@ -64,7 +58,6 @@ ResDGBufVertexPtr ResDGBufVertex::create( const u32 dataSize, void * const pData
 	return ResDGBufVertexPtr( new ResDGBufVertex( buffer ) );
 }
 
-
 ResDGBufVertex::ResDGBufVertex( const dg::RefCntAutoPtr<dg::IBuffer> &buffer )
 	:
 	ResDGBuffer( buffer )
@@ -78,10 +71,10 @@ ResDGBufVertex::~ResDGBufVertex( void )
 
 void ResDGBufVertex::load( const char *const pFilename )
 {
-
 }
 
 
+// I n d e x 
 ResDGBufIndexPtr ResDGBufIndex::create( const u32 dataSize, void *const pData )
 {
 
@@ -116,3 +109,5 @@ void ResDGBufIndex::load( const char *const pFilename )
 {
 
 }
+
+

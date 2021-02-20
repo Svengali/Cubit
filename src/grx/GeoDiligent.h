@@ -12,6 +12,13 @@
 //Render context for the diligent engine
 PtrFwd( RCDiligent );
 
+
+
+
+
+
+
+
 //Base class for everything that can render diligent geometry
 class GeoDiligent : public Geometry
 {

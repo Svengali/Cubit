@@ -6,13 +6,15 @@
 
 #include "../stdafx.h"
 
+#include "./ResDGPipelineState.h"
+
+
 #include "ResDGBuffer.h"
 
 #include "ResDGVertexShader.h"
 #include "ResDGPixelShader.h"
 
 
-#include "./ResDGPipelineState.h"
 
 
 ResDGPipelineStatePtr ResDGPipelineState::create( const ResDGVertexShaderPtr &vs, const ResDGPixelShaderPtr &ps, const ResDGBufferPtr &constants )

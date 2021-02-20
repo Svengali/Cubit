@@ -68,9 +68,9 @@ void StructToLayout( const T &t, std::vector<dg::LayoutElement> *const pLayout )
 struct VertexBase
 {
 public:
-	CLASS( VertexBase )
+	STRUCT( VertexBase )
 
-	virtual void Reflection( StructConverter &converter ) { Reflection<StructConverter>( converter ); }
+	void Reflection( StructConverter &converter ) { Reflection<StructConverter>( converter ); }
 
 	REFLECT_BEGIN_ROOT( VertexBase )
 	REFLECT_END()
@@ -79,15 +79,38 @@ public:
 
 struct VertPosUV: public VertexBase
 {
-	CLASS( VertPosUV, VertexBase );
+	STRUCT( VertPosUV, VertexBase );
 
 	REFLECT_BEGIN( VertPosUV, VertexBase )
 		REFLECT( pos );
 		REFLECT( uv );
-	REFLECT_END()
+	REFLECT_END();
+
+	VertPosUV() = default;
+
+	VertPosUV( const cb::Vec3 _pos, const cb::Vec2 _uv )
+		:
+		pos( _pos ),
+		uv ( _uv  )
+		{}
+
+	cb::Vec3 pos;
+	cb::Vec2 uv;
+};
+
+struct VertPosNormalUV: public VertexBase
+{
+	STRUCT( VertPosUV, VertexBase );
+
+	REFLECT_BEGIN( VertPosUV, VertexBase )
+		REFLECT( pos );
+		REFLECT( pos );
+		REFLECT( uv );
+	REFLECT_END();
 
 
 	cb::Vec3 pos;
+	cb::Vec3 normal;
 	cb::Vec2 uv;
 };
 

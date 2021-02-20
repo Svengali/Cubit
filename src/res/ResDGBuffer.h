@@ -8,9 +8,9 @@
 
 #include "res/Resource.h"
 
-PtrFwd( ResDGBuffer );
-PtrFwd( ResDGBufVertex );
-PtrFwd( ResDGBufIndex );
+
+
+
 
 //General buffer
 class ResDGBuffer: public Resource
@@ -18,7 +18,7 @@ class ResDGBuffer: public Resource
 public:
 	CLASS( ResDGBuffer, Resource );
 
-	static ResDGBufferPtr create( dg::RefCntAutoPtr<dg::IBuffer> &buffer );
+	static std::shared_ptr<ResDGBuffer> create( dg::RefCntAutoPtr<dg::IBuffer> &buffer );
 
 	ResDGBuffer( const dg::RefCntAutoPtr<dg::IBuffer> &buffer );
 	virtual ~ResDGBuffer();
@@ -28,7 +28,7 @@ public:
 
 
 	REFLECT_BEGIN( ResDGBuffer, Resource )
-		REFLECT_END();
+	REFLECT_END();
 
 	dg::RefCntAutoPtr<dg::IBuffer> &Buffer() { return m_buffer; }
 
@@ -39,6 +39,8 @@ private:
 
 PtrDef( ResDGBuffer );
 
+
+PtrFwd( ResDGBufVertex );
 
 class ResDGBufVertex: public ResDGBuffer
 {
@@ -55,12 +57,14 @@ public:
 
 
 	REFLECT_BEGIN( ResDGBufVertex, ResDGBuffer )
-		REFLECT_END();
+	REFLECT_END();
 
 
 private:
 
 };
+
+PtrFwd( ResDGBufIndex );
 
 
 class ResDGBufIndex: public ResDGBuffer
@@ -86,11 +90,7 @@ private:
 };
 
 
-
-
-
-
-
-
 PtrDef( ResDGBufVertex );
 PtrDef( ResDGBufIndex );
+
+

@@ -7,8 +7,11 @@
 #pragma once
 
 #include "res/Resource.h"
+#include "res/ResDGBuffer.h"
 
 PtrFwd( ResDGPipelineState );
+PtrFwd( ResDGVertexShader );
+PtrFwd( ResDGPixelShader );
 
 
 class ResDGPipelineState: public Resource
