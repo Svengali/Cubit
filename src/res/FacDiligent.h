@@ -14,6 +14,10 @@ class FacDiligent : public res::Factory
 public:
 	//virtual GeometryPtr convert( const grx::SimpleMesh *const pMesh ) override;
 
+
+
+
+
 };
 
 

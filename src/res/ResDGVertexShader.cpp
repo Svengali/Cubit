@@ -8,7 +8,7 @@
 
 #include "./ResDGVertexShader.h"
 
-ResDGVertexShaderPtr ResDGVertexShader::create( const char *const pFilename )
+ResDGVertexShaderPtr ResDGVertexShader::create( const char *const pFilename, const util::Symbol &type )
 {
 
 	dg::ShaderCreateInfo ShaderCI;

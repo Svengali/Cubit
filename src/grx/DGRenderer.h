@@ -30,6 +30,12 @@ public:
 	REFLECT_BEGIN( DGRenderer, Renderer );
 	REFLECT_END();
 
+
+
+
+
+
+
 };
 
 PtrDef( DGRenderer );

@@ -11,7 +11,7 @@
 #include "./ResDGTexture.h"
 
 
-ResDGTexturePtr ResDGTexture::create( const char *const pFilename )
+ResDGTexturePtr ResDGTexture::create( const char *const pFilename, const util::Symbol &type )
 {
 
 	dg::TextureLoadInfo loadInfo;

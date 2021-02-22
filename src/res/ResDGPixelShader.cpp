@@ -11,7 +11,7 @@
 #include "./ResDGPixelShader.h"
 
 
-ResDGPixelShaderPtr ResDGPixelShader::create( const char *const pFilename )
+ResDGPixelShaderPtr ResDGPixelShader::create( const char *const pFilename, const util::Symbol &type )
 {
 
   dg::ShaderCreateInfo ShaderCI;

@@ -13,6 +13,9 @@
 #include "res/ResDGPipelineState.h"
 #include "grx/Generate.h"
 
+#include "grx/DGRenderer.h"
+#include "grx/GeoDiligent.h"
+
 
 namespace Diligent
 {
@@ -210,6 +213,9 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 	Style_DarkGraphite();
 
 
+	DGRenderer::startup();
+
+
 	VertPosUV verts;
 
 	std::vector<dg::LayoutElement> layout;
@@ -218,13 +224,22 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 	const auto vecLayout = ResDGLayout::create( layout );
 
-	ResourceMgr::AddResource( "<VertPosUV>.layout", vecLayout );
+	ResourceMgr::AddResource( "+VertPosUV.layout", vecLayout );
 
-	const auto vecLayoutLU = ResourceMgr::LookupResource( "<VertPosUV>.layout" );
+	const auto vecLayoutLU = ResourceMgr::LookupResource( "+VertPosUV.layout" );
 
 
 	const auto cubeVerts = grx::gen::createCenteredCubeVertices( 0.5f );
 	const auto cubeIndicies = grx::gen::createCenteredCubeIndicies();
+
+	ResourceMgr::AddResource( "+gen:0.5.verts", cubeVerts );
+	ResourceMgr::AddResource( "+gen:0.5.indices", cubeIndicies );
+
+
+	GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/test.xml" );
+
+
+
 
 	//const auto pso = ResDGPipelineState::create( )
 

@@ -16,7 +16,7 @@ class ResDGPixelShader: public Resource
 public:
 	CLASS( ResDGPixelShader, Resource );
 
-	static ResDGPixelShaderPtr create( const char * const pFilename );
+	static ResDGPixelShaderPtr create( const char * const pFilename, const util::Symbol &type );
 
 	ResDGPixelShader( const dg::ShaderCreateInfo &shaderCI, const dg::RefCntAutoPtr<dg::IShader> &ps );
 	virtual ~ResDGPixelShader();

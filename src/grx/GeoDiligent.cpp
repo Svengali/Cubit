@@ -14,7 +14,14 @@
 
 #include "grx/RenderContext.h"
 
+#include "grx/RCDiligent.h"
+#include "res/ResDGBuffer.h"
+#include "res/ResDGVertexShader.h"
+#include "res/ResDGPixelShader.h"
+#include "res/ResDGTexture.h"
 
+
+SERIALIZABLE( GeoDiligentCfg );
 
 SERIALIZABLE( GeoDiligent );
 

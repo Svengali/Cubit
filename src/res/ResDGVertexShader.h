@@ -16,7 +16,7 @@ class ResDGVertexShader: public Resource
 public:
 	CLASS( ResDGVertexShader, Resource );
 
-	static ResDGVertexShaderPtr create( const char * const pFilename );
+	static ResDGVertexShaderPtr create( const char * const pFilename, const util::Symbol &type );
 
 	ResDGVertexShader( const dg::ShaderCreateInfo &shaderCI, const dg::RefCntAutoPtr<dg::IShader> &vs );
 	virtual ~ResDGVertexShader();
@@ -24,7 +24,7 @@ public:
 	virtual void load( const char *const pFilename );
 
 	REFLECT_BEGIN( ResDGVertexShader, Resource )
-		REFLECT( m_shaderCI );
+		//REFLECT( m_shaderCI );
 		//REFLECT( m_vs );
 	REFLECT_END();
 
