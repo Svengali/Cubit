@@ -8,6 +8,7 @@
 
 #include "PhamApp.h"
 #include "imgui.h"
+# include "imgui/imgui_node_editor.h"
 
 #include "res/ResDGLayout.h"
 #include "res/ResDGPipelineState.h"
@@ -15,6 +16,30 @@
 
 #include "grx/DGRenderer.h"
 #include "grx/GeoDiligent.h"
+
+void Application_Frame();
+void Application_Initialize();
+
+
+namespace ed = ax::NodeEditor;
+
+// Struct to hold basic information about connection between
+// pins. Note that connection (aka. link) has its own ID.
+// This is useful later with dealing with selections, deletion
+// or other operations.
+struct LinkInfo
+{
+	ed::LinkId Id;
+	ed::PinId  InputId;
+	ed::PinId  OutputId;
+};
+
+
+static ImVector<LinkInfo>   g_Links;                // List of live links. It is dynamic unless you want to create read-only view over nodes.
+
+static ed::EditorContext *g_Context = nullptr;
+static int                  g_NextLinkId = 100;     // Counter to help generate link ids. In real application this will probably based on pointer to user data structure.
+
 
 
 namespace Diligent
@@ -216,6 +241,15 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 	DGRenderer::startup();
 
 
+	ed::Config config;
+	config.SettingsFile = "Simple.json";
+	g_Context = ed::CreateEditor( &config );
+
+
+	//Application_Initialize();
+
+
+
 	VertPosUV verts;
 
 	std::vector<dg::LayoutElement> layout;
@@ -247,7 +281,22 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 
 
+void node( const u32 nodeIdBase )
+{
 
+	u32 nodeId = nodeIdBase * 4;
+
+	ed::BeginNode( nodeId++ );
+	ImGui::Text( "Node A" );
+	ed::BeginPin( nodeId++, ed::PinKind::Input );
+	ImGui::Text( "-> In" );
+	ed::EndPin();
+	ImGui::SameLine();
+	ed::BeginPin( nodeId++, ed::PinKind::Output );
+	ImGui::Text( "Out ->" );
+	ed::EndPin();
+	ed::EndNode();
+}
 
 static bool s_showDemoWindow = false;
 
@@ -268,6 +317,8 @@ void PhamApp::UpdateUI()
 		ImGui::ShowDemoWindow( &m_ShowDemoWindow );
 	}
 
+
+	//Application_Frame();
 
 
 
@@ -293,6 +344,113 @@ void PhamApp::UpdateUI()
 		ImGui::End();
 	}
 
+	{
+		ImGui::Begin( "Nodes" );
+		ed::SetCurrentEditor( g_Context );
+		ed::Begin( "My Editor", ImVec2( 0.0, 0.0f ) );
+
+		u32 uniqueId = 1;
+
+		node( uniqueId++ );
+		node( uniqueId++ );
+		node( uniqueId++ );
+		node( uniqueId++ );
+
+
+
+
+
+
+	// Submit Links
+		for( auto &linkInfo : g_Links )
+			ed::Link( linkInfo.Id, linkInfo.InputId, linkInfo.OutputId );
+
+
+			// Handle creation action, returns true if editor want to create new object (node or link)
+		if( ed::BeginCreate() )
+		{
+			ed::PinId inputPinId, outputPinId;
+			if( ed::QueryNewLink( &inputPinId, &outputPinId ) )
+			{
+					// QueryNewLink returns true if editor want to create new link between pins.
+					//
+					// Link can be created only for two valid pins, it is up to you to
+					// validate if connection make sense. Editor is happy to make any.
+					//
+					// Link always goes from input to output. User may choose to drag
+					// link from output pin or input pin. This determine which pin ids
+					// are valid and which are not:
+					//   * input valid, output invalid - user started to drag new ling from input pin
+					//   * input invalid, output valid - user started to drag new ling from output pin
+					//   * input valid, output valid   - user dragged link over other pin, can be validated
+
+				if( inputPinId && outputPinId ) // both are valid, let's accept link
+				{
+						// ed::AcceptNewItem() return true when user release mouse button.
+					if( ed::AcceptNewItem() )
+					{
+							// Since we accepted new link, lets add one to our list of links.
+						g_Links.push_back( { ed::LinkId( g_NextLinkId++ ), inputPinId, outputPinId } );
+
+						// Draw new link.
+						ed::Link( g_Links.back().Id, g_Links.back().InputId, g_Links.back().OutputId );
+					}
+
+					// You may choose to reject connection between these nodes
+					// by calling ed::RejectNewItem(). This will allow editor to give
+					// visual feedback by changing link thickness and color.
+				}
+			}
+		}
+		ed::EndCreate(); // Wraps up object creation action handling.
+
+
+		// Handle deletion action
+		if( ed::BeginDelete() )
+		{
+				// There may be many links marked for deletion, let's loop over them.
+			ed::LinkId deletedLinkId;
+			while( ed::QueryDeletedLink( &deletedLinkId ) )
+			{
+					// If you agree that link can be deleted, accept deletion.
+				if( ed::AcceptDeletedItem() )
+				{
+						// Then remove link from your data.
+					for( auto &link : g_Links )
+					{
+						if( link.Id == deletedLinkId )
+						{
+							g_Links.erase( &link );
+							break;
+						}
+					}
+				}
+
+				// You may reject link deletion by calling:
+				// ed::RejectDeletedItem();
+			}
+		}
+		ed::EndDelete(); // Wrap up deletion action
+
+
+
+
+
+
+
+
+
+
+		ed::End();
+		ed::SetCurrentEditor( nullptr );
+		ImGui::End();
+
+	}
+
+
+
+
+
 }
 
 // Render a frame
@@ -315,4 +473,8 @@ void PhamApp::Update( double CurrTime, double ElapsedTime )
 void PhamApp::WindowResize( dg::Uint32 Width, dg::Uint32 Height )
 {
 }
+
+
+
+
 

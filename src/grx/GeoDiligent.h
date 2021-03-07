@@ -40,6 +40,8 @@ public:
 		REFLECT( m_indexBuf );
 		REFLECT( m_texture );
 	REFLECT_END();
+
+
 	virtual void DoReflection( XMLReader &reader ) override { GeoDiligentCfg::Reflection<XMLReader>( reader ); }
 
 

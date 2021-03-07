@@ -26,6 +26,12 @@ DGRenderer &DGRenderer::Inst()
 	return s_renderer;
 }
 
+ResourcePtr nullCreate( const char *const pFilename, const util::Symbol &type )
+{
+	return nullptr;
+}
+
+
 void DGRenderer::startup()
 {
 	Renderer::startup( &s_renderer );
@@ -37,8 +43,8 @@ void DGRenderer::startup()
 	ResourceMgr::RegisterCreator( "psh", ResDGPixelShader::SClass(), ResDGPixelShader::create );
 	ResourceMgr::RegisterCreator( "vsh", ResDGVertexShader::SClass(), ResDGVertexShader::create );
 
-	ResourceMgr::RegisterCreator( "verts", ResDGPixelShader::SClass(), ResDGPixelShader::create );
-	ResourceMgr::RegisterCreator( "indices", ResDGVertexShader::SClass(), ResDGVertexShader::create );
+	ResourceMgr::RegisterCreator( "verts", ResDGPixelShader::SClass(), nullCreate );
+	ResourceMgr::RegisterCreator( "indices", ResDGVertexShader::SClass(), nullCreate );
 
 	//ResourceMgr::RegisterCreator( "xml", GeoDiligentCfg::SClass(), GeoDiligentCfg::create );
 
@@ -61,4 +67,30 @@ DGRenderer::DGRenderer()
 DGRenderer::~DGRenderer(void)
 {
 }
+
+void DGRenderer::addRenderableSystem( const DGRenderableSystemPtr &rs )
+{
+	m_rs.push_back( rs );
+}
+
+
+void DGRenderer::render()
+{
+
+
+	for( auto rs : m_rs )
+	{
+		rs->render();
+	}
+
+}
+
+
+
+
+void RSEntity::render()
+{
+}
+
+
 

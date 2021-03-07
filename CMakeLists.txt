@@ -24,7 +24,7 @@ endif()
 file(
   GLOB_RECURSE CUBIT_HEADERS 
   RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-  src/*.h src/*.hpp
+  src/*.h src/*.hpp src/*.inl
 )
 
 file(
