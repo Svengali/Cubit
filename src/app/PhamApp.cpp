@@ -113,7 +113,7 @@ void Style_MarcGreen()
 	style.Colors[ImGuiCol_PlotHistogram]         = ImVec4( 0.90f, 0.00f, 0.70f, 1.00f );																																																																																						//ImGuiCol_PlotLinesHovered,
 	style.Colors[ImGuiCol_PlotHistogramHovered]  = ImVec4( 1.00f, 0.00f, 0.60f, 1.00f );																																											//ImGuiCol_PlotHistogram,
 	style.Colors[ImGuiCol_TextSelectedBg]        = ImVec4( 0.00f, 1.00f, 0.00f, 0.35f );																																											//ImGuiCol_PlotHistogramHovered,
-	style.Colors[ImGuiCol_ModalWindowDarkening]  = ImVec4( 0.20f, 0.20f, 0.20f, 0.35f );																																											//ImGuiCol_TextSelectedBg,
+	//style.Colors[ImGuiCol_ModalWindowDarkening]  = ImVec4( 0.20f, 0.20f, 0.20f, 0.35f );																																											//ImGuiCol_TextSelectedBg,
 																																											//ImGuiCol_DragDropTarget,
 																																											//ImGuiCol_NavHighlight,        
 																																											//ImGuiCol_NavWindowingHighlight
