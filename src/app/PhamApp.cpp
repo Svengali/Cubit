@@ -53,6 +53,7 @@ namespace Diligent
 
 PhamApp::~PhamApp()
 {
+	ed::DestroyEditor(g_Context);
 	DGRenderer::shutdown();
 }
 
