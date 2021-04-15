@@ -20,6 +20,8 @@
 
 #include <Windows.h>
 
+#include "stb_image/stb_image.h"
+
 #include "ImGui.h"
 
 // TODO: reference additional headers your program requires here

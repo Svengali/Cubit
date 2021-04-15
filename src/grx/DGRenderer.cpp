@@ -19,11 +19,11 @@
 
 SERIALIZABLE( DGRenderer );
 
-static DGRenderer s_renderer;
+static DGRenderer *s_renderer = nullptr;
 
 DGRenderer &DGRenderer::Inst()
 {
-	return s_renderer;
+	return *s_renderer;
 }
 
 ResourcePtr nullCreate( const char *const pFilename, const util::Symbol &type )
@@ -34,9 +34,13 @@ ResourcePtr nullCreate( const char *const pFilename, const util::Symbol &type )
 
 void DGRenderer::startup()
 {
-	Renderer::startup( &s_renderer );
+	s_renderer = new DGRenderer();
+
+	Renderer::startup( s_renderer );
 
 	//void RegisterCreator( const char *const pExtension, const util::Symbol &type, FnCreator func );
+
+	ResourceMgr::AppStart();
 
 	ResourceMgr::RegisterCreator( "xml", Config::SClass(), &Config::create );
 
@@ -54,7 +58,10 @@ void DGRenderer::startup()
 
 void DGRenderer::shutdown()
 {
+	ResourceMgr::AppStop();
 
+	delete s_renderer;
+	s_renderer = nullptr;
 }
 
 
