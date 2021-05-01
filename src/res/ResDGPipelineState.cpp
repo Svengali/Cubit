@@ -108,7 +108,7 @@ ResDGPipelineStatePtr ResDGPipelineState::create( const ResDGVertexShaderPtr &vs
 	// Since we did not explcitly specify the type for 'Constants' variable, default
 	// type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables
 	// never change and are bound directly through the pipeline state object.
-	pso->GetStaticVariableByName( dg::SHADER_TYPE_VERTEX, "Constants" )->Set( constants->Buffer() );
+	//pso->GetStaticVariableByName( dg::SHADER_TYPE_VERTEX, "Constants" )->Set( constants->Buffer() );
 
 	/*
 	// Since we are using mutable variable, we must create a shader resource binding object

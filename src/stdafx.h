@@ -44,10 +44,12 @@
 #include "RenderDevice.h"
 #include "DeviceContext.h"
 #include "SwapChain.h"
+#include "DeviceContext.h"
 //#include "InputController.hpp"
 #include "BasicMath.hpp"
 #include "GraphicsUtilities.h"
 #include "TextureUtilities.h"
+#include "MapHelper.hpp"
 
 //Mostly frozen diligent things
 #include "app/SampleApp.hpp"

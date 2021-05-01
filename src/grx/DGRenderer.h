@@ -7,6 +7,43 @@
 #pragma once
 
 #include "grx/Renderer.h"
+#include "RCDiligent.h"
+
+PtrFwd( GeoDiligent );
+
+
+class GeoBlock
+{
+public:
+
+
+	enum EDynamicSlots
+	{
+		Status = 0,
+		EntityId = 1,
+		Frame = 2,
+		Geometry = 3,
+	};
+
+public:
+
+
+	typedef df::ComBlocks<GeoBlock::EDynamicSlots, cb::Frame3, GeoDiligentPtr> TCom;
+	typedef TCom::AllBlocks::TBlock Block;
+
+	TCom m_com;
+
+public:
+
+	void operate( std::function<void( TCom::AllBlocks::TBlock *, const i32 )> );
+
+	/*
+	void updateBlock(const uint64_t dtMs, TCom::AllBlocks::TBlock& blocks, const i32 count);
+
+	void update(const uint64_t dtMs);
+	*/
+};
+
 
 
 // These are meant to be major systems 
@@ -16,21 +53,29 @@ public:
 
 	CLASS( DGRenderableSystem );
 
+	virtual void add( const cb::Frame3 frame, const GeoDiligentPtr &ptr ) = 0;
 
-	virtual void render() = 0;
+	virtual void render( RCDiligent *pContext ) = 0;
 
 };
 
 PtrDef( DGRenderableSystem );
 
-class RSEntity : public DGRenderableSystem
+class RSEntity: public DGRenderableSystem
 {
 public:
 
 	CLASS( RSEntity, DGRenderableSystem );
 
+	virtual void render( RCDiligent *pContext ) override;
 
-	virtual void render();
+	// Inherited via DGRenderableSystem
+	virtual void add( const cb::Frame3 frame, const GeoDiligentPtr &ptr ) override;
+
+	GeoBlock m_geos;
+
+private:
+	//std::vector<GeoDiligentPtr> m_geos;
 
 };
 
@@ -39,12 +84,12 @@ PtrDef( RSEntity );
 
 
 //Class for everything that can render diligent geometry
-class DGRenderer : public Renderer
+class DGRenderer: public Renderer
 {
 
 public:
 	CLASS( DGRenderer, Renderer );
-	
+
 	static DGRenderer &Inst();
 
 	static void startup();
@@ -56,11 +101,12 @@ public:
 	REFLECT_BEGIN( DGRenderer, Renderer );
 	REFLECT_END();
 
+	void addGeo( const cb::Frame3 frame, const GeoDiligentPtr &geo );
 
 	void addRenderableSystem( const DGRenderableSystemPtr &rs );
 
 
-	void render();
+	void render( RCDiligent *pContext );
 
 
 

@@ -35,11 +35,32 @@ GeoDiligent::GeoDiligent()
 
 
 
-GeoDiligent::GeoDiligent( const char * const pMesh )
+GeoDiligent::GeoDiligent( const ent::EntityId id, const GeoDiligentCfgPtr &cfg, const ResDGPipelineStatePtr &pso )
+	:
+	m_id( id ),
+	m_cfg( cfg ),
+	m_pso( pso )
 {
+
+
+	auto constants = m_cfg->m_namedBuffers.front();
+
+	// Since we did not explcitly specify the type for 'Constants' variable, default
+	 // type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables
+	 // never change and are bound directly through the pipeline state object.
+	m_pso->PSO()->GetStaticVariableByName( dg::SHADER_TYPE_VERTEX, constants.m_name.GetString() )->Set( constants.m_buffer->Buffer() );
+
+	// Since we are using mutable variable, we must create a shader resource binding object
+	// http://diligentgraphics.com/2016/03/23/resource-binding-model-in-diligent-engine-2-0/
+	m_pso->PSO()->CreateShaderResourceBinding( &m_srb, true );
+
+	m_srb->GetVariableByName( dg::SHADER_TYPE_PIXEL, "g_Texture" )->Set( m_cfg->m_texture->View() );
+
+
+
 }
 
-GeoDiligent::~GeoDiligent(void)
+GeoDiligent::~GeoDiligent( void )
 {
 }
 
@@ -48,13 +69,51 @@ void GeoDiligent::load( const char *const pFilename )
 
 }
 
-
-
-void GeoDiligent::render( const RenderContextPtr &rcon, const cb::Frame3 &frame )
+void GeoDiligent::renderDiligent( RCDiligent *pRC, const cb::Frame3 &frame )
 {
-	//std::shared_ptr<RCDiligent> rcPtr = std::dynamic_pointer_cast<RCDiligent>(rcon);
 
-	//renderDiligent( rcPtr, frame );
+
+
+	auto constants = m_cfg->m_namedBuffers.front().m_buffer;
+
+	//*
+	{
+		// Map the buffer and write current world-view-projection matrix
+		dg::MapHelper<dg::float4x4> CBConstants( pRC->m_devContext, constants->Buffer(), dg::MAP_WRITE, dg::MAP_FLAG_DISCARD );
+		*CBConstants = pRC->m_viewProj.Transpose();
+	}
+	//*/
+
+	//*
+	// Bind vertex and index buffers
+	u32   offset = 0;
+	dg::IBuffer *pBuffs[] = { m_cfg->m_vertexBuf->Buffer() };
+	pRC->m_devContext->SetVertexBuffers( 0, 1, pBuffs, &offset, dg::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, dg::SET_VERTEX_BUFFERS_FLAG_RESET );
+	pRC->m_devContext->SetIndexBuffer( m_cfg->m_indexBuf->Buffer(), 0, dg::RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
+
+	// Set the pipeline state
+	pRC->m_devContext->SetPipelineState( m_pso->PSO() );
+	// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode
+	// makes sure that resources are transitioned to required states.
+
+	pRC->m_devContext->CommitShaderResources( m_srb, dg::RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
+
+	//*/
+
+	dg::DrawIndexedAttribs DrawAttrs;     // This is an indexed draw call
+	DrawAttrs.IndexType = dg::VT_UINT32; // Index type
+	DrawAttrs.NumIndices = 36;
+	// Verify the state of vertex and index buffers
+	DrawAttrs.Flags = dg::DRAW_FLAG_VERIFY_ALL;
+	pRC->m_devContext->DrawIndexed( DrawAttrs );
+
+}
+
+
+
+void GeoDiligent::render( RenderContext *pRC, const cb::Frame3 &frame )
+{
+	ASSERT( false && "Dont need to run through render, we go directly through renderDiligent" );
 }
 
 

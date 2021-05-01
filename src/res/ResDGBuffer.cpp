@@ -10,10 +10,28 @@
 
 #include "./ResDGBuffer.h"
 
+SERIALIZABLE( ResDGBufferCreator );
+
+template <>
+void XMLReader::operator() < ResDGBuffer > ( const TiXmlElement *const pNamedElem, ResDGBuffer &val )
+{
+}
+
 
 ResDGBufferPtr ResDGBuffer::create( dg::RefCntAutoPtr<dg::IBuffer> &buffer )
 {
 	return ResDGBufferPtr( new ResDGBuffer( buffer ) );
+}
+
+ResDGBufferPtr ResDGBuffer::create( const i32 size, const std::string &desc )
+{
+	dg::IBuffer *pBuffer;
+
+	CreateUniformBuffer( dg::App::Info().Device(), size, desc.c_str(), &pBuffer );
+
+	auto bufferPtr = dg::RefCntAutoPtr( pBuffer );
+
+	return ResDGBuffer::create( bufferPtr );
 }
 
 ResDGBuffer::ResDGBuffer( const dg::RefCntAutoPtr<dg::IBuffer> &buffer )
@@ -110,4 +128,13 @@ void ResDGBufIndex::load( const char *const pFilename )
 
 }
 
+ResourcePtr ResDGBufferCreator::create() const
+{
+	dg::IBuffer *pBuffer = nullptr;
 
+	CreateUniformBuffer( dg::App::Info().Device(), size, desc.c_str(), &pBuffer );
+
+	auto bufferPtr = dg::RefCntAutoPtr( pBuffer );
+
+	return ResDGBuffer::create( bufferPtr );
+}

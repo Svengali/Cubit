@@ -10,7 +10,7 @@
 
 
 
-
+PtrFwd( ResDGBuffer );
 
 //General buffer
 class ResDGBuffer: public Resource
@@ -19,6 +19,10 @@ public:
 	CLASS( ResDGBuffer, Resource );
 
 	static std::shared_ptr<ResDGBuffer> create( dg::RefCntAutoPtr<dg::IBuffer> &buffer );
+	static ResDGBufferPtr create( const i32 size, const std::string &desc );
+
+	ResDGBuffer() {}
+
 
 	ResDGBuffer( const dg::RefCntAutoPtr<dg::IBuffer> &buffer );
 	virtual ~ResDGBuffer();
@@ -38,6 +42,47 @@ private:
 };
 
 PtrDef( ResDGBuffer );
+
+
+class ResDGBufferCreator : public ResCreator
+{
+public:
+	i32 size;
+	std::string desc;
+
+	REFLECT_BEGIN_ROOT( ResDGBufferCreator )
+		REFLECT( size );
+		REFLECT( desc );
+	REFLECT_END();
+
+	//static ResDGBufferPtr create( const ResDGBufferCreator &info ) { return nullptr; };
+
+
+	// Inherited via ResCreator
+	virtual ResourcePtr create() const override;
+
+};
+
+template<>
+struct cb::TypeTraits<ResDGBufferCreator>
+{
+	BoolAsType_True  hasReflection;
+	BoolAsType_False isPrimitive;
+	BoolAsType_False ioBytes;
+};
+
+
+template <>
+void XMLReader::operator()<ResDGBuffer>( const TiXmlElement *const pNamedElem, ResDGBuffer &val );
+
+
+template <>
+struct CreatorTraits<ResDGBuffer>
+{
+	CreatorBoolAsType_True hasACustomCreator;
+	typedef ResDGBufferCreator Creator;
+};
+
 
 
 PtrFwd( ResDGBufVertex );

@@ -34,7 +34,7 @@ void GDGLTF::load( const char *const pFilename )
 
 }
 
-void GDGLTF::renderDiligent( const RCDiligentPtr &rcon, const cb::Frame3 &frame )
+void GDGLTF::renderDiligent( RCDiligent *pRC, const cb::Frame3 &frame )
 {
 
 }

@@ -31,6 +31,9 @@ public:
 	dg::RefCntAutoPtr<dg::ITexture> &Texture() { return m_texture; }
 	dg::RefCntAutoPtr<dg::ITextureView> &View() { return m_texView; }
 
+	dg::RefCntAutoPtr<dg::IShaderResourceBinding> m_srb;
+
+
 private:
 	dg::RefCntAutoPtr<dg::ITexture> m_texture;
 	dg::RefCntAutoPtr<dg::ITextureView> m_texView;

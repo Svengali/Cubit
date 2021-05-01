@@ -53,23 +53,23 @@ namespace Diligent
 
 PhamApp::~PhamApp()
 {
-	ed::DestroyEditor(g_Context);
+	ed::DestroyEditor( g_Context );
 	DGRenderer::shutdown();
 }
 
 void PhamApp::GetEngineInitializationAttribs(
 	dg::RENDER_DEVICE_TYPE DeviceType,
 	dg::EngineCreateInfo& EngineCI,
-	dg::SwapChainDesc& SCDesc)
+	dg::SwapChainDesc& SCDesc )
 {
-	SampleBase::GetEngineInitializationAttribs(DeviceType, EngineCI, SCDesc);
+	SampleBase::GetEngineInitializationAttribs( DeviceType, EngineCI, SCDesc );
 
 	EngineCI.Features.DepthClamp = dg::DEVICE_FEATURE_STATE_OPTIONAL;
 
 #if D3D12_SUPPORTED
-	if (DeviceType == dg::RENDER_DEVICE_TYPE_D3D12)
+	if( DeviceType == dg::RENDER_DEVICE_TYPE_D3D12 )
 	{
-		auto& D3D12CI = static_cast<dg::EngineD3D12CreateInfo&>(EngineCI);
+		auto& D3D12CI = static_cast<dg::EngineD3D12CreateInfo&>( EngineCI );
 		D3D12CI.GPUDescriptorHeapSize[1] = 1024; // Sampler descriptors
 		D3D12CI.GPUDescriptorHeapDynamicSize[1] = 1024;
 	}
@@ -96,50 +96,50 @@ void Style_MarcGreen()
 	style.TabBorderSize = 1;
 	style.WindowBorderSize = 1;
 
-	style.Colors[ImGuiCol_Text] = ImVec4(0.90f, 0.90f, 0.90f, 0.90f);//ImGuiCol_Text,
-	style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);//ImGuiCol_TextDisabled,
-	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.09f, 0.15f, 0.09f, 1.00f);//ImGuiCol_WindowBg,            
-	style.Colors[ImGuiCol_ChildBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);//ImGuiCol_ChildBg,             
-	style.Colors[ImGuiCol_PopupBg] = ImVec4(0.05f, 0.10f, 0.05f, 0.85f);//ImGuiCol_PopupBg,             
-	style.Colors[ImGuiCol_Border] = ImVec4(0.70f, 0.70f, 0.70f, 0.65f);//ImGuiCol_Border,
-	style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);//ImGuiCol_BorderShadow,
-	style.Colors[ImGuiCol_FrameBg] = ImVec4(0.00f, 0.01f, 0.00f, 1.00f);//ImGuiCol_FrameBg,             
-	style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.90f, 0.80f, 0.80f, 0.40f);//ImGuiCol_FrameBgHovered,
-	style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.90f, 0.65f, 0.65f, 0.45f);//ImGuiCol_FrameBgActive,
-	style.Colors[ImGuiCol_TitleBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.83f);//ImGuiCol_TitleBg,
-	style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.40f, 0.80f, 0.40f, 0.20f);//ImGuiCol_TitleBgActive,
-	style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.00f, 0.00f, 0.00f, 0.87f);//ImGuiCol_TitleBgCollapsed,
-	style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.01f, 0.02f, 0.01f, 0.80f);//ImGuiCol_MenuBarBg,
-	style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.20f, 0.30f, 0.25f, 0.60f);//ImGuiCol_ScrollbarBg,
-	style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.55f, 0.55f, 0.53f, 0.51f);//ImGuiCol_ScrollbarGrab,
-	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.56f, 0.56f, 0.56f, 1.00f);//ImGuiCol_ScrollbarGrabHovered,
-	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.56f, 0.56f, 0.56f, 0.91f);//ImGuiCol_ScrollbarGrabActive,
-	style.Colors[ImGuiCol_CheckMark] = ImVec4(0.90f, 0.90f, 0.90f, 0.83f);//ImGuiCol_CheckMark,
-	style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.70f, 0.70f, 0.70f, 0.62f);//ImGuiCol_SliderGrab,
-	style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.30f, 0.30f, 0.30f, 0.84f);//ImGuiCol_SliderGrabActive,
-	style.Colors[ImGuiCol_Button] = ImVec4(0.48f, 0.89f, 0.72f, 0.49f);//ImGuiCol_Button,
-	style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.50f, 0.99f, 0.69f, 0.68f);//ImGuiCol_ButtonHovered,
-	style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.80f, 0.50f, 0.50f, 1.00f);//ImGuiCol_ButtonActive,
-	style.Colors[ImGuiCol_Header] = ImVec4(0.30f, 1.00f, 0.69f, 0.53f);//ImGuiCol_Header,              
-	style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.44f, 0.86f, 0.61f, 1.00f);//ImGuiCol_HeaderHovered,
-	style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.38f, 0.83f, 0.62f, 1.00f);//ImGuiCol_HeaderActive,
+	style.Colors[ImGuiCol_Text] = ImVec4( 0.90f, 0.90f, 0.90f, 0.90f );//ImGuiCol_Text,
+	style.Colors[ImGuiCol_TextDisabled] = ImVec4( 0.60f, 0.60f, 0.60f, 1.00f );//ImGuiCol_TextDisabled,
+	style.Colors[ImGuiCol_WindowBg] = ImVec4( 0.09f, 0.15f, 0.09f, 1.00f );//ImGuiCol_WindowBg,            
+	style.Colors[ImGuiCol_ChildBg] = ImVec4( 0.00f, 0.00f, 0.00f, 0.00f );//ImGuiCol_ChildBg,             
+	style.Colors[ImGuiCol_PopupBg] = ImVec4( 0.05f, 0.10f, 0.05f, 0.85f );//ImGuiCol_PopupBg,             
+	style.Colors[ImGuiCol_Border] = ImVec4( 0.70f, 0.70f, 0.70f, 0.65f );//ImGuiCol_Border,
+	style.Colors[ImGuiCol_BorderShadow] = ImVec4( 0.00f, 0.00f, 0.00f, 0.00f );//ImGuiCol_BorderShadow,
+	style.Colors[ImGuiCol_FrameBg] = ImVec4( 0.00f, 0.01f, 0.00f, 1.00f );//ImGuiCol_FrameBg,             
+	style.Colors[ImGuiCol_FrameBgHovered] = ImVec4( 0.90f, 0.80f, 0.80f, 0.40f );//ImGuiCol_FrameBgHovered,
+	style.Colors[ImGuiCol_FrameBgActive] = ImVec4( 0.90f, 0.65f, 0.65f, 0.45f );//ImGuiCol_FrameBgActive,
+	style.Colors[ImGuiCol_TitleBg] = ImVec4( 0.00f, 0.00f, 0.00f, 0.83f );//ImGuiCol_TitleBg,
+	style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4( 0.40f, 0.80f, 0.40f, 0.20f );//ImGuiCol_TitleBgActive,
+	style.Colors[ImGuiCol_TitleBgActive] = ImVec4( 0.00f, 0.00f, 0.00f, 0.87f );//ImGuiCol_TitleBgCollapsed,
+	style.Colors[ImGuiCol_MenuBarBg] = ImVec4( 0.01f, 0.02f, 0.01f, 0.80f );//ImGuiCol_MenuBarBg,
+	style.Colors[ImGuiCol_ScrollbarBg] = ImVec4( 0.20f, 0.30f, 0.25f, 0.60f );//ImGuiCol_ScrollbarBg,
+	style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4( 0.55f, 0.55f, 0.53f, 0.51f );//ImGuiCol_ScrollbarGrab,
+	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4( 0.56f, 0.56f, 0.56f, 1.00f );//ImGuiCol_ScrollbarGrabHovered,
+	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4( 0.56f, 0.56f, 0.56f, 0.91f );//ImGuiCol_ScrollbarGrabActive,
+	style.Colors[ImGuiCol_CheckMark] = ImVec4( 0.90f, 0.90f, 0.90f, 0.83f );//ImGuiCol_CheckMark,
+	style.Colors[ImGuiCol_SliderGrab] = ImVec4( 0.70f, 0.70f, 0.70f, 0.62f );//ImGuiCol_SliderGrab,
+	style.Colors[ImGuiCol_SliderGrabActive] = ImVec4( 0.30f, 0.30f, 0.30f, 0.84f );//ImGuiCol_SliderGrabActive,
+	style.Colors[ImGuiCol_Button] = ImVec4( 0.48f, 0.89f, 0.72f, 0.49f );//ImGuiCol_Button,
+	style.Colors[ImGuiCol_ButtonHovered] = ImVec4( 0.50f, 0.99f, 0.69f, 0.68f );//ImGuiCol_ButtonHovered,
+	style.Colors[ImGuiCol_ButtonActive] = ImVec4( 0.80f, 0.50f, 0.50f, 1.00f );//ImGuiCol_ButtonActive,
+	style.Colors[ImGuiCol_Header] = ImVec4( 0.30f, 1.00f, 0.69f, 0.53f );//ImGuiCol_Header,              
+	style.Colors[ImGuiCol_HeaderHovered] = ImVec4( 0.44f, 0.86f, 0.61f, 1.00f );//ImGuiCol_HeaderHovered,
+	style.Colors[ImGuiCol_HeaderActive] = ImVec4( 0.38f, 0.83f, 0.62f, 1.00f );//ImGuiCol_HeaderActive,
 
 //style.Colors[ImGuiCol_Separator]             = ImVec4( 0.38f, 0.83f, 0.62f, 1.00f );//ImGuiCol_Separator,
 //style.Colors[ImGuiCol_SeparatorHovered]      = ImVec4( 0.38f, 0.83f, 0.62f, 1.00f );//ImGuiCol_SeparatorHovered,
 //style.Colors[ImGuiCol_SeparatorActive]       = ImVec4( 0.38f, 0.83f, 0.62f, 1.00f );//ImGuiCol_SeparatorActive,
 
-	style.Colors[ImGuiCol_ResizeGrip] = ImVec4(1.00f, 1.00f, 1.00f, 0.85f);//ImGuiCol_ResizeGrip,
-	style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(1.00f, 1.00f, 1.00f, 0.60f);//ImGuiCol_ResizeGripHovered,
-	style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(1.00f, 1.00f, 1.00f, 0.90f);//ImGuiCol_ResizeGripActive,
+	style.Colors[ImGuiCol_ResizeGrip] = ImVec4( 1.00f, 1.00f, 1.00f, 0.85f );//ImGuiCol_ResizeGrip,
+	style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4( 1.00f, 1.00f, 1.00f, 0.60f );//ImGuiCol_ResizeGripHovered,
+	style.Colors[ImGuiCol_ResizeGripActive] = ImVec4( 1.00f, 1.00f, 1.00f, 0.90f );//ImGuiCol_ResizeGripActive,
 //ImGuiCol_Tab,
 //ImGuiCol_TabHovered,
 //ImGuiCol_TabActive,
 //ImGuiCol_TabUnfocused,
-	style.Colors[ImGuiCol_PlotLines] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);																																											//ImGuiCol_TabUnfocusedActive,
-	style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.90f, 0.00f, 0.70f, 1.00f);																																											//ImGuiCol_PlotLines,
-	style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.00f, 0.70f, 1.00f);																																																																																						//ImGuiCol_PlotLinesHovered,
-	style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.00f, 0.60f, 1.00f);																																											//ImGuiCol_PlotHistogram,
-	style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.00f, 1.00f, 0.00f, 0.35f);																																											//ImGuiCol_PlotHistogramHovered,
+	style.Colors[ImGuiCol_PlotLines] = ImVec4( 1.00f, 1.00f, 1.00f, 1.00f );																																											//ImGuiCol_TabUnfocusedActive,
+	style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4( 0.90f, 0.00f, 0.70f, 1.00f );																																											//ImGuiCol_PlotLines,
+	style.Colors[ImGuiCol_PlotHistogram] = ImVec4( 0.90f, 0.00f, 0.70f, 1.00f );																																																																																						//ImGuiCol_PlotLinesHovered,
+	style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4( 1.00f, 0.00f, 0.60f, 1.00f );																																											//ImGuiCol_PlotHistogram,
+	style.Colors[ImGuiCol_TextSelectedBg] = ImVec4( 0.00f, 1.00f, 0.00f, 0.35f );																																											//ImGuiCol_PlotHistogramHovered,
 	//style.Colors[ImGuiCol_ModalWindowDarkening]  = ImVec4( 0.20f, 0.20f, 0.20f, 0.35f );																																											//ImGuiCol_TextSelectedBg,
 																																											//ImGuiCol_DragDropTarget,
 																																											//ImGuiCol_NavHighlight,        
@@ -149,56 +149,54 @@ void Style_MarcGreen()
 
 }
 
-
-
 void Style_DarkGraphite()
 {
 	ImGuiStyle* style = &ImGui::GetStyle();
 	ImVec4* colors = style->Colors;
 
-	colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-	colors[ImGuiCol_TextDisabled] = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
-	colors[ImGuiCol_ChildBg] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
-	colors[ImGuiCol_WindowBg] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
-	colors[ImGuiCol_PopupBg] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
-	colors[ImGuiCol_Border] = ImVec4(0.12f, 0.12f, 0.12f, 0.90f);
-	colors[ImGuiCol_BorderShadow] = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
-	colors[ImGuiCol_FrameBg] = ImVec4(0.42f, 0.42f, 0.42f, 0.54f);
-	colors[ImGuiCol_FrameBgHovered] = ImVec4(0.42f, 0.42f, 0.42f, 0.40f);
-	colors[ImGuiCol_FrameBgActive] = ImVec4(0.56f, 0.56f, 0.56f, 0.67f);
-	colors[ImGuiCol_TitleBg] = ImVec4(0.19f, 0.19f, 0.19f, 1.00f);
-	colors[ImGuiCol_TitleBgActive] = ImVec4(0.22f, 0.22f, 0.22f, 1.00f);
-	colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.17f, 0.17f, 0.17f, 0.90f);
-	colors[ImGuiCol_MenuBarBg] = ImVec4(0.335f, 0.335f, 0.335f, 1.000f);
-	colors[ImGuiCol_ScrollbarBg] = ImVec4(0.24f, 0.24f, 0.24f, 0.53f);
-	colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.41f, 0.41f, 0.41f, 1.00f);
-	colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.52f, 0.52f, 0.52f, 1.00f);
-	colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.76f, 0.76f, 0.76f, 1.00f);
-	colors[ImGuiCol_CheckMark] = ImVec4(0.65f, 0.65f, 0.65f, 1.00f);
-	colors[ImGuiCol_SliderGrab] = ImVec4(0.52f, 0.52f, 0.52f, 1.00f);
-	colors[ImGuiCol_SliderGrabActive] = ImVec4(0.64f, 0.64f, 0.64f, 1.00f);
-	colors[ImGuiCol_Button] = ImVec4(0.54f, 0.54f, 0.54f, 0.35f);
-	colors[ImGuiCol_ButtonHovered] = ImVec4(0.52f, 0.52f, 0.52f, 0.59f);
-	colors[ImGuiCol_ButtonActive] = ImVec4(0.76f, 0.76f, 0.76f, 1.00f);
-	colors[ImGuiCol_Header] = ImVec4(0.38f, 0.38f, 0.38f, 1.00f);
-	colors[ImGuiCol_HeaderHovered] = ImVec4(0.47f, 0.47f, 0.47f, 1.00f);
-	colors[ImGuiCol_HeaderActive] = ImVec4(0.76f, 0.76f, 0.76f, 0.77f);
-	colors[ImGuiCol_Separator] = ImVec4(0.000f, 0.000f, 0.000f, 0.137f);
-	colors[ImGuiCol_SeparatorHovered] = ImVec4(0.700f, 0.671f, 0.600f, 0.290f);
-	colors[ImGuiCol_SeparatorActive] = ImVec4(0.702f, 0.671f, 0.600f, 0.674f);
-	colors[ImGuiCol_ResizeGrip] = ImVec4(0.26f, 0.59f, 0.98f, 0.25f);
-	colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
-	colors[ImGuiCol_ResizeGripActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
-	colors[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
-	colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
-	colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
-	colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
-	colors[ImGuiCol_TextSelectedBg] = ImVec4(0.73f, 0.73f, 0.73f, 0.35f);
-	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
-	colors[ImGuiCol_DragDropTarget] = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
-	colors[ImGuiCol_NavHighlight] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-	colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
-	colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
+	colors[ImGuiCol_Text] = ImVec4( 1.00f, 1.00f, 1.00f, 1.00f );
+	colors[ImGuiCol_TextDisabled] = ImVec4( 0.40f, 0.40f, 0.40f, 1.00f );
+	colors[ImGuiCol_ChildBg] = ImVec4( 0.25f, 0.25f, 0.25f, 1.00f );
+	colors[ImGuiCol_WindowBg] = ImVec4( 0.25f, 0.25f, 0.25f, 1.00f );
+	colors[ImGuiCol_PopupBg] = ImVec4( 0.25f, 0.25f, 0.25f, 1.00f );
+	colors[ImGuiCol_Border] = ImVec4( 0.12f, 0.12f, 0.12f, 0.90f );
+	colors[ImGuiCol_BorderShadow] = ImVec4( 1.00f, 1.00f, 1.00f, 0.06f );
+	colors[ImGuiCol_FrameBg] = ImVec4( 0.42f, 0.42f, 0.42f, 0.54f );
+	colors[ImGuiCol_FrameBgHovered] = ImVec4( 0.42f, 0.42f, 0.42f, 0.40f );
+	colors[ImGuiCol_FrameBgActive] = ImVec4( 0.56f, 0.56f, 0.56f, 0.67f );
+	colors[ImGuiCol_TitleBg] = ImVec4( 0.19f, 0.19f, 0.19f, 1.00f );
+	colors[ImGuiCol_TitleBgActive] = ImVec4( 0.22f, 0.22f, 0.22f, 1.00f );
+	colors[ImGuiCol_TitleBgCollapsed] = ImVec4( 0.17f, 0.17f, 0.17f, 0.90f );
+	colors[ImGuiCol_MenuBarBg] = ImVec4( 0.335f, 0.335f, 0.335f, 1.000f );
+	colors[ImGuiCol_ScrollbarBg] = ImVec4( 0.24f, 0.24f, 0.24f, 0.53f );
+	colors[ImGuiCol_ScrollbarGrab] = ImVec4( 0.41f, 0.41f, 0.41f, 1.00f );
+	colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4( 0.52f, 0.52f, 0.52f, 1.00f );
+	colors[ImGuiCol_ScrollbarGrabActive] = ImVec4( 0.76f, 0.76f, 0.76f, 1.00f );
+	colors[ImGuiCol_CheckMark] = ImVec4( 0.65f, 0.65f, 0.65f, 1.00f );
+	colors[ImGuiCol_SliderGrab] = ImVec4( 0.52f, 0.52f, 0.52f, 1.00f );
+	colors[ImGuiCol_SliderGrabActive] = ImVec4( 0.64f, 0.64f, 0.64f, 1.00f );
+	colors[ImGuiCol_Button] = ImVec4( 0.54f, 0.54f, 0.54f, 0.35f );
+	colors[ImGuiCol_ButtonHovered] = ImVec4( 0.52f, 0.52f, 0.52f, 0.59f );
+	colors[ImGuiCol_ButtonActive] = ImVec4( 0.76f, 0.76f, 0.76f, 1.00f );
+	colors[ImGuiCol_Header] = ImVec4( 0.38f, 0.38f, 0.38f, 1.00f );
+	colors[ImGuiCol_HeaderHovered] = ImVec4( 0.47f, 0.47f, 0.47f, 1.00f );
+	colors[ImGuiCol_HeaderActive] = ImVec4( 0.76f, 0.76f, 0.76f, 0.77f );
+	colors[ImGuiCol_Separator] = ImVec4( 0.000f, 0.000f, 0.000f, 0.137f );
+	colors[ImGuiCol_SeparatorHovered] = ImVec4( 0.700f, 0.671f, 0.600f, 0.290f );
+	colors[ImGuiCol_SeparatorActive] = ImVec4( 0.702f, 0.671f, 0.600f, 0.674f );
+	colors[ImGuiCol_ResizeGrip] = ImVec4( 0.26f, 0.59f, 0.98f, 0.25f );
+	colors[ImGuiCol_ResizeGripHovered] = ImVec4( 0.26f, 0.59f, 0.98f, 0.67f );
+	colors[ImGuiCol_ResizeGripActive] = ImVec4( 0.26f, 0.59f, 0.98f, 0.95f );
+	colors[ImGuiCol_PlotLines] = ImVec4( 0.61f, 0.61f, 0.61f, 1.00f );
+	colors[ImGuiCol_PlotLinesHovered] = ImVec4( 1.00f, 0.43f, 0.35f, 1.00f );
+	colors[ImGuiCol_PlotHistogram] = ImVec4( 0.90f, 0.70f, 0.00f, 1.00f );
+	colors[ImGuiCol_PlotHistogramHovered] = ImVec4( 1.00f, 0.60f, 0.00f, 1.00f );
+	colors[ImGuiCol_TextSelectedBg] = ImVec4( 0.73f, 0.73f, 0.73f, 0.35f );
+	colors[ImGuiCol_ModalWindowDimBg] = ImVec4( 0.80f, 0.80f, 0.80f, 0.35f );
+	colors[ImGuiCol_DragDropTarget] = ImVec4( 1.00f, 1.00f, 0.00f, 0.90f );
+	colors[ImGuiCol_NavHighlight] = ImVec4( 0.26f, 0.59f, 0.98f, 1.00f );
+	colors[ImGuiCol_NavWindowingHighlight] = ImVec4( 1.00f, 1.00f, 1.00f, 0.70f );
+	colors[ImGuiCol_NavWindowingDimBg] = ImVec4( 0.80f, 0.80f, 0.80f, 0.20f );
 
 	/*
 	style->ChildRounding = 4.0f;
@@ -214,12 +212,27 @@ void Style_DarkGraphite()
 	//*/
 }
 
-
-
-
-void PhamApp::Initialize(const dg::SampleInitInfo& InitInfo)
+void PhamApp::Initialize( const dg::SampleInitInfo& InitInfo )
 {
-	dg::SampleBase::Initialize(InitInfo);
+	ent::EntityId::initStartingEntityId( 1024 );
+
+	dg::SampleBase::Initialize( InitInfo );
+
+
+	const auto &SCDesc = m_pSwapChain->GetDesc();
+
+	float NearPlane = 0.1f;
+	float FarPlane = 250.f;
+	float AspectRatio = static_cast<float>( SCDesc.Width ) / static_cast<float>( SCDesc.Height );
+	m_Camera.SetProjAttribs( NearPlane, FarPlane, AspectRatio, dg::PI_F / 4.f,
+		m_pSwapChain->GetDesc().PreTransform, m_pDevice->GetDeviceCaps().IsGLDevice() );
+
+	m_Camera.SetReferenceAxes( dg::float3( 1.0f, 0.0f, 0.0f ), dg::float3( 0.0f, 0.0f, 1.0f ), true );
+
+	m_Camera.SetLookAt( dg::float3( 0.0f, 0.0f, 0.0f ) );
+
+	m_Camera.SetPos( dg::float3( 2.0f, 2.0f, 5.0f ) );
+
 
 
 	ImGuiStyle& style = ImGui::GetStyle();
@@ -256,62 +269,73 @@ void PhamApp::Initialize(const dg::SampleInitInfo& InitInfo)
 
 	std::vector<dg::LayoutElement> layout;
 
-	StructToLayout(verts, &layout);
+	StructToLayout( verts, &layout );
 
-	const auto vecLayout = ResDGLayout::create(layout);
+	const auto vecLayout = ResDGLayout::create( layout );
 
-	ResourceMgr::AddResource("+VertPosUV.layout", vecLayout);
+	ResourceMgr::AddResource( "+VertPosUV.layout", vecLayout );
 
-	const auto vecLayoutLU = ResourceMgr::LookupResource("+VertPosUV.layout");
+	const auto vecLayoutLU = ResourceMgr::LookupResource( "+VertPosUV.layout" );
 
 
-	const auto cubeVerts = grx::gen::createCenteredCubeVertices(0.5f);
+	const auto cubeVerts = grx::gen::createCenteredCubeVertices( 0.5f );
 	const auto cubeIndicies = grx::gen::createCenteredCubeIndicies();
 
-	ResourceMgr::AddResource("+gen:0.5.verts", cubeVerts);
-	ResourceMgr::AddResource("+gen:0.5.indices", cubeIndicies);
+	ResourceMgr::AddResource( "+gen:0.5.verts", cubeVerts );
+	ResourceMgr::AddResource( "+gen:0.5.indices", cubeIndicies );
 
 
-	GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>("config/geo/test.xml");
+	GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/test.xml" );
+
+	const auto id = ent::EntityId::makeNext();
+
+	// HACK fixed name buffers
+	auto pso = ResDGPipelineState::create( cfg->m_vertexShader, cfg->m_pixelShader, cfg->m_namedBuffers.front().m_buffer );
+
+	GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( id, cfg, pso ) );
 
 
 
+
+	cb::Mat3 mat;
+	cb::Vec3 pos;
+	cb::Frame3 frame( mat, pos );
+
+	DGRenderer::Inst().addGeo( frame, geo );
 
 	//const auto pso = ResDGPipelineState::create( )
 
 }
 
-
-
-void node(const u32 nodeIdBase)
+void node( const u32 nodeIdBase )
 {
 
 	u32 nodeId = nodeIdBase * 10;
 
-	ed::BeginNode(nodeId++);
-	ImGui::Text("Node %i", nodeIdBase);
-	ed::BeginPin(nodeId++, ed::PinKind::Input);
-	ImGui::Text("-> In");
+	ed::BeginNode( nodeId++ );
+	ImGui::Text( "Node %i", nodeIdBase );
+	ed::BeginPin( nodeId++, ed::PinKind::Input );
+	ImGui::Text( "-> In" );
 	ed::EndPin();
 
 	ImGui::SameLine();
-	ed::BeginPin(nodeId++, ed::PinKind::Output);
-	ImGui::Text("Out ->");
+	ed::BeginPin( nodeId++, ed::PinKind::Output );
+	ImGui::Text( "Out ->" );
 	ed::EndPin();
 
 
-	ed::BeginPin(nodeId++, ed::PinKind::Input);
-	ImGui::Text("-> In");
+	ed::BeginPin( nodeId++, ed::PinKind::Input );
+	ImGui::Text( "-> In" );
 	ed::EndPin();
 
 
 	ImGui::SameLine();
-	ed::BeginPin(nodeId++, ed::PinKind::Output);
-	ImGui::Text("Out ->");
+	ed::BeginPin( nodeId++, ed::PinKind::Output );
+	ImGui::Text( "Out ->" );
 	ed::EndPin();
 
-	ed::BeginPin(nodeId++, ed::PinKind::Input);
-	ImGui::Text("-> In");
+	ed::BeginPin( nodeId++, ed::PinKind::Input );
+	ImGui::Text( "-> In" );
 	ed::EndPin();
 
 	ed::EndNode();
@@ -328,12 +352,16 @@ static u32 s_timeAoSuS = 0;
 static u32 s_timeSoA3uS = 0;
 static u32 s_timeSoA4uS = 0;
 
-void PhamApp::UpdateUI()
-{ 
+static i32							s_atTestSize = 1000;
+static i32							s_atTestCalls = 1000;
+static std::vector<i32> s_atTest;
 
-	if (s_showDemoWindow)
+void PhamApp::UpdateUI()
+{
+
+	if( s_showDemoWindow )
 	{
-		ImGui::ShowDemoWindow(&m_ShowDemoWindow);
+		ImGui::ShowDemoWindow( &m_ShowDemoWindow );
 	}
 
 #if 0
@@ -350,7 +378,7 @@ void PhamApp::UpdateUI()
 			ImGuiWindowFlags_NoBringToFrontOnFocus );
 		/*/
 		ImGui::SetNextWindowSize( ImVec2( 256, 256 ) );
-		ImGui::Begin("Content");
+		ImGui::Begin( "Content" );
 		//*/
 
 		//Application_Frame();
@@ -363,38 +391,92 @@ void PhamApp::UpdateUI()
 
 
 	{
-		ImGui::Begin("Pham");
+		ImGui::Begin( "Pham" );
 
-		ImGui::Checkbox("Show Demo Window", &s_showDemoWindow); // Edit bools storing our window open/close state
+		ImGui::Checkbox( "Show Demo Window", &s_showDemoWindow ); // Edit bools storing our window open/close state
 		ImGui::SameLine();
-		ImGui::Checkbox("Time Blocks", &s_timeBlocks); // Edit bools storing our window open/close state
+		ImGui::Checkbox( "Time Blocks", &s_timeBlocks ); // Edit bools storing our window open/close state
 
-		if (s_timeBlocks)
+		if( s_timeBlocks )
 		{
-			df::timeBlocks(s_numLoops, s_numEnts, &s_timeSoAIndividualuS, &s_timeAoSuS, &s_timeSoA3uS, &s_timeSoA4uS);
+			df::timeBlocks( s_numLoops, s_numEnts, &s_timeSoAIndividualuS, &s_timeAoSuS, &s_timeSoA3uS, &s_timeSoA4uS );
 		}
 
 		{
-			ImGui::SliderInt("s_numLoops", &s_numLoops, 0, 10);
-			ImGui::SliderInt("s_numEnts", &s_numEnts, 0, 1000000);
+			ImGui::SliderInt( "s_numLoops", &s_numLoops, 0, 10 );
+			ImGui::SliderInt( "s_numEnts", &s_numEnts, 0, 1000000 );
 
-			ImGui::Text("Time in uS, SoAFine %i | AoS %i | SoA 3 %i | SoA 4 %i", s_timeSoAIndividualuS, s_timeAoSuS, s_timeSoA3uS, s_timeSoA4uS);
+			ImGui::Text( "Time in uS, SoAFine %i | AoS %i | SoA 3 %i | SoA 4 %i", s_timeSoAIndividualuS, s_timeAoSuS, s_timeSoA3uS, s_timeSoA4uS );
 		}
 
 		ImGui::End();
 	}
 
 	{
-		ImGui::Begin("Nodes");
-		ed::SetCurrentEditor(g_Context);
-		ed::Begin("My Editor", ImVec2(0.0, 0.0f));
+		ImGui::Begin( "At Test" );
+
+		ImGui::SliderInt( "s_atTestSize", &s_atTestSize, 1, 100000000 );
+		ImGui::SliderInt( "s_atTestCalls", &s_atTestCalls, 1, 100000000 );
+
+
+		if( s_atTest.size() != s_atTestSize )
+		{
+			s_atTest.resize( s_atTestSize );
+
+			for( i32 i = 0; i < s_atTest.size(); ++i )
+			{
+				s_atTest[i] = rand();
+			}
+		}
+
+		i32 accumBrace = 0;
+
+		const auto timeBrace = Timer<>::execution( [&]() {
+			for( int32_t i = 0; i < s_atTestCalls; ++i )
+			{
+				const i32 val = s_atTest[i % s_atTestSize];
+
+				accumBrace += val;
+			}
+			} );
+
+		const float fTimeBraceUs = (float)timeBrace;
+		const float fTimeBraceMs = fTimeBraceUs / 1000.0f;
+
+
+		i32 accumMath = 0;
+
+		i32* pStart = &s_atTest[0];
+
+		const auto timeMath = Timer<>::execution( [&]() {
+			for( int32_t i = 0; i < s_atTestCalls; ++i )
+			{
+				const i32 val = *( pStart + ( i % s_atTestSize ) );
+
+				accumMath += val;
+			}
+			} );
+
+		const float fTimeMathUs = (float)timeMath;
+		const float fTimeMathMs = fTimeMathUs / 1000.0f;
+
+
+		ImGui::Text( "Ms Brace %.3f  Math %.3f\n", fTimeBraceMs, fTimeMathMs );
+		ImGui::Text( "Accum %i %i\n", accumBrace, accumMath );
+		ImGui::End();
+	}
+
+	{
+		ImGui::Begin( "Nodes" );
+		ed::SetCurrentEditor( g_Context );
+		ed::Begin( "My Editor", ImVec2( 0.0, 0.0f ) );
 
 		u32 uniqueId = 1;
 
-		node(uniqueId++);
-		node(uniqueId++);
-		node(uniqueId++);
-		node(uniqueId++);
+		node( uniqueId++ );
+		node( uniqueId++ );
+		node( uniqueId++ );
+		node( uniqueId++ );
 
 
 
@@ -402,15 +484,15 @@ void PhamApp::UpdateUI()
 
 
 		// Submit Links
-		for (auto& linkInfo : g_Links)
-			ed::Link(linkInfo.Id, linkInfo.InputId, linkInfo.OutputId);
+		for( auto& linkInfo : g_Links )
+			ed::Link( linkInfo.Id, linkInfo.InputId, linkInfo.OutputId );
 
 
 		// Handle creation action, returns true if editor want to create new object (node or link)
-		if (ed::BeginCreate())
+		if( ed::BeginCreate() )
 		{
 			ed::PinId inputPinId, outputPinId;
-			if (ed::QueryNewLink(&inputPinId, &outputPinId))
+			if( ed::QueryNewLink( &inputPinId, &outputPinId ) )
 			{
 				// QueryNewLink returns true if editor want to create new link between pins.
 				//
@@ -424,16 +506,16 @@ void PhamApp::UpdateUI()
 				//   * input invalid, output valid - user started to drag new ling from output pin
 				//   * input valid, output valid   - user dragged link over other pin, can be validated
 
-				if (inputPinId && outputPinId) // both are valid, let's accept link
+				if( inputPinId && outputPinId ) // both are valid, let's accept link
 				{
 					// ed::AcceptNewItem() return true when user release mouse button.
-					if (ed::AcceptNewItem())
+					if( ed::AcceptNewItem() )
 					{
 						// Since we accepted new link, lets add one to our list of links.
-						g_Links.push_back({ ed::LinkId(g_NextLinkId++), inputPinId, outputPinId });
+						g_Links.push_back( { ed::LinkId( g_NextLinkId++ ), inputPinId, outputPinId } );
 
 						// Draw new link.
-						ed::Link(g_Links.back().Id, g_Links.back().InputId, g_Links.back().OutputId);
+						ed::Link( g_Links.back().Id, g_Links.back().InputId, g_Links.back().OutputId );
 					}
 
 					// You may choose to reject connection between these nodes
@@ -446,21 +528,21 @@ void PhamApp::UpdateUI()
 
 
 		// Handle deletion action
-		if (ed::BeginDelete())
+		if( ed::BeginDelete() )
 		{
 			// There may be many links marked for deletion, let's loop over them.
 			ed::LinkId deletedLinkId;
-			while (ed::QueryDeletedLink(&deletedLinkId))
+			while( ed::QueryDeletedLink( &deletedLinkId ) )
 			{
 				// If you agree that link can be deleted, accept deletion.
-				if (ed::AcceptDeletedItem())
+				if( ed::AcceptDeletedItem() )
 				{
 					// Then remove link from your data.
-					for (auto& link : g_Links)
+					for( auto& link : g_Links )
 					{
-						if (link.Id == deletedLinkId)
+						if( link.Id == deletedLinkId )
 						{
-							g_Links.erase(&link);
+							g_Links.erase( &link );
 							break;
 						}
 					}
@@ -482,14 +564,10 @@ void PhamApp::UpdateUI()
 
 
 		ed::End();
-		ed::SetCurrentEditor(nullptr);
+		ed::SetCurrentEditor( nullptr );
 		ImGui::End();
 
 	}
-
-
-
-
 
 }
 
@@ -497,20 +575,40 @@ void PhamApp::UpdateUI()
 void PhamApp::Render()
 {
 
+	auto *pRTV = m_pSwapChain->GetCurrentBackBufferRTV();
+	auto *pDSV = m_pSwapChain->GetDepthBufferDSV();
+	// Clear the back buffer
+	const float ClearColor[] = { 0.350f, 0.350f, 0.350f, 1.0f };
+	m_pImmediateContext->ClearRenderTarget( pRTV, ClearColor, dg::RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
+	m_pImmediateContext->ClearDepthStencil( pDSV, dg::CLEAR_DEPTH_FLAG, 1.f, 0, dg::RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
 
-	auto* pRTV = m_pSwapChain->GetCurrentBackBufferRTV();
-	m_pImmediateContext->ClearRenderTarget(pRTV, &m_ClearColor.x, dg::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+	auto proj = GetAdjustedProjectionMatrix( dg::PI_F / 2.0f, 0.1f, 100.f );
+	auto view = dg::float4x4::Translation( 0.f, 5.0f, 5.0f );
+
+
+	
+
+	RCDiligent context;
+	context.m_devContext = m_pImmediateContext;
+	context.m_viewProj = /*m_Camera.GetWorldMatrix() * */ m_Camera.GetViewMatrix() * m_Camera.GetProjMatrix();
+
+
+	DGRenderer::Inst().render( &context );
+
 }
 
 
-void PhamApp::Update(double CurrTime, double ElapsedTime)
+void PhamApp::Update( double CurrTime, double ElapsedTime )
 {
-	SampleBase::Update(CurrTime, ElapsedTime);
+	SampleBase::Update( CurrTime, ElapsedTime );
+
+	m_Camera.Update( m_InputController, cast<float>( ElapsedTime ) );
 
 	UpdateUI();
 }
 
-void PhamApp::WindowResize(dg::Uint32 Width, dg::Uint32 Height)
+void PhamApp::WindowResize( dg::Uint32 Width, dg::Uint32 Height )
 {
 }
 

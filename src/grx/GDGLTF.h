@@ -28,7 +28,7 @@ public:
 	virtual void load( const char *const pFilename );
 
 	
-	virtual void renderDiligent( const RCDiligentPtr &rcon, const cb::Frame3 &frame ) ;
+	virtual void renderDiligent( RCDiligent *pRC, const cb::Frame3 &frame ) ;
 
 	REFLECT_BEGIN( GeoDiligent, GeoDiligent );
 	REFLECT_END();

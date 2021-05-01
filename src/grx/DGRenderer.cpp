@@ -54,6 +54,13 @@ void DGRenderer::startup()
 
 	ResourceMgr::RegisterCreator( "png", ResDGTexture::SClass(), ResDGTexture::create );
 	ResourceMgr::RegisterCreator( "jpg", ResDGTexture::SClass(), ResDGTexture::create );
+
+
+	RSEntityPtr rs = RSEntityPtr( new RSEntity() );
+
+	s_renderer->addRenderableSystem( rs );
+
+
 }
 
 void DGRenderer::shutdown()
@@ -71,7 +78,7 @@ DGRenderer::DGRenderer()
 }
 
 
-DGRenderer::~DGRenderer(void)
+DGRenderer::~DGRenderer( void )
 {
 }
 
@@ -81,23 +88,88 @@ void DGRenderer::addRenderableSystem( const DGRenderableSystemPtr &rs )
 }
 
 
-void DGRenderer::render()
+void DGRenderer::render( RCDiligent *pContext )
 {
 
 
 	for( auto rs : m_rs )
 	{
-		rs->render();
+		rs->render( pContext );
 	}
 
 }
 
 
 
-
-void RSEntity::render()
+void DGRenderer::addGeo( const cb::Frame3 frame, const GeoDiligentPtr &geo )
 {
+	m_rs.front()->add( frame, geo );
 }
 
 
+void RSEntity::render( RCDiligent *pContext )
+{
+
+	m_geos.operate( [pContext]( GeoBlock::Block *pBlock, const i32 max ){
+
+		const auto *__restrict const pSrcFrame	= pBlock->src<GeoBlock::Frame, cb::Frame3>();
+		const auto *__restrict const pSrcGeo		= pBlock->src<GeoBlock::Geometry, GeoDiligentPtr>();
+
+		for( i32 i = 0; i < max; ++i )
+		{
+			const cb::Frame3 &frame = pSrcFrame[i];
+			const GeoDiligentPtr &geo = pSrcGeo[i];
+
+			geo->renderDiligent( pContext, frame );
+		}
+
+
+		} );
+
+
+
+}
+
+void RSEntity::add( const cb::Frame3 frame, const GeoDiligentPtr &ptr )
+{
+	const auto id = ptr->m_id;
+
+	m_geos.m_com.insert( id, frame, ptr );
+}
+
+
+
+/*
+void GeoBlock::updateBlock( const uint64_t dtMs, TCom::AllBlocks::TBlock &block, const i32 count )
+{
+	const auto *__restrict const pSrcFrame = block.src<Frame, cb::Frame3>();
+	const auto *__restrict const pSrcGeo   = block.src<Geometry, GeoDiligentPtr>();
+
+	for( i32 i = 0; i < count; ++i )
+	{
+		const cb::Frame3 &frame = pSrcFrame[i];
+		const GeoDiligentPtr &geo = pSrcGeo[i];
+
+		geo->renderDiligent( nullptr, frame );
+
+
+	}
+}
+*/
+
+void GeoBlock::operate( std::function<void( Block *, const i32 max )> fn )
+{
+	const auto size = (int)m_com.m_blocks.m_block.size();
+
+	async::parallel_for( async::irange( 0, size ), [fn, this]( int iBlock ) {
+		auto &block = m_com.m_blocks.m_block[iBlock];
+
+		const auto max = m_com.m_blocks.m_allocated[iBlock];
+
+		fn( block.get(), max );
+
+
+		//updateBlock( dtMs, *block.get(), count );
+		} );
+}
 

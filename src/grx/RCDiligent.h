@@ -25,7 +25,12 @@ public:
 	REFLECT_BEGIN( RCDiligent, RenderContext );
 	REFLECT_END();
 
+	dg::float4x4 m_viewProj;
+
+	dg::RefCntAutoPtr<dg::IDeviceContext> m_devContext;
+
+
 };
 
-PtrDef( RCDiligent );
+//PtrDef( RCDiligent );
 

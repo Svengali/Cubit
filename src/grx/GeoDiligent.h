@@ -24,6 +24,31 @@ PtrFwd( ResDGTexture );
 #include "res/ResDGVertexShader.h"
 #include "res/ResDGPixelShader.h"
 #include "res/ResDGTexture.h"
+#include "res/ResDGPipelineState.h"
+
+struct NamedBuffer
+{
+public:
+
+	CLASS( NamedBuffer );
+
+	REFLECT_BEGIN_ROOT( NamedBuffer );
+		REFLECT( m_name );
+		REFLECT( m_buffer );
+	REFLECT_END();
+
+	util::Symbol		m_name = util::Symbol( util::Symbol::eEmpty );
+	ResDGBufferPtr	m_buffer;
+
+};
+
+template<>
+struct cb::TypeTraits<NamedBuffer>
+{
+	BoolAsType_True  hasReflection;
+	BoolAsType_False isPrimitive;
+	BoolAsType_False ioBytes;
+};
 
 
 
@@ -34,6 +59,7 @@ public:
 	CLASS( GeoDiligentCfg, Config );
 
 	REFLECT_BEGIN( GeoDiligent, Config );
+		REFLECT( m_namedBuffers );
 		REFLECT( m_vertexShader );
 		REFLECT( m_pixelShader );
 		REFLECT( m_vertexBuf );
@@ -44,6 +70,7 @@ public:
 
 	virtual void DoReflection( XMLReader &reader ) override { GeoDiligentCfg::Reflection<XMLReader>( reader ); }
 
+	std::vector<NamedBuffer> m_namedBuffers;
 
 	ResDGVertexShaderPtr	m_vertexShader;
 	ResDGPixelShaderPtr		m_pixelShader;
@@ -53,6 +80,7 @@ public:
 
 	ResDGTexturePtr	m_texture;
 
+
 };
 
 
@@ -61,33 +89,38 @@ PtrDef( GeoDiligentCfg );
 
 
 //Base class for everything that can render diligent geometry
-class GeoDiligent : public Geometry
+class GeoDiligent: public Geometry
 {
 
 public:
 	CLASS( GeoDiligent, Geometry );
-	
+
 	GeoDiligent();
-	
-	GeoDiligent( const char * const pMesh );
-	
+
+	GeoDiligent( const ent::EntityId id, const GeoDiligentCfgPtr &cfg, const ResDGPipelineStatePtr &pso );
+
 	virtual ~GeoDiligent();
 
 	virtual void load( const char *const pFilename );
 
-	
-	virtual void renderDiligent( const RCDiligentPtr &rcon, const cb::Frame3 &frame ) 
-	{};
+
+	virtual void renderDiligent( RCDiligent *pRC, const cb::Frame3 &frame );
 
 	//virtual void DoReflection( XMLReader &reader ) override { Reflection<XMLReader>( reader ); }
 	REFLECT_BEGIN( GeoDiligent, Geometry );
 		REFLECT( m_cfg );
+		REFLECT( m_pso );
 	REFLECT_END();
 
+	ent::EntityId			m_id;
 	GeoDiligentCfgPtr m_cfg;
 
+	ResDGPipelineStatePtr m_pso;
+
+	dg::RefCntAutoPtr<dg::IShaderResourceBinding> m_srb;
+
 private:
-	virtual void render( const RenderContextPtr &rcon, const cb::Frame3 &frame );
+	virtual void render( RenderContext *pRC, const cb::Frame3 &frame );
 };
 
 PtrDef( GeoDiligent );

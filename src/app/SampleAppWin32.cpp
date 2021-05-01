@@ -166,6 +166,18 @@ public:
                 break;
         }
 
+
+        struct WindowsMessageData
+        {
+          HWND   hWnd;
+          UINT   message;
+          WPARAM wParam;
+          LPARAM lParam;
+        } MsgData = { hWnd, message, wParam, lParam };
+
+        m_TheSample->GetInputController().HandleNativeMessage( &MsgData );
+
+
         if (m_pImGui)
         {
             auto Handled = static_cast<ImGuiImplWin32*>(m_pImGui.get())->Win32_ProcHandler(hWnd, message, wParam, lParam);
@@ -173,14 +185,6 @@ public:
                 return Handled;
         }
 
-        struct WindowsMessageData
-        {
-            HWND   hWnd;
-            UINT   message;
-            WPARAM wParam;
-            LPARAM lParam;
-        } MsgData = {hWnd, message, wParam, lParam};
-        m_TheSample->GetInputController().HandleNativeMessage(&MsgData);
         return m_TheSample->HandleNativeMessage(&MsgData);
     }
 
