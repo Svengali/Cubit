@@ -41,6 +41,12 @@ static ed::EditorContext* g_Context = nullptr;
 static int                  g_NextLinkId = 100;     // Counter to help generate link ids. In real application this will probably based on pointer to user data structure.
 
 
+dg::float3 c( const cb::Vec3 &v )
+{
+	return dg::float3( v.x, v.y, v.z );
+}
+
+
 
 namespace Diligent
 {
@@ -284,25 +290,65 @@ void PhamApp::Initialize( const dg::SampleInitInfo& InitInfo )
 	ResourceMgr::AddResource( "+gen:0.5.verts", cubeVerts );
 	ResourceMgr::AddResource( "+gen:0.5.indices", cubeIndicies );
 
+	{
+		GeoDiligentCfgPtr cfg0;
+		{
+			cfg0 = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/test.xml" );
 
-	GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/test.xml" );
+			{
+				GeoDiligentCfgPtr cfg1 = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/test.xml" );
+				GeoDiligentCfgPtr cfg2 = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/test.xml" );
+				GeoDiligentCfgPtr cfg3 = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/test.xml" );
+				GeoDiligentCfgPtr cfg4 = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/test.xml" );
+				GeoDiligentCfgPtr cfg5 = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/test.xml" );
+			}
+		}
+	}
 
-	const auto id = ent::EntityId::makeNext();
 
 	// HACK fixed name buffers
-	auto pso = ResDGPipelineState::create( cfg->m_vertexShader, cfg->m_pixelShader, cfg->m_namedBuffers.front().m_buffer );
 
-	GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( id, cfg, pso ) );
+	const i32 width = 10;
+	const i32 hight = 10;
+
+	for( i32 iy = -hight; iy < hight + 1; ++iy )
+	{
+		const auto y = cast<f32>( iy );
+
+		OutputDebugString( "Ping\n" );
+
+		for( i32 ix = -width; ix < width + 1; ++ix )
+		{
+			const auto id = ent::EntityId::makeNext();
+
+			const auto x = cast<f32>( ix );
+
+			cb::Mat3 mat( cb::Mat3::eIdentity );
+
+			cb::SetZRotation( &mat, CB_PIf * ( x + y ) / 50.0f );
+			
+			cb::Vec3 pos( x, y, 0 );
+			cb::Frame3 frame( mat, pos );
 
 
+			//const dg::float4x4 dgTrans = dg::float4x4::RotationZ( CB_PIf * 0.25f ) * dg::float4x4::Translation( c(pos) );
+
+			//const cb::Mat4 mat4( frame );
 
 
-	cb::Mat3 mat;
-	cb::Vec3 pos;
-	cb::Frame3 frame( mat, pos );
+			//const dg::float4x4 another = dg::float4x4::MakeMatrix( mat4.GetData() );
+			GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/test.xml" );
 
-	DGRenderer::Inst().addGeo( frame, geo );
 
+			auto pso = ResDGPipelineState::create( cfg->m_vertexShader, cfg->m_pixelShader, cfg->m_namedBuffers.front().m_buffer );
+
+			GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( id, cfg, pso ) );
+
+
+			DGRenderer::Inst().addGeo( frame, geo );
+
+		}
+	}
 	//const auto pso = ResDGPipelineState::create( )
 
 }
@@ -412,6 +458,7 @@ void PhamApp::UpdateUI()
 		ImGui::End();
 	}
 
+	/*
 	{
 		ImGui::Begin( "At Test" );
 
@@ -465,6 +512,7 @@ void PhamApp::UpdateUI()
 		ImGui::Text( "Accum %i %i\n", accumBrace, accumMath );
 		ImGui::End();
 	}
+	*/
 
 	{
 		ImGui::Begin( "Nodes" );
@@ -578,21 +626,13 @@ void PhamApp::Render()
 	auto *pRTV = m_pSwapChain->GetCurrentBackBufferRTV();
 	auto *pDSV = m_pSwapChain->GetDepthBufferDSV();
 	// Clear the back buffer
-	const float ClearColor[] = { 0.350f, 0.350f, 0.350f, 1.0f };
+	const float ClearColor[] = { 0.350f, 0.150f, 0.350f, 1.0f };
 	m_pImmediateContext->ClearRenderTarget( pRTV, ClearColor, dg::RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
 	m_pImmediateContext->ClearDepthStencil( pDSV, dg::CLEAR_DEPTH_FLAG, 1.f, 0, dg::RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
 
+	const auto viewProj = /*m_Camera.GetWorldMatrix() * */ m_Camera.GetViewMatrix() * m_Camera.GetProjMatrix();
 
-	auto proj = GetAdjustedProjectionMatrix( dg::PI_F / 2.0f, 0.1f, 100.f );
-	auto view = dg::float4x4::Translation( 0.f, 5.0f, 5.0f );
-
-
-	
-
-	RCDiligent context;
-	context.m_devContext = m_pImmediateContext;
-	context.m_viewProj = /*m_Camera.GetWorldMatrix() * */ m_Camera.GetViewMatrix() * m_Camera.GetProjMatrix();
-
+	RCDiligent context( viewProj, DGViewPtr( pRTV ), m_pImmediateContext ) ;
 
 	DGRenderer::Inst().render( &context );
 

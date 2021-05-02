@@ -12,12 +12,4 @@
 
 SERIALIZABLE( RCDiligent );
 
-RCDiligent::RCDiligent()
-{
-}
-
-
-RCDiligent::~RCDiligent(void)
-{
-}
 

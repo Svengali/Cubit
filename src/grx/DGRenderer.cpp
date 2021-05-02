@@ -135,6 +135,11 @@ void RSEntity::add( const cb::Frame3 frame, const GeoDiligentPtr &ptr )
 	const auto id = ptr->m_id;
 
 	m_geos.m_com.insert( id, frame, ptr );
+
+
+	GeoBlock::Block::TIndividualTuple values;
+
+	m_geos.m_com.debug_get( id, &values );
 }
 
 

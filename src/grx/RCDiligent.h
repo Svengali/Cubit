@@ -17,9 +17,19 @@ class RCDiligent : public RenderContext
 public:
 	CLASS( RCDiligent, RenderContext );
 	
-	RCDiligent();
+	RCDiligent() = default;
+
+
+	RCDiligent( dg::float4x4 viewProj, DGViewPtr renderTarget, DGContextPrt devContext )
+		:
+		m_viewProj( viewProj ),
+		m_renderTarget( renderTarget ),
+		m_devContext( devContext )
+	{
+
+	}
 	
-	virtual ~RCDiligent();
+	virtual ~RCDiligent() = default;
 
 
 	REFLECT_BEGIN( RCDiligent, RenderContext );
@@ -27,7 +37,9 @@ public:
 
 	dg::float4x4 m_viewProj;
 
-	dg::RefCntAutoPtr<dg::IDeviceContext> m_devContext;
+	DGViewPtr m_renderTarget;
+
+	DGContextPrt m_devContext;
 
 
 };

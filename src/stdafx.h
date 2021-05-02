@@ -56,3 +56,10 @@
 
 
 namespace dg = Diligent;
+typedef dg::RefCntAutoPtr<dg::IBuffer>				DGBufferPtr;
+typedef dg::RefCntAutoPtr<dg::ITextureView>		DGViewPtr;
+typedef dg::RefCntAutoPtr<dg::ISampler>				DGSamplerPtr;
+typedef dg::RefCntAutoPtr<dg::IPipelineState> DGPipelinePtr;
+typedef dg::RefCntAutoPtr<dg::IDeviceContext> DGContextPrt;
+
+typedef dg::RefCntAutoPtr<dg::IShaderResourceBinding> DGShaderResPtr;

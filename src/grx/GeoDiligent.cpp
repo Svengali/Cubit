@@ -72,6 +72,12 @@ void GeoDiligent::load( const char *const pFilename )
 void GeoDiligent::renderDiligent( RCDiligent *pRC, const cb::Frame3 &frame )
 {
 
+	const cb::Mat4 mat( frame );
+
+	const dg::float4x4 world = dg::float4x4::MakeMatrix( mat.GetData() );
+
+
+	const dg::float4x4 fin = world * pRC->m_viewProj;
 
 
 	auto constants = m_cfg->m_namedBuffers.front().m_buffer;
@@ -80,7 +86,7 @@ void GeoDiligent::renderDiligent( RCDiligent *pRC, const cb::Frame3 &frame )
 	{
 		// Map the buffer and write current world-view-projection matrix
 		dg::MapHelper<dg::float4x4> CBConstants( pRC->m_devContext, constants->Buffer(), dg::MAP_WRITE, dg::MAP_FLAG_DISCARD );
-		*CBConstants = pRC->m_viewProj.Transpose();
+		*CBConstants = fin.Transpose();
 	}
 	//*/
 
