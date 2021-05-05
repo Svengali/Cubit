@@ -50,14 +50,14 @@ GeoDiligent::GeoDiligent( const ent::EntityId id, const GeoDiligentCfgPtr &cfg, 
 	 // never change and are bound directly through the pipeline state object.
 	m_pso->PSO()->GetStaticVariableByName( dg::SHADER_TYPE_VERTEX, constants.m_name.GetString() )->Set( constants.m_buffer->Buffer() );
 
-	// Since we are using mutable variable, we must create a shader resource binding object
-	// http://diligentgraphics.com/2016/03/23/resource-binding-model-in-diligent-engine-2-0/
-	m_pso->PSO()->CreateShaderResourceBinding( &m_srb, true );
+	if( !m_cfg->m_texture->m_srb )
+	{
+		// Since we are using mutable variable, we must create a shader resource binding object
+		// http://diligentgraphics.com/2016/03/23/resource-binding-model-in-diligent-engine-2-0/
+		m_pso->PSO()->CreateShaderResourceBinding( &m_cfg->m_texture->m_srb, true );
 
-	m_srb->GetVariableByName( dg::SHADER_TYPE_PIXEL, "g_Texture" )->Set( m_cfg->m_texture->View() );
-
-
-
+		m_cfg->m_texture->m_srb->GetVariableByName( dg::SHADER_TYPE_PIXEL, "g_Texture" )->Set( m_cfg->m_texture->View() );
+	}
 }
 
 GeoDiligent::~GeoDiligent( void )
@@ -76,21 +76,16 @@ void GeoDiligent::renderDiligent( RCDiligent *pRC, const cb::Frame3 &frame )
 
 	const dg::float4x4 world = dg::float4x4::MakeMatrix( mat.GetData() );
 
-
 	const dg::float4x4 fin = world * pRC->m_viewProj;
-
 
 	auto constants = m_cfg->m_namedBuffers.front().m_buffer;
 
-	//*
 	{
 		// Map the buffer and write current world-view-projection matrix
 		dg::MapHelper<dg::float4x4> CBConstants( pRC->m_devContext, constants->Buffer(), dg::MAP_WRITE, dg::MAP_FLAG_DISCARD );
 		*CBConstants = fin.Transpose();
 	}
-	//*/
 
-	//*
 	// Bind vertex and index buffers
 	u32   offset = 0;
 	dg::IBuffer *pBuffs[] = { m_cfg->m_vertexBuf->Buffer() };
@@ -102,9 +97,8 @@ void GeoDiligent::renderDiligent( RCDiligent *pRC, const cb::Frame3 &frame )
 	// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode
 	// makes sure that resources are transitioned to required states.
 
-	pRC->m_devContext->CommitShaderResources( m_srb, dg::RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
+	pRC->m_devContext->CommitShaderResources( m_cfg->m_texture->m_srb, dg::RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
 
-	//*/
 
 	dg::DrawIndexedAttribs DrawAttrs;     // This is an indexed draw call
 	DrawAttrs.IndexType = dg::VT_UINT32; // Index type
