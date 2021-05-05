@@ -11,7 +11,7 @@
 
 PtrFwd( GeoDiligent );
 
-const i32 k_blocksize = 10;
+const i32 k_geoBlockSize = 6 * 1024;
 
 class GeoBlock
 {
@@ -29,7 +29,7 @@ public:
 public:
 
 
-	typedef df::ComBlocks<k_blocksize, GeoBlock::EDynamicSlots, cb::Frame3, GeoDiligentPtr> TCom;
+	typedef df::ComBlocks<k_geoBlockSize, GeoBlock::EDynamicSlots, cb::Frame3, GeoDiligentPtr> TCom;
 	typedef TCom::AllBlocks::TBlock Block;
 
 	TCom m_com;

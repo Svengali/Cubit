@@ -117,8 +117,6 @@ public:
 
 	ResDGPipelineStatePtr m_pso;
 
-	dg::RefCntAutoPtr<dg::IShaderResourceBinding> m_srb;
-
 private:
 	virtual void render( RenderContext *pRC, const cb::Frame3 &frame );
 };

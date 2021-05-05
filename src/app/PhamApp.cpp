@@ -72,12 +72,14 @@ void PhamApp::GetEngineInitializationAttribs(
 
 	EngineCI.Features.DepthClamp = dg::DEVICE_FEATURE_STATE_OPTIONAL;
 
+	EngineCI.NumDeferredContexts = 64;
+
 #if D3D12_SUPPORTED
 	if( DeviceType == dg::RENDER_DEVICE_TYPE_D3D12 )
 	{
 		auto& D3D12CI = static_cast<dg::EngineD3D12CreateInfo&>( EngineCI );
-		D3D12CI.GPUDescriptorHeapSize[1] = 1024; // Sampler descriptors
-		D3D12CI.GPUDescriptorHeapDynamicSize[1] = 1024;
+		D3D12CI.GPUDescriptorHeapSize[1] = 1 * 1024; // Sampler descriptors
+		D3D12CI.GPUDescriptorHeapDynamicSize[1] = 1 * 1024;
 	}
 #endif
 }
@@ -308,8 +310,8 @@ void PhamApp::Initialize( const dg::SampleInitInfo& InitInfo )
 
 	// HACK fixed name buffers
 
-	const i32 width = 10;
-	const i32 hight = 10;
+	const i32 width = 200;
+	const i32 hight = 200;
 
 	for( i32 iy = -hight; iy < hight + 1; ++iy )
 	{

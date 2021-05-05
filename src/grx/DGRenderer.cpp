@@ -110,21 +110,82 @@ void DGRenderer::addGeo( const cb::Frame3 frame, const GeoDiligentPtr &geo )
 void RSEntity::render( RCDiligent *pContext )
 {
 
-	m_geos.operate( [pContext]( GeoBlock::Block *pBlock, const i32 max ){
+	std::atomic<i32> num = 0;
+
+
+	std::array<dg::RefCntAutoPtr<dg::ICommandList>, 64> cmdLists;
+	std::array<std::atomic<bool>, 64> waitList;
+
+
+
+	m_geos.operate( [pContext, &num, &cmdLists, &waitList]( GeoBlock::Block *pBlock, const i32 max ){
 
 		const auto *__restrict const pSrcFrame	= pBlock->src<GeoBlock::Frame, cb::Frame3>();
 		const auto *__restrict const pSrcGeo		= pBlock->src<GeoBlock::Geometry, GeoDiligentPtr>();
+
+		const i32 id = num.fetch_add( 1 ) % 64;
+
+		/*
+		while( !waitList[id].exchange(true) )
+		{
+		}
+		//*/
+
+		/*
+		char buffer[256];
+
+		snprintf( buffer, 256, "Rendering id %i\n", id);
+
+		OutputDebugString( buffer );
+		//*/
+
+		auto context = dg::App::Info().DeferredContexts()[id];
+
+		RCDiligent newRC;
+		newRC.m_devContext = context;
+		newRC.m_renderTarget = pContext->m_renderTarget;
+		newRC.m_viewProj = pContext->m_viewProj;
+			
+		auto swapChain = dg::App::Info().SwapChain();
+		auto *pRTV = swapChain->GetCurrentBackBufferRTV();
+		context->SetRenderTargets( 1, &pRTV, swapChain->GetDepthBufferDSV(), dg::RESOURCE_STATE_TRANSITION_MODE_VERIFY );
 
 		for( i32 i = 0; i < max; ++i )
 		{
 			const cb::Frame3 &frame = pSrcFrame[i];
 			const GeoDiligentPtr &geo = pSrcGeo[i];
 
-			geo->renderDiligent( pContext, frame );
+			geo->renderDiligent( &newRC, frame );
 		}
 
+		/*
+		while( waitList[id].exchange( false ) )
+		{
+		}
+		//*/
 
-		} );
+	} );
+
+
+
+	for( i32 i = 0; i < std::min(64, num.load()); ++i )
+	{
+		auto contextDef = dg::App::Info().DeferredContexts()[i];
+
+		auto contextImm = dg::App::Info().ImmContext();
+		
+		contextDef->FinishCommandList( &cmdLists[i] );
+
+		contextImm->ExecuteCommandList( cmdLists[i] );
+
+		// Release command lists now to release all outstanding references
+		// In d3d11 mode, command lists hold references to the swap chain's back buffer
+		// that cause swap chain resize to fail
+		cmdLists[i].Release();
+
+		contextDef->FinishFrame();
+	}
+
 
 
 
@@ -166,7 +227,13 @@ void GeoBlock::operate( std::function<void( Block *, const i32 max )> fn )
 {
 	const auto size = (int)m_com.m_blocks.m_block.size();
 
+	//*
 	async::parallel_for( async::irange( 0, size ), [fn, this]( int iBlock ) {
+	/*/
+	for( i32 iBlock = 0; iBlock < size; ++iBlock ) {
+	//*/
+
+
 		auto &block = m_com.m_blocks.m_block[iBlock];
 
 		const auto max = m_com.m_blocks.m_allocated[iBlock];
@@ -175,6 +242,10 @@ void GeoBlock::operate( std::function<void( Block *, const i32 max )> fn )
 
 
 		//updateBlock( dtMs, *block.get(), count );
-		} );
+		}
+		//*
+		);
+		/*/
+		//*/
 }
 

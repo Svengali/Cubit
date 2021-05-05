@@ -53,6 +53,8 @@ void SampleBase::GetEngineInitializationAttribs(RENDER_DEVICE_TYPE DeviceType, E
             EngineD3D12CI.GPUDescriptorHeapDynamicSize[1]         = 2048 - 128;
             EngineD3D12CI.DynamicDescriptorAllocationChunkSize[0] = 32;
             EngineD3D12CI.DynamicDescriptorAllocationChunkSize[1] = 8; // D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER
+
+            EngineD3D12CI.NumDeferredContexts = 16;
         }
         break;
 #endif
