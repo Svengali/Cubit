@@ -92,13 +92,14 @@ class ResDGBufVertex: public ResDGBuffer
 public:
 	CLASS( ResDGBufVertex, ResDGBuffer );
 
-	static ResDGBufVertexPtr create( const u32 dataSize, void *const pData );
+	static ResDGBufVertexPtr create( const char *const pFilename, const util::Symbol &type );
+	static ResDGBufVertexPtr createRaw( const u32 dataSize, void *const pData );
 
 	ResDGBufVertex( const dg::RefCntAutoPtr<dg::IBuffer> &buffer );
 	virtual ~ResDGBufVertex();
 
 
-	virtual void load( const char *const pFilename );
+	virtual void load( const char *const pFilename, const util::Symbol type );
 
 
 	REFLECT_BEGIN( ResDGBufVertex, ResDGBuffer )
@@ -117,13 +118,14 @@ class ResDGBufIndex: public ResDGBuffer
 public:
 	CLASS( ResDGBufIndex, ResDGBuffer );
 
-	static ResDGBufIndexPtr create( const u32 dataSize, void *const pData );
+	static ResDGBufIndexPtr create( const char *const pFilename, const util::Symbol &type );
+	static ResDGBufIndexPtr createRaw( const u32 dataSize, void *const pData );
 
 	ResDGBufIndex( const dg::RefCntAutoPtr<dg::IBuffer> &buffer );
 	virtual ~ResDGBufIndex();
 
 
-	virtual void load( const char *const pFilename );
+	virtual void load( const char *const pFilename, const util::Symbol type );
 
 
 	REFLECT_BEGIN( ResDGBufIndex, ResDGBuffer )

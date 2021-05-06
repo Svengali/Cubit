@@ -286,12 +286,15 @@ void PhamApp::Initialize( const dg::SampleInitInfo& InitInfo )
 	const auto vecLayoutLU = ResourceMgr::LookupResource( "+VertPosUV.layout" );
 
 
+	/*
 	const auto cubeVerts = grx::gen::createCenteredCubeVertices( 0.5f );
 	const auto cubeIndicies = grx::gen::createCenteredCubeIndicies();
 
 	ResourceMgr::AddResource( "+gen:0.5.verts", cubeVerts );
 	ResourceMgr::AddResource( "+gen:0.5.indices", cubeIndicies );
+	*/
 
+	/*
 	{
 		GeoDiligentCfgPtr cfg0;
 		{
@@ -306,18 +309,34 @@ void PhamApp::Initialize( const dg::SampleInitInfo& InitInfo )
 			}
 		}
 	}
-
+	//*/
 
 	// HACK fixed name buffers
 
-	const i32 width = 200;
-	const i32 hight = 200;
+	const i32 width = 100;
+	const i32 hight = 100;
 
 	for( i32 iy = -hight; iy < hight + 1; ++iy )
 	{
 		const auto y = cast<f32>( iy );
 
-		OutputDebugString( "Ping\n" );
+		if( ( iy % ( 1000 / width ) ) == 0 )
+		{
+			OutputDebugString( "Ping\n" );
+
+			if( dg::App::Info().Barriers.size() > 0 )
+			{
+				m_pImmediateContext->TransitionResourceStates( static_cast<u32>( dg::App::Info().Barriers.size() ), dg::App::Info().Barriers.data() );
+				for( auto context : dg::App::Info().DeferredContexts() )
+				{
+					context->TransitionResourceStates( static_cast<u32>( dg::App::Info().Barriers.size() ), dg::App::Info().Barriers.data() );
+				}
+				dg::App::Info().Barriers.clear();
+			}
+
+			std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
+
+		}
 
 		for( i32 ix = -width; ix < width + 1; ++ix )
 		{
@@ -341,15 +360,18 @@ void PhamApp::Initialize( const dg::SampleInitInfo& InitInfo )
 			//const dg::float4x4 another = dg::float4x4::MakeMatrix( mat4.GetData() );
 			GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/test.xml" );
 
+			// PSO FIX
+			//auto pso = ResDGPipelineState::createRaw( cfg->m_vertexShader, cfg->m_pixelShader, cfg->m_namedBuffers.front().m_buffer );
 
-			auto pso = ResDGPipelineState::create( cfg->m_vertexShader, cfg->m_pixelShader, cfg->m_namedBuffers.front().m_buffer );
-
-			GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( id, cfg, pso ) );
+			GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( id, cfg ) );
 
 
-			DGRenderer::Inst().addGeo( frame, geo );
+			DGRenderer::Inst().addStaticGeo( frame, geo );
 
 		}
+
+		ResourceMgr::RemResource( "config/geo/test.xml" );
+
 	}
 	//const auto pso = ResDGPipelineState::create( )
 
@@ -403,6 +425,7 @@ static u32 s_timeSoA4uS = 0;
 static i32							s_atTestSize = 1000;
 static i32							s_atTestCalls = 1000;
 static std::vector<i32> s_atTest;
+static i32							s_frameNum = 0;
 
 void PhamApp::UpdateUI()
 {
@@ -624,6 +647,8 @@ void PhamApp::UpdateUI()
 // Render a frame
 void PhamApp::Render()
 {
+	++s_frameNum;
+
 
 	auto *pRTV = m_pSwapChain->GetCurrentBackBufferRTV();
 	auto *pDSV = m_pSwapChain->GetDepthBufferDSV();
@@ -636,7 +661,11 @@ void PhamApp::Render()
 
 	RCDiligent context( viewProj, DGViewPtr( pRTV ), m_pImmediateContext ) ;
 
-	DGRenderer::Inst().render( &context );
+	if( s_frameNum > 16 )
+	{
+		DGRenderer::Inst().render( &context );
+	}
+
 
 }
 
@@ -644,6 +673,17 @@ void PhamApp::Render()
 void PhamApp::Update( double CurrTime, double ElapsedTime )
 {
 	SampleBase::Update( CurrTime, ElapsedTime );
+
+	if( dg::App::Info().Barriers.size() > 0 )
+	{
+		m_pImmediateContext->TransitionResourceStates( static_cast<u32>( dg::App::Info().Barriers.size() ), dg::App::Info().Barriers.data() );
+		for( auto context : dg::App::Info().DeferredContexts() )
+		{
+			context->TransitionResourceStates( static_cast<u32>( dg::App::Info().Barriers.size() ), dg::App::Info().Barriers.data() );
+		}
+		dg::App::Info().Barriers.clear();
+	}
+
 
 	m_Camera.Update( m_InputController, cast<float>( ElapsedTime ) );
 

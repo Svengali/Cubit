@@ -26,31 +26,6 @@ PtrFwd( ResDGTexture );
 #include "res/ResDGTexture.h"
 #include "res/ResDGPipelineState.h"
 
-struct NamedBuffer
-{
-public:
-
-	CLASS( NamedBuffer );
-
-	REFLECT_BEGIN_ROOT( NamedBuffer );
-		REFLECT( m_name );
-		REFLECT( m_buffer );
-	REFLECT_END();
-
-	util::Symbol		m_name = util::Symbol( util::Symbol::eEmpty );
-	ResDGBufferPtr	m_buffer;
-
-};
-
-template<>
-struct cb::TypeTraits<NamedBuffer>
-{
-	BoolAsType_True  hasReflection;
-	BoolAsType_False isPrimitive;
-	BoolAsType_False ioBytes;
-};
-
-
 
 class GeoDiligentCfg: public Config
 {
@@ -59,9 +34,7 @@ public:
 	CLASS( GeoDiligentCfg, Config );
 
 	REFLECT_BEGIN( GeoDiligent, Config );
-		REFLECT( m_namedBuffers );
-		REFLECT( m_vertexShader );
-		REFLECT( m_pixelShader );
+		REFLECT( m_pso );
 		REFLECT( m_vertexBuf );
 		REFLECT( m_indexBuf );
 		REFLECT( m_texture );
@@ -70,10 +43,11 @@ public:
 
 	virtual void DoReflection( XMLReader &reader ) override { GeoDiligentCfg::Reflection<XMLReader>( reader ); }
 
-	std::vector<NamedBuffer> m_namedBuffers;
 
-	ResDGVertexShaderPtr	m_vertexShader;
-	ResDGPixelShaderPtr		m_pixelShader;
+	ResDGPipelineStatePtr m_pso;
+
+	//ResDGVertexShaderPtr	m_vertexShader;
+	//ResDGPixelShaderPtr		m_pixelShader;
 
 	ResDGBufVertexPtr	m_vertexBuf;
 	ResDGBufIndexPtr	m_indexBuf;
@@ -97,7 +71,7 @@ public:
 
 	GeoDiligent();
 
-	GeoDiligent( const ent::EntityId id, const GeoDiligentCfgPtr &cfg, const ResDGPipelineStatePtr &pso );
+	GeoDiligent( const ent::EntityId id, const GeoDiligentCfgPtr &cfg );
 
 	virtual ~GeoDiligent();
 

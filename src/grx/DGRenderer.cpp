@@ -47,19 +47,13 @@ void DGRenderer::startup()
 	ResourceMgr::RegisterCreator( "psh", ResDGPixelShader::SClass(), ResDGPixelShader::create );
 	ResourceMgr::RegisterCreator( "vsh", ResDGVertexShader::SClass(), ResDGVertexShader::create );
 
-	ResourceMgr::RegisterCreator( "verts", ResDGPixelShader::SClass(), nullCreate );
-	ResourceMgr::RegisterCreator( "indices", ResDGVertexShader::SClass(), nullCreate );
+	ResourceMgr::RegisterCreator( "verts", ResDGBufVertex::SClass(), ResDGBufVertex::create );
+	ResourceMgr::RegisterCreator( "indices", ResDGBufIndex::SClass(), ResDGBufIndex::create );
 
 	//ResourceMgr::RegisterCreator( "xml", GeoDiligentCfg::SClass(), GeoDiligentCfg::create );
 
 	ResourceMgr::RegisterCreator( "png", ResDGTexture::SClass(), ResDGTexture::create );
 	ResourceMgr::RegisterCreator( "jpg", ResDGTexture::SClass(), ResDGTexture::create );
-
-
-	RSEntityPtr rs = RSEntityPtr( new RSEntity() );
-
-	s_renderer->addRenderableSystem( rs );
-
 
 }
 
@@ -75,6 +69,8 @@ void DGRenderer::shutdown()
 
 DGRenderer::DGRenderer()
 {
+	RSEntityPtr rs = RSEntityPtr( new RSEntity() );
+	m_rsStatic = rs;
 }
 
 
@@ -82,43 +78,31 @@ DGRenderer::~DGRenderer( void )
 {
 }
 
-void DGRenderer::addRenderableSystem( const DGRenderableSystemPtr &rs )
-{
-	m_rs.push_back( rs );
-}
-
-
 void DGRenderer::render( RCDiligent *pContext )
 {
-
-
-	for( auto rs : m_rs )
-	{
-		rs->render( pContext );
-	}
-
+		m_rsStatic->render( pContext );
 }
 
 
 
-void DGRenderer::addGeo( const cb::Frame3 frame, const GeoDiligentPtr &geo )
+void DGRenderer::addStaticGeo( const cb::Frame3 frame, const GeoDiligentPtr &geo )
 {
-	m_rs.front()->add( frame, geo );
+	m_rsStatic->add( frame, geo );
 }
 
 
 void RSEntity::render( RCDiligent *pContext )
 {
 
+	
 	std::atomic<i32> num = 0;
 
-
 	std::array<dg::RefCntAutoPtr<dg::ICommandList>, 64> cmdLists;
-	std::array<std::atomic<bool>, 64> waitList;
+	//std::array<std::atomic<bool>, 64> waitList;
 
 
 
-	m_geos.operate( [pContext, &num, &cmdLists, &waitList]( GeoBlock::Block *pBlock, const i32 max ){
+	m_geos.operate( [pContext, &cmdLists, &num /*, &waitList*/]( GeoBlock::Block *pBlock, const i32 max ){
 
 		const auto *__restrict const pSrcFrame	= pBlock->src<GeoBlock::Frame, cb::Frame3>();
 		const auto *__restrict const pSrcGeo		= pBlock->src<GeoBlock::Geometry, GeoDiligentPtr>();

@@ -93,6 +93,8 @@ public:
 	const RefCntAutoPtr<ISwapChain> &SwapChain() { return m_pSwapChain; }
 	const std::vector<RefCntAutoPtr<IDeviceContext>> &DeferredContexts() { return m_pDeferredContexts; }
 
+	std::vector<StateTransitionDesc> Barriers;
+
 protected:
 	void InitializeDiligentEngine( const NativeWindow *pWindow );
 	void InitializeSample();

@@ -54,17 +54,6 @@ private:
     dg::FirstPersonCamera m_Camera;
     dg::MouseState        m_LastMouseState;
 
-    dg::RefCntAutoPtr<dg::IBuffer>                             m_CameraAttribsCB;
-    dg::RefCntAutoPtr<dg::IBuffer>                             m_LightAttribsCB;
-    std::vector<dg::Uint32>                                    m_PSOIndex;
-    std::vector<dg::RefCntAutoPtr<dg::IPipelineState>>         m_RenderMeshPSO;
-    std::vector<dg::RefCntAutoPtr<dg::IPipelineState>>         m_RenderMeshShadowPSO;
-    std::vector<dg::RefCntAutoPtr<dg::IShaderResourceBinding>> m_SRBs;
-    std::vector<dg::RefCntAutoPtr<dg::IShaderResourceBinding>> m_ShadowSRBs;
-
-    dg::RefCntAutoPtr<dg::ISampler> m_pComparisonSampler;
-    dg::RefCntAutoPtr<dg::ISampler> m_pFilterableShadowMapSampler;
-
 
 };
 

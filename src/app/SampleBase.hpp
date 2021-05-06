@@ -67,7 +67,7 @@ public:
     virtual void WindowResize(Uint32 Width, Uint32 Height) {}
     virtual bool HandleNativeMessage(const void* pNativeMsgData) { return false; }
 
-    virtual const Char* GetSampleName() const { return "Diligent Engine Sample"; }
+    virtual const Char* GetSampleName() const { return "Cubit"; }
     virtual void        ProcessCommandLine(const char* CmdLine) {}
 
     InputController& GetInputController()
@@ -85,7 +85,6 @@ public:
     const RefCntAutoPtr<IDeviceContext>&              ImmContext()     { return m_pImmediateContext; }
     const RefCntAutoPtr<ISwapChain>&                  SwapChain() { return m_pSwapChain; }
     const std::vector<RefCntAutoPtr<IDeviceContext>>& DeferredContexts() { return m_pDeferredContexts; }
-
 
 protected:
     // Returns projection matrix adjusted to the current screen orientation

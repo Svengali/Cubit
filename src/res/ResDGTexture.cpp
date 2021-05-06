@@ -22,6 +22,7 @@ ResDGTexturePtr ResDGTexture::create( const char *const pFilename, const util::S
 
 	// Get shader resource view from the texture
 	//m_TextureSRV = Tex->GetDefaultView( dg::TEXTURE_VIEW_SHADER_RESOURCE );
+	dg::App::Info().Barriers.emplace_back( texture, dg::RESOURCE_STATE_UNKNOWN, dg::RESOURCE_STATE_SHADER_RESOURCE, true );
 
 
 	return ResDGTexturePtr( new ResDGTexture( texture ) );

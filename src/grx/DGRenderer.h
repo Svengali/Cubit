@@ -11,7 +11,7 @@
 
 PtrFwd( GeoDiligent );
 
-const i32 k_geoBlockSize = 6 * 1024;
+const i32 k_geoBlockSize = 1 * 1024;
 
 class GeoBlock
 {
@@ -102,9 +102,8 @@ public:
 	REFLECT_BEGIN( DGRenderer, Renderer );
 	REFLECT_END();
 
-	void addGeo( const cb::Frame3 frame, const GeoDiligentPtr &geo );
+	void addStaticGeo( const cb::Frame3 frame, const GeoDiligentPtr &geo );
 
-	void addRenderableSystem( const DGRenderableSystemPtr &rs );
 
 
 	void render( RCDiligent *pContext );
@@ -113,7 +112,7 @@ public:
 
 
 private:
-	std::vector< DGRenderableSystemPtr > m_rs;
+	DGRenderableSystemPtr m_rsStatic;;
 
 
 };

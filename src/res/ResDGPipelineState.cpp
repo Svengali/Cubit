@@ -14,10 +14,21 @@
 #include "ResDGVertexShader.h"
 #include "ResDGPixelShader.h"
 
+SERIALIZABLE( ResDGPipelineState );
 
+/*
+ResDGPipelineStatePtr ResDGPipelineState::create( const char *const pFilename, const util::Symbol &type )
+{
+	return createRaw( m_vs, m_ps );
+}
+*/
 
+void ResDGPipelineState::onPostLoad()
+{
+	createRaw( m_vs, m_ps );
+}
 
-ResDGPipelineStatePtr ResDGPipelineState::create( const ResDGVertexShaderPtr &vs, const ResDGPixelShaderPtr &ps, const ResDGBufferPtr &constants )
+void ResDGPipelineState::createRaw( const ResDGVertexShaderPtr &vs, const ResDGPixelShaderPtr &ps )
 {
 
 	// Pipeline state object encompasses configuration of all GPU stages
@@ -60,7 +71,7 @@ ResDGPipelineStatePtr ResDGPipelineState::create( const ResDGVertexShaderPtr &vs
 	};
 	//*/
 
-	PSODesc.GraphicsPipeline.pVS = vs->VS();
+	PSODesc.GraphicsPipeline.pVS = vs->m_vs;
 	PSODesc.GraphicsPipeline.pPS = ps->PS();
 
 	//TODO CONFIG
@@ -101,9 +112,7 @@ ResDGPipelineStatePtr ResDGPipelineState::create( const ResDGVertexShaderPtr &vs
 	PSODesc.ResourceLayout.NumStaticSamplers = _countof( StaticSamplers );
 
 
-	dg::RefCntAutoPtr<dg::IPipelineState> pso;
-
-	dg::App::Info().Device()->CreatePipelineState( PSOCreateInfo, &pso );
+	dg::App::Info().Device()->CreatePipelineState( PSOCreateInfo, &m_pso );
 
 	// Since we did not explcitly specify the type for 'Constants' variable, default
 	// type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables
@@ -115,8 +124,6 @@ ResDGPipelineStatePtr ResDGPipelineState::create( const ResDGVertexShaderPtr &vs
 	// http://diligentgraphics.com/2016/03/23/resource-binding-model-in-diligent-engine-2-0/
 	m_pPSO->CreateShaderResourceBinding( &m_SRB, true );
 	*/
-
-	return ResDGPipelineStatePtr( new ResDGPipelineState( pso ) );
 }
 
 

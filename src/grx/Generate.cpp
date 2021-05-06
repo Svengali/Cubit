@@ -95,7 +95,7 @@ ResDGBufVertexPtr grx::gen::createCenteredCubeVertices( const float s )
   VBData.pData    = CubeVerts;
   VBData.DataSize = sizeof( CubeVerts );
 
-  const auto buf = ResDGBufVertex::create( sizeof( CubeVerts ), CubeVerts );
+  const auto buf = ResDGBufVertex::createRaw( sizeof( CubeVerts ), CubeVerts );
 
   return buf;
 
@@ -130,7 +130,7 @@ ResDGBufIndexPtr  grx::gen::createCenteredCubeIndicies()
   IBData.pData    = indicies;
   IBData.DataSize = sizeof( indicies );
 
-  const auto buf = ResDGBufIndex::create( sizeof( indicies ), indicies );
+  const auto buf = ResDGBufIndex::createRaw( sizeof( indicies ), indicies );
 
   return buf;
 
