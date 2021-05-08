@@ -46,6 +46,10 @@ ResDGBuffer::ResDGBuffer( const dg::RefCntAutoPtr<dg::IBuffer> &buffer )
 
 ResDGBuffer::~ResDGBuffer( void )
 {
+	if( m_buffer )
+	{
+		//m_buffer->Release();
+	}
 }
 
 void ResDGBuffer::load( const char *const pFilename )

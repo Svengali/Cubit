@@ -37,7 +37,7 @@ struct LinkInfo
 
 static ImVector<LinkInfo>   g_Links;                // List of live links. It is dynamic unless you want to create read-only view over nodes.
 
-static ed::EditorContext* g_Context = nullptr;
+static ed::EditorContext *g_Context = nullptr;
 static int                  g_NextLinkId = 100;     // Counter to help generate link ids. In real application this will probably based on pointer to user data structure.
 
 
@@ -50,7 +50,7 @@ dg::float3 c( const cb::Vec3 &v )
 
 namespace Diligent
 {
-	SampleBase* CreateSample()
+	SampleBase *CreateSample()
 	{
 		return new PhamApp();
 	}
@@ -65,8 +65,8 @@ PhamApp::~PhamApp()
 
 void PhamApp::GetEngineInitializationAttribs(
 	dg::RENDER_DEVICE_TYPE DeviceType,
-	dg::EngineCreateInfo& EngineCI,
-	dg::SwapChainDesc& SCDesc )
+	dg::EngineCreateInfo &EngineCI,
+	dg::SwapChainDesc &SCDesc )
 {
 	SampleBase::GetEngineInitializationAttribs( DeviceType, EngineCI, SCDesc );
 
@@ -77,7 +77,7 @@ void PhamApp::GetEngineInitializationAttribs(
 #if D3D12_SUPPORTED
 	if( DeviceType == dg::RENDER_DEVICE_TYPE_D3D12 )
 	{
-		auto& D3D12CI = static_cast<dg::EngineD3D12CreateInfo&>( EngineCI );
+		auto &D3D12CI = static_cast<dg::EngineD3D12CreateInfo &>( EngineCI );
 		D3D12CI.GPUDescriptorHeapSize[1] = 1 * 1024; // Sampler descriptors
 		D3D12CI.GPUDescriptorHeapDynamicSize[1] = 1 * 1024;
 	}
@@ -89,7 +89,7 @@ void PhamApp::GetEngineInitializationAttribs(
 void Style_MarcGreen()
 {
 
-	ImGuiStyle& style = ImGui::GetStyle();
+	ImGuiStyle &style = ImGui::GetStyle();
 	style.ChildRounding = 0;
 	style.FrameRounding = 0;
 	style.GrabRounding = 0;
@@ -159,8 +159,8 @@ void Style_MarcGreen()
 
 void Style_DarkGraphite()
 {
-	ImGuiStyle* style = &ImGui::GetStyle();
-	ImVec4* colors = style->Colors;
+	ImGuiStyle *style = &ImGui::GetStyle();
+	ImVec4 *colors = style->Colors;
 
 	colors[ImGuiCol_Text] = ImVec4( 1.00f, 1.00f, 1.00f, 1.00f );
 	colors[ImGuiCol_TextDisabled] = ImVec4( 0.40f, 0.40f, 0.40f, 1.00f );
@@ -220,7 +220,7 @@ void Style_DarkGraphite()
 	//*/
 }
 
-void PhamApp::Initialize( const dg::SampleInitInfo& InitInfo )
+void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 {
 	ent::EntityId::initStartingEntityId( 1024 );
 
@@ -243,7 +243,7 @@ void PhamApp::Initialize( const dg::SampleInitInfo& InitInfo )
 
 
 
-	ImGuiStyle& style = ImGui::GetStyle();
+	ImGuiStyle &style = ImGui::GetStyle();
 	style.ChildRounding = 0;
 	style.FrameRounding = 0;
 	style.GrabRounding = 0;
@@ -313,8 +313,9 @@ void PhamApp::Initialize( const dg::SampleInitInfo& InitInfo )
 
 	// HACK fixed name buffers
 
-	const i32 width = 100;
-	const i32 hight = 100;
+	/*
+	const i32 width = 30;
+	const i32 hight = 30;
 
 	for( i32 iy = -hight; iy < hight + 1; ++iy )
 	{
@@ -347,7 +348,7 @@ void PhamApp::Initialize( const dg::SampleInitInfo& InitInfo )
 			cb::Mat3 mat( cb::Mat3::eIdentity );
 
 			cb::SetZRotation( &mat, CB_PIf * ( x + y ) / 50.0f );
-			
+
 			cb::Vec3 pos( x, y, 0 );
 			cb::Frame3 frame( mat, pos );
 
@@ -373,7 +374,40 @@ void PhamApp::Initialize( const dg::SampleInitInfo& InitInfo )
 		ResourceMgr::RemResource( "config/geo/test.xml" );
 
 	}
+	*/
+
 	//const auto pso = ResDGPipelineState::create( )
+
+	//*
+	const auto id = ent::EntityId::makeNext();
+
+	const auto x = cast<f32>( 10 );
+
+	cb::Mat3 mat( cb::Mat3::eIdentity );
+
+	cb::SetZRotation( &mat, CB_PIf * ( x + 1 ) / 50.0f );
+
+	cb::Vec3 pos( x, 1, 0 );
+	cb::Frame3 frame( mat, pos );
+
+
+	//const dg::float4x4 dgTrans = dg::float4x4::RotationZ( CB_PIf * 0.25f ) * dg::float4x4::Translation( c(pos) );
+
+	//const cb::Mat4 mat4( frame );
+
+
+	//const dg::float4x4 another = dg::float4x4::MakeMatrix( mat4.GetData() );
+	GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/test.xml" );
+
+	// PSO FIX
+	//auto pso = ResDGPipelineState::createRaw( cfg->m_vertexShader, cfg->m_pixelShader, cfg->m_namedBuffers.front().m_buffer );
+
+	GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( id, cfg ) );
+
+
+	DGRenderer::Inst().addStaticGeo( frame, geo );
+	//*/
+
 
 }
 
@@ -557,7 +591,7 @@ void PhamApp::UpdateUI()
 
 
 		// Submit Links
-		for( auto& linkInfo : g_Links )
+		for( auto &linkInfo : g_Links )
 			ed::Link( linkInfo.Id, linkInfo.InputId, linkInfo.OutputId );
 
 
@@ -611,7 +645,7 @@ void PhamApp::UpdateUI()
 				if( ed::AcceptDeletedItem() )
 				{
 					// Then remove link from your data.
-					for( auto& link : g_Links )
+					for( auto &link : g_Links )
 					{
 						if( link.Id == deletedLinkId )
 						{
@@ -659,7 +693,7 @@ void PhamApp::Render()
 
 	const auto viewProj = /*m_Camera.GetWorldMatrix() * */ m_Camera.GetViewMatrix() * m_Camera.GetProjMatrix();
 
-	RCDiligent context( viewProj, DGViewPtr( pRTV ), m_pImmediateContext ) ;
+	RCDiligent context( viewProj, DGViewPtr( pRTV ), m_pImmediateContext );
 
 	if( s_frameNum > 16 )
 	{

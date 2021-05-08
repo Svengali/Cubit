@@ -55,7 +55,18 @@ struct SampleInitInfo
 class SampleBase
 {
 public:
-    virtual ~SampleBase() {}
+    virtual ~SampleBase()
+    {
+      /*
+      m_pEngineFactory.Release();
+      m_pDevice.Release();
+      m_pImmediateContext.Release();
+      m_pDeferredContexts.clear();
+      m_pSwapChain.Release();
+      */
+      //Unneeded.
+      //delete m_pImGui;
+    }
 
     virtual void GetEngineInitializationAttribs(RENDER_DEVICE_TYPE DeviceType, EngineCreateInfo& EngineCI, SwapChainDesc& SCDesc);
 

@@ -31,6 +31,12 @@ class GeoDiligentCfg: public Config
 {
 public:
 
+
+	~GeoDiligentCfg()
+	{
+
+	}
+
 	CLASS( GeoDiligentCfg, Config );
 
 	REFLECT_BEGIN( GeoDiligent, Config );
@@ -83,13 +89,10 @@ public:
 	//virtual void DoReflection( XMLReader &reader ) override { Reflection<XMLReader>( reader ); }
 	REFLECT_BEGIN( GeoDiligent, Geometry );
 		REFLECT( m_cfg );
-		REFLECT( m_pso );
 	REFLECT_END();
 
 	ent::EntityId			m_id;
 	GeoDiligentCfgPtr m_cfg;
-
-	ResDGPipelineStatePtr m_pso;
 
 private:
 	virtual void render( RenderContext *pRC, const cb::Frame3 &frame );
