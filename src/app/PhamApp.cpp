@@ -17,6 +17,8 @@
 #include "grx/DGRenderer.h"
 #include "grx/GeoDiligent.h"
 
+#include "df/comTest.h"
+
 void Application_Frame();
 void Application_Initialize();
 
@@ -313,7 +315,7 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 	// HACK fixed name buffers
 
-	/*
+	//*
 	const i32 width = 30;
 	const i32 hight = 30;
 
@@ -374,11 +376,11 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 		ResourceMgr::RemResource( "config/geo/test.xml" );
 
 	}
-	*/
+	//*/
 
 	//const auto pso = ResDGPipelineState::create( )
 
-	//*
+	/* Single Geo test
 	const auto id = ent::EntityId::makeNext();
 
 	const auto x = cast<f32>( 10 );
