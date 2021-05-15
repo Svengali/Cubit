@@ -130,7 +130,11 @@ ResDGBufIndexPtr ResDGBufIndex::createRaw( const u32 dataSize, void *const pData
 
 	dg::App::Info().Barriers.emplace_back( buffer, dg::RESOURCE_STATE_UNKNOWN, dg::RESOURCE_STATE_INDEX_BUFFER, true );
 
-	return ResDGBufIndexPtr( new ResDGBufIndex( buffer ) );
+	auto bufIndex = ResDGBufIndexPtr( new ResDGBufIndex( buffer ) );
+
+	bufIndex->m_count = dataSize / sizeof( u32 );
+
+	return bufIndex;
 }
 
 
@@ -167,11 +171,11 @@ ResourcePtr ResDGBufferCreator::create() const
 
 	dg::IBuffer *pBuffer = nullptr;
 
-	char buffer[256];
+	//char buffer[256];
 
-	snprintf( buffer, 256, "%s_%i", desc.c_str(), s_count++ );
+	//snprintf( buffer, 256, "%s_%i", desc.c_str(), s_count++ );
 
-	CreateUniformBuffer( dg::App::Info().Device(), size, buffer, &pBuffer );
+	CreateUniformBuffer( dg::App::Info().Device(), size, desc.c_str(), &pBuffer );
 
 	auto bufferPtr = dg::RefCntAutoPtr( pBuffer );
 

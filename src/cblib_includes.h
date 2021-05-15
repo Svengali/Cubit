@@ -32,4 +32,4 @@
 #include "cblib/AxialBox.h"
 #include "cblib/TypeTraits.h"
 #include "cblib/String.h"
-
+#include "cblib/Log.h"

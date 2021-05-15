@@ -70,8 +70,8 @@ public:
 
     struct ProjectionAttribs
     {
-        Float32           NearClipPlane = 1.f;
-        Float32           FarClipPlane  = 1000.f;
+        Float32           NearClipPlane = 0.1f;
+        Float32           FarClipPlane  = 10000.f;
         Float32           AspectRatio   = 1.f;
         Float32           FOV           = PI_F / 4.f;
         SURFACE_TRANSFORM PreTransform  = SURFACE_TRANSFORM_IDENTITY;

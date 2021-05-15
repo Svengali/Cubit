@@ -129,8 +129,9 @@ public:
 
 
 	REFLECT_BEGIN( ResDGBufIndex, ResDGBuffer )
-		REFLECT_END();
+	REFLECT_END();
 
+	i32 m_count = 0;
 
 private:
 

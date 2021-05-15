@@ -74,7 +74,7 @@ void PhamApp::GetEngineInitializationAttribs(
 
 	EngineCI.Features.DepthClamp = dg::DEVICE_FEATURE_STATE_OPTIONAL;
 
-	EngineCI.NumDeferredContexts = 64;
+	EngineCI.NumDeferredContexts = 16;
 
 #if D3D12_SUPPORTED
 	if( DeviceType == dg::RENDER_DEVICE_TYPE_D3D12 )
@@ -84,6 +84,21 @@ void PhamApp::GetEngineInitializationAttribs(
 		D3D12CI.GPUDescriptorHeapDynamicSize[1] = 1 * 1024;
 	}
 #endif
+
+#if VULKAN_SUPPORTED
+		if( DeviceType == dg::RENDER_DEVICE_TYPE_D3D12 )
+		{
+			auto &VkCI = static_cast<dg::EngineVkCreateInfo &>( EngineCI );
+
+			VkCI.DynamicHeapSize = 26 << 20; // Enough space for 32x32x32x256 bytes allocations for 3 frames
+
+			//VkCI.GPUDescriptorHeapSize[1] = 1 * 1024; // Sampler descriptors
+			//VkCI.GPUDescriptorHeapDynamicSize[1] = 1 * 1024;
+		}
+#endif
+
+
+
 }
 
 
@@ -224,6 +239,14 @@ void Style_DarkGraphite()
 
 void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 {
+	cb::LogOpen( nullptr, nullptr );
+
+	lprintf( "Starting up Cubit\n" );
+	lprintf( "Test\n" );
+
+	m_Camera.SetSpeedUpScales( 4.0f, 20.0f );
+
+
 	ent::EntityId::initStartingEntityId( 1024 );
 
 	dg::SampleBase::Initialize( InitInfo );
@@ -232,16 +255,16 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 	const auto &SCDesc = m_pSwapChain->GetDesc();
 
 	float NearPlane = 0.1f;
-	float FarPlane = 250.f;
+	float FarPlane = 10000.f;
 	float AspectRatio = static_cast<float>( SCDesc.Width ) / static_cast<float>( SCDesc.Height );
 	m_Camera.SetProjAttribs( NearPlane, FarPlane, AspectRatio, dg::PI_F / 4.f,
 		m_pSwapChain->GetDesc().PreTransform, m_pDevice->GetDeviceCaps().IsGLDevice() );
 
 	m_Camera.SetReferenceAxes( dg::float3( 1.0f, 0.0f, 0.0f ), dg::float3( 0.0f, 0.0f, 1.0f ), true );
 
-	m_Camera.SetLookAt( dg::float3( 0.0f, 0.0f, 0.0f ) );
+	m_Camera.SetLookAt( dg::float3( 20.0f, 200.0f, 140.0f ) );
 
-	m_Camera.SetPos( dg::float3( 2.0f, 2.0f, 5.0f ) );
+	m_Camera.SetPos( dg::float3( 22.0f, 202.0f, 145.0f ) );
 
 
 
@@ -274,7 +297,7 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 	//Application_Initialize();
 
 
-
+	/*
 	VertPosUV verts;
 
 	std::vector<dg::LayoutElement> layout;
@@ -286,7 +309,7 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 	ResourceMgr::AddResource( "+VertPosUV.layout", vecLayout );
 
 	const auto vecLayoutLU = ResourceMgr::LookupResource( "+VertPosUV.layout" );
-
+	*/
 
 	/*
 	const auto cubeVerts = grx::gen::createCenteredCubeVertices( 0.5f );
@@ -313,17 +336,33 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 	}
 	//*/
 
-	// HACK fixed name buffers
+
+
+
+	m_cubit = vox::CubitPlanePtr( new vox::CubitPlane() );
 
 	//*
-	const i32 width = 30;
-	const i32 hight = 30;
+	cb::Vec3 pos( 0.0f, 0.0f, 0.0f );
+
+	m_cubit->genWorld( pos );
+
+	m_cubit->genGeo( pos );
+	//*/
+
+
+
+
+
+
+	//*
+	const i32 width = 10;
+	const i32 hight = 10;
 
 	for( i32 iy = -hight; iy < hight + 1; ++iy )
 	{
 		const auto y = cast<f32>( iy );
 
-		if( ( iy % ( 1000 / width ) ) == 0 )
+		if( ( iy % ( 1000 / (width+1) ) ) == 0 )
 		{
 			OutputDebugString( "Ping\n" );
 
@@ -337,7 +376,7 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 				dg::App::Info().Barriers.clear();
 			}
 
-			std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
+			//std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
 
 		}
 
@@ -351,7 +390,7 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 			cb::SetZRotation( &mat, CB_PIf * ( x + y ) / 50.0f );
 
-			cb::Vec3 pos( x, y, 0 );
+			cb::Vec3 pos( x, y, -1.0f );
 			cb::Frame3 frame( mat, pos );
 
 
@@ -373,7 +412,7 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 		}
 
-		ResourceMgr::RemResource( "config/geo/test.xml" );
+		//ResourceMgr::RemResource( "config/geo/test.xml" );
 
 	}
 	//*/
@@ -497,6 +536,7 @@ void PhamApp::UpdateUI()
 
 
 
+	/*
 	{
 		ImGui::Begin( "Pham" );
 
@@ -518,6 +558,7 @@ void PhamApp::UpdateUI()
 
 		ImGui::End();
 	}
+	*/
 
 	/*
 	{
@@ -574,7 +615,7 @@ void PhamApp::UpdateUI()
 		ImGui::End();
 	}
 	*/
-
+	//*
 	{
 		ImGui::Begin( "Nodes" );
 		ed::SetCurrentEditor( g_Context );
@@ -662,9 +703,20 @@ void PhamApp::UpdateUI()
 			}
 		}
 		ed::EndDelete(); // Wrap up deletion action
+		//*/
 
 
+		//*
+		{
+			ImGui::Begin( "World" );
 
+			const auto pos = m_Camera.GetPos();
+
+			ImGui::Text( "%.2f, %.2f, %.2f  ", pos.x, pos.y, pos.z );
+
+			ImGui::End();
+		}
+		//*/
 
 
 
@@ -685,22 +737,22 @@ void PhamApp::Render()
 {
 	++s_frameNum;
 
-
-	auto *pRTV = m_pSwapChain->GetCurrentBackBufferRTV();
-	auto *pDSV = m_pSwapChain->GetDepthBufferDSV();
-	// Clear the back buffer
-	const float ClearColor[] = { 0.350f, 0.150f, 0.350f, 1.0f };
-	m_pImmediateContext->ClearRenderTarget( pRTV, ClearColor, dg::RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
-	m_pImmediateContext->ClearDepthStencil( pDSV, dg::CLEAR_DEPTH_FLAG, 1.f, 0, dg::RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
-
-	const auto viewProj = /*m_Camera.GetWorldMatrix() * */ m_Camera.GetViewMatrix() * m_Camera.GetProjMatrix();
-
-	RCDiligent context( viewProj, DGViewPtr( pRTV ), m_pImmediateContext );
-
-	if( s_frameNum > 16 )
+	if( dg::App::Info().Barriers.size() == 0 )
 	{
+		auto *pRTV = m_pSwapChain->GetCurrentBackBufferRTV();
+		auto *pDSV = m_pSwapChain->GetDepthBufferDSV();
+		// Clear the back buffer
+		const float ClearColor[] = { 0.350f, 0.150f, 0.350f, 1.0f };
+		m_pImmediateContext->ClearRenderTarget( pRTV, ClearColor, dg::RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
+		m_pImmediateContext->ClearDepthStencil( pDSV, dg::CLEAR_DEPTH_FLAG, 1.f, 0, dg::RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
+
+		const auto viewProj = /*m_Camera.GetWorldMatrix() * */ m_Camera.GetViewMatrix() * m_Camera.GetProjMatrix();
+
+		RCDiligent context( viewProj, DGViewPtr( pRTV ), m_pImmediateContext );
+
 		DGRenderer::Inst().render( &context );
 	}
+
 
 
 }
@@ -710,6 +762,20 @@ void PhamApp::Update( double CurrTime, double ElapsedTime )
 {
 	SampleBase::Update( CurrTime, ElapsedTime );
 
+
+	cb::Vec3 pos( 0.0f, 0.0f, 0.0f );
+
+	m_cubit->genWorld( pos );
+
+	m_cubit->genGeo( pos );
+
+
+	m_Camera.Update( m_InputController, cast<float>( ElapsedTime ) );
+
+	UpdateUI();
+
+
+
 	if( dg::App::Info().Barriers.size() > 0 )
 	{
 		m_pImmediateContext->TransitionResourceStates( static_cast<u32>( dg::App::Info().Barriers.size() ), dg::App::Info().Barriers.data() );
@@ -717,13 +783,12 @@ void PhamApp::Update( double CurrTime, double ElapsedTime )
 		{
 			context->TransitionResourceStates( static_cast<u32>( dg::App::Info().Barriers.size() ), dg::App::Info().Barriers.data() );
 		}
+		//m_pImmediateContext->Flush();
+		//m_pImmediateContext->WaitForIdle();
 		dg::App::Info().Barriers.clear();
 	}
 
 
-	m_Camera.Update( m_InputController, cast<float>( ElapsedTime ) );
-
-	UpdateUI();
 }
 
 void PhamApp::WindowResize( dg::Uint32 Width, dg::Uint32 Height )

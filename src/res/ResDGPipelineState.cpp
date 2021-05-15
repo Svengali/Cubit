@@ -25,18 +25,59 @@ ResDGPipelineStatePtr ResDGPipelineState::create( const char *const pFilename, c
 
 void ResDGPipelineState::onPostLoad()
 {
-	createRaw( m_vs, m_ps );
+	// TODO HACK Properly find out the layouts
+	const auto it = m_filename.find( "VertPosNormalUV" );
+
+	if( it < m_filename.size() )
+	{
+		std::vector<dg::LayoutElement> LayoutElems =
+		{
+			// Attribute 0 - vertex position
+			dg::LayoutElement{0, 0, 3, dg::VT_FLOAT32, dg::False},
+			// Attribute 1 - normal
+			dg::LayoutElement{1, 0, 3, dg::VT_FLOAT32, dg::False},
+			// Attribute 2 - texture coordinates
+			dg::LayoutElement{2, 0, 2, dg::VT_FLOAT32, dg::False}
+		};
+
+		createRaw( m_vs, m_ps, LayoutElems );
+
+	}
+	else
+	{
+		std::vector<dg::LayoutElement> LayoutElems =
+		{
+			// Attribute 0 - vertex position
+			dg::LayoutElement{0, 0, 3, dg::VT_FLOAT32, dg::False},
+			// Attribute 1 - texture coordinates
+			dg::LayoutElement{1, 0, 2, dg::VT_FLOAT32, dg::False}
+		};
+
+		createRaw( m_vs, m_ps, LayoutElems );
+
+	}
+
 }
 
-void ResDGPipelineState::createRaw( const ResDGVertexShaderPtr &vs, const ResDGPixelShaderPtr &ps )
+static i32 s_count = 128;
+
+void ResDGPipelineState::createRaw( 
+	const ResDGVertexShaderPtr &vs, 
+	const ResDGPixelShaderPtr &ps, 
+	const std::vector<dg::LayoutElement> &layout
+	)
 {
 
 	// Pipeline state object encompasses configuration of all GPU stages
 	dg::PipelineStateCreateInfo PSOCreateInfo;
 	dg::PipelineStateDesc &PSODesc = PSOCreateInfo.PSODesc;
 
+	char buffer[256];
+
+	snprintf( buffer, 256, "PSO_%i", s_count++ );
+
 	//TODO CONFIG
-	PSODesc.Name = "Cube PSO";
+	PSODesc.Name = buffer;
 
 	// This is a graphics pipeline
 	//TODO CONFIG
@@ -59,18 +100,6 @@ void ResDGPipelineState::createRaw( const ResDGVertexShaderPtr &vs, const ResDGP
 	PSODesc.GraphicsPipeline.DepthStencilDesc.DepthEnable = dg::True;
 	
 
-	// Define vertex shader input layout
-	//TODO CONFIG
-	//*
-	dg::LayoutElement LayoutElems[] =
-	{
-			// Attribute 0 - vertex position
-			dg::LayoutElement{0, 0, 3, dg::VT_FLOAT32, dg::False},
-			// Attribute 1 - texture coordinates
-			dg::LayoutElement{1, 0, 2, dg::VT_FLOAT32, dg::False}
-	};
-	//*/
-
 	PSODesc.GraphicsPipeline.pVS = vs->m_vs;
 	PSODesc.GraphicsPipeline.pPS = ps->PS();
 
@@ -79,8 +108,8 @@ void ResDGPipelineState::createRaw( const ResDGVertexShaderPtr &vs, const ResDGP
 
 
 	//TODO CONFIG	
-	PSODesc.GraphicsPipeline.InputLayout.LayoutElements = LayoutElems;
-	PSODesc.GraphicsPipeline.InputLayout.NumElements    = _countof( LayoutElems );
+	PSODesc.GraphicsPipeline.InputLayout.LayoutElements = layout.data();
+	PSODesc.GraphicsPipeline.InputLayout.NumElements    = layout.size();
 
 	// Define variable type that will be used by default
 	PSODesc.ResourceLayout.DefaultVariableType = dg::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
@@ -111,7 +140,6 @@ void ResDGPipelineState::createRaw( const ResDGVertexShaderPtr &vs, const ResDGP
 	PSODesc.ResourceLayout.StaticSamplers    = StaticSamplers;
 	PSODesc.ResourceLayout.NumStaticSamplers = _countof( StaticSamplers );
 
-
 	dg::App::Info().Device()->CreatePipelineState( PSOCreateInfo, &m_pso );
 
 	// Since we did not explcitly specify the type for 'Constants' variable, default
@@ -140,6 +168,5 @@ ResDGPipelineState::~ResDGPipelineState( void )
 
 void ResDGPipelineState::load( const char *const pFilename )
 {
-
 }
 

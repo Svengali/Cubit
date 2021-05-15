@@ -39,7 +39,7 @@ ResDGBufVertexPtr grx::gen::createCenteredCubeVertices( const float s )
   // This time we have to duplicate verices because texture coordinates cannot
   // be shared
 
-
+  /*
   const cb::Vec3 v1 ( -1, -1, -1 );
   const cb::Vec3 v2 { -1, -1, -1 };
 
@@ -49,7 +49,7 @@ ResDGBufVertexPtr grx::gen::createCenteredCubeVertices( const float s )
 
   VertPosUV verPos1 ={ cb::Vec3 { -1,-1,-1 }, cb::Vec2{ 0,1 } };
   //VertPosUV verPos2 ={ { -1,-1,-1 }, { 0,1 } };
-
+  */
 
   VertPosUV CubeVerts[] =
   {
@@ -85,6 +85,7 @@ ResDGBufVertexPtr grx::gen::createCenteredCubeVertices( const float s )
   };
   // clang-format on
 
+  /*
   dg::BufferDesc VertBuffDesc;
   VertBuffDesc.Name          = "Cube vertex buffer";
   VertBuffDesc.Usage         = dg::USAGE_STATIC;
@@ -94,6 +95,7 @@ ResDGBufVertexPtr grx::gen::createCenteredCubeVertices( const float s )
   dg::BufferData VBData;
   VBData.pData    = CubeVerts;
   VBData.DataSize = sizeof( CubeVerts );
+  */
 
   const auto buf = ResDGBufVertex::createRaw( sizeof( CubeVerts ), CubeVerts );
 

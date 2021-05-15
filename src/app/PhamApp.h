@@ -11,7 +11,7 @@
 #include "BasicMath.hpp"
 #include "FirstPersonCamera.hpp"
 
-
+#include "vox/cubit.h"
 
 namespace Diligent
 {
@@ -53,6 +53,8 @@ private:
     dg::LightAttribs      m_LightAttribs;
     dg::FirstPersonCamera m_Camera;
     dg::MouseState        m_LastMouseState;
+
+    vox::CubitPlanePtr    m_cubit;
 
 
 };

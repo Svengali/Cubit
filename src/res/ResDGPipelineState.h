@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include "res/Resource.h"
 #include "res/ResDGBuffer.h"
 #include "res/ResDGVertexShader.h"
 #include "res/ResDGPixelShader.h"
@@ -41,7 +40,7 @@ struct cb::TypeTraits<NamedBuffer>
 
 
 
-class ResDGPipelineState: public Resource
+class ResDGPipelineState: public ResReflect
 {
 public:
 	CLASS( ResDGPipelineState, Resource );
@@ -49,7 +48,7 @@ public:
 
 	static ResDGPipelineStatePtr create( const char *const pFilename, const util::Symbol &type );
 
-	void createRaw( const ResDGVertexShaderPtr &vs, const ResDGPixelShaderPtr &ps );
+	void createRaw( const ResDGVertexShaderPtr &vs, const ResDGPixelShaderPtr &ps, const std::vector<dg::LayoutElement> &layout );
 
 	// REFLECTION
 	ResDGPipelineState() {}
@@ -74,6 +73,10 @@ public:
 
 private:
 	ResDGPipelineState( const dg::RefCntAutoPtr<dg::IPipelineState> &pso );
+
+
+	// Inherited via ResReflect
+	virtual void DoReflection( XMLReader &reader ) override { ResDGPipelineState::Reflection<XMLReader>( reader ); }
 
 };
 

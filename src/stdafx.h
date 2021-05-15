@@ -33,11 +33,6 @@
 #include <cassert>
 #include <optional>
 
-
-#include "cblib_includes.h"
-
-#include "pham_core.h"
-
 //Basic Diligent includes
 #include "EngineFactory.h"
 #include "RefCntAutoPtr.hpp"
@@ -53,6 +48,13 @@
 
 //Mostly frozen diligent things
 #include "app/SampleApp.hpp"
+
+
+
+#include "cblib_includes.h"
+
+#include "pham_core.h"
+
 
 
 namespace dg = Diligent;

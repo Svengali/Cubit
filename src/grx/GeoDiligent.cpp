@@ -47,7 +47,15 @@ GeoDiligent::GeoDiligent( const ent::EntityId id, const GeoDiligentCfgPtr &cfg )
 	// Since we did not explcitly specify the type for 'Constants' variable, default
 	 // type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables
 	 // never change and are bound directly through the pipeline state object.
-	m_cfg->m_pso->m_pso->GetStaticVariableByName( dg::SHADER_TYPE_VERTEX, constants.m_name.GetString() )->Set( constants.m_buffer->Buffer() );
+	auto constBuf = m_cfg->m_pso->m_pso->GetStaticVariableByName( dg::SHADER_TYPE_VERTEX, constants.m_name.GetString() );
+	if( constBuf )
+	{
+		constBuf->Set( constants.m_buffer->Buffer() );
+	}
+	else
+	{
+		lprinterr( "Constant buffer %s not found.", constants.m_name.GetString() );
+	}
 
 	if( !m_cfg->m_texture->m_srb )
 	{
@@ -103,7 +111,7 @@ void GeoDiligent::renderDiligent( RCDiligent *pRC, const cb::Frame3 &frame )
 	DrawAttrs.IndexType = dg::VT_UINT32; 
 
 	// TODO CONFIG
-	DrawAttrs.NumIndices = 36;
+	DrawAttrs.NumIndices = m_cfg->m_indexBuf->m_count;
 
 	// TODO CONFIG
 	DrawAttrs.Flags = dg::DRAW_FLAG_VERIFY_ALL;

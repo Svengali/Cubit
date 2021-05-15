@@ -16,6 +16,7 @@
 #include "grx/GeoDiligent.h"
 
 #include "res/ResourceMgr.h"
+#include "res/ResReflect.h"
 
 SERIALIZABLE( DGRenderer );
 
@@ -54,6 +55,8 @@ void DGRenderer::startup()
 
 	ResourceMgr::RegisterCreator( "png", ResDGTexture::SClass(), ResDGTexture::create );
 	ResourceMgr::RegisterCreator( "jpg", ResDGTexture::SClass(), ResDGTexture::create );
+
+	ResourceMgr::RegisterCreator( "res", Resource::SClass(), &ResReflect::create );
 
 }
 
@@ -97,7 +100,7 @@ void RSEntity::render( RCDiligent *pContext )
 	
 	std::atomic<i32> num = 0;
 
-	std::array<dg::RefCntAutoPtr<dg::ICommandList>, 64> cmdLists;
+	std::array<dg::RefCntAutoPtr<dg::ICommandList>, 16> cmdLists;
 	//std::array<std::atomic<bool>, 64> waitList;
 
 
@@ -107,7 +110,7 @@ void RSEntity::render( RCDiligent *pContext )
 		const auto *__restrict const pSrcFrame	= pBlock->src<GeoBlock::Frame, cb::Frame3>();
 		const auto *__restrict const pSrcGeo		= pBlock->src<GeoBlock::Geometry, GeoDiligentPtr>();
 
-		const i32 id = num.fetch_add( 1 ) % 64;
+		const i32 id = num.fetch_add( 1 ) % 16;
 
 		/*
 		while( !waitList[id].exchange(true) )
@@ -151,24 +154,40 @@ void RSEntity::render( RCDiligent *pContext )
 	} );
 
 
+	auto contextImm = dg::App::Info().ImmContext();
 
-	for( i32 i = 0; i < std::min(64, num.load()); ++i )
+	//num = 64;
+
+	for( i32 i = 0; i < num; ++i )
 	{
 		auto contextDef = dg::App::Info().DeferredContexts()[i];
 
-		auto contextImm = dg::App::Info().ImmContext();
-		
 		contextDef->FinishCommandList( &cmdLists[i] );
 
+	}
+
+	for( i32 i = 0; i < num; ++i )
+	{
 		contextImm->ExecuteCommandList( cmdLists[i] );
 
 		// Release command lists now to release all outstanding references
 		// In d3d11 mode, command lists hold references to the swap chain's back buffer
 		// that cause swap chain resize to fail
 		cmdLists[i].Release();
+	}
+
+
+	for( i32 i = 0; i < num; ++i )
+	{
+		auto contextDef = dg::App::Info().DeferredContexts()[i];
 
 		contextDef->FinishFrame();
+
 	}
+
+
+
+
 
 
 
@@ -182,7 +201,7 @@ void RSEntity::add( const cb::Frame3 frame, const GeoDiligentPtr &ptr )
 	m_geos.m_com.insert( id, frame, ptr );
 
 
-	GeoBlock::Block::TIndividualTuple values;
+	GeoBlock::Block::TTuple values;
 
 	m_geos.m_com.debug_get( id, &values );
 }

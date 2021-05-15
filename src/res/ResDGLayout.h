@@ -104,10 +104,23 @@ struct VertPosNormalUV: public VertexBase
 
 	REFLECT_BEGIN( VertPosUV, VertexBase )
 		REFLECT( pos );
-		REFLECT( pos );
+		REFLECT( normal );
 		REFLECT( uv );
 	REFLECT_END();
 
+	VertPosNormalUV()
+	{
+
+	}
+
+	VertPosNormalUV( const cb::Vec3 &_pos, const cb::Vec3 &_normal, const cb::Vec2 &_uv )
+		:
+		pos( _pos ),
+		normal( _normal ),
+		uv( _uv )
+	{
+
+	}
 
 	cb::Vec3 pos;
 	cb::Vec3 normal;

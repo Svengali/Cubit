@@ -29,6 +29,7 @@ typedef  double  f64;
 //#include "async++.h"
 #include "math/units.h"
 #include "math/units64.h"
+#include "math/SimplexNoise.h"
 #include "util/index.h"
 #include "util/id.h"
 #include "util/expected_lite.h"
@@ -51,6 +52,12 @@ typedef  double  f64;
 
 #include "util/Serialization.h"
 #include "util/Config.h"
+
+#include "vox/vox.h"
+
+#include "res/Resource.h"
+#include "res/ResReflect.h"
+
 
 
 // Mostly frozen project includes

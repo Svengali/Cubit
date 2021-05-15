@@ -32,6 +32,12 @@ class GeoDiligentCfg: public Config
 public:
 
 
+	GeoDiligentCfg()
+	{
+
+	}
+
+
 	~GeoDiligentCfg()
 	{
 
