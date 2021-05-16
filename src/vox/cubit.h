@@ -6,16 +6,8 @@
 
 #pragma once
 
-
 namespace vox
 {
-
-
-
-
-
-
-
 	class Cubit: public Chunk<Cubit, u8, 32>
 	{
 	public:
@@ -43,9 +35,7 @@ namespace vox
 		virtual void genWorld( Plane<Cubit> *pPlane, CPos pos ) override;
 		virtual void genGeo( Plane<Cubit> * pPlane, const CPos pos ) override;
 
-
 		StorageArr<Cubit> m_arr;
-
 
 	private:
 
@@ -56,23 +46,12 @@ namespace vox
 	class CubitPlane: public Plane<Cubit>
 	{
 	public:
-
-
-
 		virtual void genWorld( const cb::Vec3 pos );
 		virtual void genGeo( const cb::Vec3 pos );
-
-
-
-
-
 	private:
 	};
 
 	PtrDef(CubitPlane);
-
-
-
 
 }
 

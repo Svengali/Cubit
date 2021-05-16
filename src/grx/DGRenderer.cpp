@@ -208,24 +208,6 @@ void RSEntity::add( const cb::Frame3 frame, const GeoDiligentPtr &ptr )
 
 
 
-/*
-void GeoBlock::updateBlock( const uint64_t dtMs, TCom::AllBlocks::TBlock &block, const i32 count )
-{
-	const auto *__restrict const pSrcFrame = block.src<Frame, cb::Frame3>();
-	const auto *__restrict const pSrcGeo   = block.src<Geometry, GeoDiligentPtr>();
-
-	for( i32 i = 0; i < count; ++i )
-	{
-		const cb::Frame3 &frame = pSrcFrame[i];
-		const GeoDiligentPtr &geo = pSrcGeo[i];
-
-		geo->renderDiligent( nullptr, frame );
-
-
-	}
-}
-*/
-
 void GeoBlock::operate( std::function<void( Block *, const i32 max )> fn )
 {
 	const auto size = (int)m_com.m_blocks.m_block.size();
