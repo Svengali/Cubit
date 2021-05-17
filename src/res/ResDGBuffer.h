@@ -110,6 +110,17 @@ private:
 
 };
 
+
+template<>
+inline void fillInRes( ResDGBufVertex *pT )
+{
+	lprintf( "Fill in ResDGBufVertex resource.\n" );
+}
+
+
+
+
+
 PtrFwd( ResDGBufIndex );
 
 

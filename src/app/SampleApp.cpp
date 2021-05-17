@@ -32,6 +32,8 @@
 #include <cmath>
 */
 
+#include "../stdafx.h"
+
 #include "PlatformDefinitions.h"
 #include "SampleApp.hpp"
 #include "Errors.hpp"

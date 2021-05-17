@@ -6,6 +6,8 @@
 
 #pragma once
 
+struct VertPosNormalUV;
+
 namespace vox
 {
 	class Cubit: public Chunk<Cubit, u8, 32>
@@ -15,7 +17,7 @@ namespace vox
 		using Chunk::Chunk;
 
 		virtual void genWorld( Plane<Cubit> *pPlane, const CPos pos );
-		virtual void genGeo( Plane<Cubit> * pPlane, const CPos pos );
+		virtual void genGeo( Plane<Cubit> * pPlane, const CPos pos, std::vector<VertPosNormalUV> *pVerts, std::vector<u32> *pIndices );
 
 		bool m_generated = false;
 
@@ -33,7 +35,7 @@ namespace vox
 		virtual u8 get_slow( LPos pos ) override;
 
 		virtual void genWorld( Plane<Cubit> *pPlane, CPos pos ) override;
-		virtual void genGeo( Plane<Cubit> * pPlane, const CPos pos ) override;
+		virtual void genGeo( Plane<Cubit> * pPlane, const CPos pos, std::vector<VertPosNormalUV> *pVerts, std::vector<u32> *pIndices ) override;
 
 		StorageArr<Cubit> m_arr;
 

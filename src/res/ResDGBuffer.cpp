@@ -82,7 +82,9 @@ ResDGBufVertexPtr ResDGBufVertex::createRaw( const u32 dataSize, void *const pDa
 
 	dg::App::Info().Barriers.emplace_back( buffer, dg::RESOURCE_STATE_UNKNOWN, dg::RESOURCE_STATE_VERTEX_BUFFER, true );
 
-	return ResDGBufVertexPtr( new ResDGBufVertex( buffer ) );
+	auto bufVertex = ResDGBufVertexPtr( new ResDGBufVertex( buffer ) );
+
+	return bufVertex;
 }
 
 ResDGBufVertex::ResDGBufVertex( const dg::RefCntAutoPtr<dg::IBuffer> &buffer )

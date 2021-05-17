@@ -109,7 +109,7 @@ void ResDGPipelineState::createRaw(
 
 	//TODO CONFIG	
 	PSODesc.GraphicsPipeline.InputLayout.LayoutElements = layout.data();
-	PSODesc.GraphicsPipeline.InputLayout.NumElements    = layout.size();
+	PSODesc.GraphicsPipeline.InputLayout.NumElements    = (u32)layout.size();
 
 	// Define variable type that will be used by default
 	PSODesc.ResourceLayout.DefaultVariableType = dg::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;

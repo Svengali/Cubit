@@ -33,6 +33,9 @@
 #include <cassert>
 #include <optional>
 
+#include "TaskScheduler.h"
+
+
 //Basic Diligent includes
 #include "EngineFactory.h"
 #include "RefCntAutoPtr.hpp"

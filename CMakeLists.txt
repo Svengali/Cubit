@@ -102,6 +102,7 @@ get_supported_backends(ENGINE_LIBRARIES)
 
 target_include_directories(Cubit PUBLIC ../../third_party/cblib/src)
 target_include_directories(Cubit PUBLIC ../../third_party/Pham/src)
+target_include_directories(Cubit PUBLIC ../../third_party/enkiTS/src)
 
 
 
@@ -111,6 +112,7 @@ PRIVATE
 PUBLIC
     cblib
     Pham
+    enkiTS
     Diligent-Common
     Diligent-GraphicsTools
     Diligent-TextureLoader
@@ -134,7 +136,7 @@ if(MSVC)
     # - w4201: nonstandard extension used: nameless struct/union
     # - w4324: structure was padded due to alignment specifier
     # - w4238: nonstandard extension used: class rvalue used as lvalue
-    target_compile_options(Asteroids PRIVATE /wd4201 /wd4324 /wd4238)
+    target_compile_options(Cubit PRIVATE /wd4201 /wd4324 /wd4238)
 endif()
 
 

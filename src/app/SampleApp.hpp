@@ -95,6 +95,9 @@ public:
 
 	std::vector<StateTransitionDesc> Barriers;
 
+	enki::TaskScheduler Task;
+
+
 protected:
 	void InitializeDiligentEngine( const NativeWindow *pWindow );
 	void InitializeSample();

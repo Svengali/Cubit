@@ -42,6 +42,7 @@ public:
 
     virtual void WindowResize(dg::Uint32 Width, dg::Uint32 Height) override final;
 
+
 private:
     void UpdateUI();
 

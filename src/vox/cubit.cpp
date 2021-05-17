@@ -35,7 +35,7 @@ void vox::Cubit::genWorld( Plane<Cubit> *pPlane, const CPos pos )
 
 
 //*
-void vox::Cubit::genGeo( Plane<Cubit> * pPlane, const CPos pos )
+void vox::Cubit::genGeo( Plane<Cubit> *pPlane, const CPos pos, std::vector<VertPosNormalUV> *pVerts, std::vector<u32> *pIndices )
 {
 }
 //*/
@@ -72,7 +72,7 @@ void vox::CubitArr::genWorld( Plane<Cubit> *pPlane, const CPos pos )
 
 				const f32 rawPerlinValue = noise.fractal( 4, perlinX, perlinY, perlinZ );
 
-				const f32 zFade = (worldZ - 32.0f) / 256.0f;
+				const f32 zFade = ( worldZ - 32.0f ) / 256.0f;
 
 				const f32 perlinValue = zFade + rawPerlinValue + perlinZ - 1;
 
@@ -102,10 +102,10 @@ void vox::CubitArr::genWorld( Plane<Cubit> *pPlane, const CPos pos )
 
 
 
-const f32 S =  0.5f;
-const f32 Z =  0.0F;
+const f32 S = 0.5f;
+const f32 Z = 0.0F;
 const f32 N = -1.0f;
-const f32 P =  1.0f;
+const f32 P = 1.0f;
 
 #if 0
 enum Faces
@@ -302,7 +302,7 @@ public:
 
 				for( i32 iIndex = 0; iIndex < 6; ++iIndex )
 				{
-					pInd->push_back( (u32)(indices[iIndex] + indexStart) );
+					pInd->push_back( (u32)( indices[iIndex] + indexStart ) );
 				}
 
 				for( i32 iPos = posStart; iPos < posEnd; ++iPos )
@@ -334,11 +334,11 @@ public:
 			if( curFace & faces )
 			{
 				const i32 vertStart = iFace * 4;
-				const i32 indicesStart = pVerts->size();
+				const i32 indicesStart = (i32)pVerts->size();
 
 				for( i32 iVert = 0; iVert < 4; ++iVert )
 				{
-					pVerts->push_back( CubeVerts[vertStart+iVert] );
+					pVerts->push_back( CubeVerts[vertStart + iVert] );
 					pVerts->back().pos += pos;
 				}
 
@@ -359,7 +359,7 @@ public:
 	void cube(
 		vox::CubitArr *const pCubit,
 		std::vector<VertPosNormalUV> *const pVerts,
-//		std::vector<float> *const pAttr,
+		//		std::vector<float> *const pAttr,
 		std::vector<u32> *const pIndices,
 		const vox::LPos pos,
 		const cb::Vec3 worldPos,
@@ -404,12 +404,13 @@ public:
 
 
 
-	i32 fill( vox::Plane<vox::Cubit> *pPlane, vox::CubitArr *const pCubit, const vox::CPos chunkPos, const cb::Vec3 worldPos )
+	i32 fill( vox::Plane<vox::Cubit> *pPlane, std::vector<VertPosNormalUV> *pVerts, std::vector<u32> *pIndices, vox::CubitArr *const pCubit, const vox::CPos chunkPos, const cb::Vec3 worldPos )
 	{
-		std::vector<VertPosNormalUV> verts;
+		//std::vector<VertPosNormalUV> verts;
+		//std::vector<u32> indices;
+
 		//std::vector<float> attributes;
 		//std::vector<float> attr;
-		std::vector<u32> indices;
 
 		//material = gr::StockMaterials::get().get_checkerboard();
 		//static_aabb = gr::AABB( gr::vec3( -1000 ) + worldPos, gr::vec3( 1000 ) + worldPos );
@@ -434,7 +435,7 @@ public:
 					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( pos.x + 0, pos.y + 0, pos.z + 1 )];
 					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( pos.x + 0, pos.y + 0, pos.z - 1 )];
 
-					cube( pCubit, &verts, &indices, pos, worldPos, posX, negX, posY, negY, posZ, negZ );
+					cube( pCubit, pVerts, pIndices, pos, worldPos, posX, negX, posY, negY, posZ, negZ );
 
 				}
 			}
@@ -466,7 +467,7 @@ public:
 					const u16 posZ = pPlane->get_slow( gPos + vPosZ ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
 					const u16 negZ = pPlane->get_slow( gPos + vNegZ ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
 
-					cube( pCubit, &verts, &indices, lPos, worldPos, posX, negX, posY, negY, posZ, negZ );
+					cube( pCubit, pVerts, pIndices, lPos, worldPos, posX, negX, posY, negY, posZ, negZ );
 				}
 
 				{
@@ -480,7 +481,7 @@ public:
 					const u16 posZ = pPlane->get_slow( gPos + vPosZ ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
 					const u16 negZ = pPlane->get_slow( gPos + vNegZ ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
 
-					cube( pCubit, &verts, &indices, lPos, worldPos, posX, negX, posY, negY, posZ, negZ );
+					cube( pCubit, pVerts, pIndices, lPos, worldPos, posX, negX, posY, negY, posZ, negZ );
 				}
 
 
@@ -507,7 +508,7 @@ public:
 					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
 					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
 
-					cube( pCubit, &verts, &indices, lPos, worldPos, posX, negX, posY, negY, posZ, negZ );
+					cube( pCubit, pVerts, pIndices, lPos, worldPos, posX, negX, posY, negY, posZ, negZ );
 				}
 
 				{
@@ -521,7 +522,7 @@ public:
 					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
 					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
 
-					cube( pCubit, &verts, &indices, lPos, worldPos, posX, negX, posY, negY, posZ, negZ );
+					cube( pCubit, pVerts, pIndices, lPos, worldPos, posX, negX, posY, negY, posZ, negZ );
 				}
 
 
@@ -548,7 +549,7 @@ public:
 					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
 					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
 
-					cube( pCubit, &verts, &indices, lPos, worldPos, posX, negX, posY, negY, posZ, negZ );
+					cube( pCubit, pVerts, pIndices, lPos, worldPos, posX, negX, posY, negY, posZ, negZ );
 				}
 
 				{
@@ -562,24 +563,26 @@ public:
 					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
 					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
 
-					cube( pCubit, &verts, &indices, lPos, worldPos, posX, negX, posY, negY, posZ, negZ );
+					cube( pCubit, pVerts, pIndices, lPos, worldPos, posX, negX, posY, negY, posZ, negZ );
 				}
 			}
 		}
 		//*/
 
-		if( verts.size() == 0 )
+		if( pVerts->size() == 0 )
 			return 0;
 
-		const auto bufVerts = ResDGBufVertex::createRaw( verts.size() * sizeof( VertPosNormalUV ), verts.data() );
 
-		const auto bufIndices = ResDGBufIndex::createRaw( indices.size() * sizeof( u32 ), indices.data() );
+		/*
+		const auto bufVerts = ResDGBufVertex::createRaw( (u32)( verts.size() * sizeof( VertPosNormalUV ) ), verts.data() );
+
+		const auto bufIndices = ResDGBufIndex::createRaw( (u32)( indices.size() * sizeof( u32 ) ), indices.data() );
 
 		GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/vox.xml" );
 		ResourceMgr::RemResource( "config/geo/vox.xml" );
 
 		cfg->m_vertexBuf = bufVerts;
-		cfg->m_indexBuf  = bufIndices;
+		cfg->m_indexBuf = bufIndices;
 
 
 		cb::Mat3 mat( cb::Mat3::eIdentity );
@@ -591,30 +594,40 @@ public:
 		GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( ent::EntityId::makeNext(), cfg ) );
 
 		DGRenderer::Inst().addStaticGeo( frame, geo );
+		*/
 
-		return (i32)verts.size();
+		return (i32)pVerts->size();
 	}
 
 };
 
 //*/
 
-void vox::CubitArr::genGeo( Plane<Cubit> * pPlane, const CPos pos )
+void vox::CubitArr::genGeo( Plane<Cubit> *pPlane, const CPos pos, std::vector<VertPosNormalUV> *pVerts, std::vector<u32> *pIndices )
 {
 	const auto pGeo = new ChunkMesh();
 
 	const auto worldPos = GPos::from( pos );
-	const auto wP = cb::Vec3( (f32)worldPos.x, (f32)worldPos.y, (f32)worldPos.z ) ;
+	const auto wP = cb::Vec3( (f32)worldPos.x, (f32)worldPos.y, (f32)worldPos.z );
 
-	const auto vertCount = pGeo->fill( pPlane, this, pos, wP );
+	const auto vertCount = pGeo->fill( pPlane, pVerts, pIndices, this, pos, wP );
 
 	if( vertCount == 0 )
 		return;
 }
 
+struct PosChunk
+{
+	vox::CPos				Pos;
+	vox::Cubit::Ptr Chunk;
+};
+
+
 static i32 s_curX = 1;
 static i32 s_curY = 1;
-static i32 s_curYExtent = 10;
+static i32 s_curYExtent = 30;
+static i32 s_maxX = 100;
+static i32 s_maxY = 100;
 
 void vox::CubitPlane::genWorld( const cb::Vec3 pos )
 {
@@ -626,80 +639,169 @@ void vox::CubitPlane::genWorld( const cb::Vec3 pos )
 	const cb::Vec3i startingChunkPos( v.x, v.y, v.z );
 
 
-	if( s_curX > 50 )
+	if( s_curX > s_maxX )
 	{
-		if( s_curY > 50 )
+		if( s_curY > s_maxY )
 		{
 			return;
 		}
-
-		s_curX = 1;
-		s_curY += s_curYExtent;
 	}
 
 
+	std::array<std::vector<PosChunk>, 30> chunks;
+
+	i32 extent = s_curYExtent;
+	if( s_curY + s_curYExtent > s_maxY )
+	{
+		extent = s_maxY - s_curY;
+	}
+
+	//for( i32 y = s_curY; y < s_curY + s_curYExtent; ++y )
+	//{
+	enki::TaskSet task( extent,
+		[&chunks, startingChunkPos]( enki::TaskSetPartition range, uint32_t threadnum ) {
+			for( i32 z = 1; z < 14; ++z )
+			{
+				for( i32 y = s_curY + range.start; y < s_curY + (i32)range.end; ++y )
+				{
+					const i32 x = s_curX;
+					{
+						auto cbChunkPos = startingChunkPos;
+
+						cbChunkPos += cb::Vec3i( x, y, z );
+
+						const CPos chunkPos( cbChunkPos.x, cbChunkPos.y, cbChunkPos.z );
+
+						const auto cubit = TChunk::Ptr( new CubitArr( chunkPos ) );
+
+						cubit->genWorld( nullptr, chunkPos );
+
+						//const auto hashFn = std::hash<CPos>();
+						//const auto hash = hashFn( chunkPos );
+
+						chunks[threadnum].push_back( { chunkPos, cubit } );
+
+						//m_sparse[chunkPos] = cubit;
+					}
+				}
+			}
+		} );
+
+	dg::App::Info().Task.AddTaskSetToPipe( &task );
+	dg::App::Info().Task.WaitforTask( &task );
+
+	for( auto &vecChunks : chunks )
+	{
+		for( auto pair : vecChunks )
+		{
+			m_sparse[pair.Pos] = pair.Chunk;
+		}
+	}
+
+	++s_curX;
+	if( s_curX > s_maxX )
+	{
+		s_curX = 1;
+		s_curY += extent;
+	}
+
+
+#if 0 
 	for( i32 z = 1; z < 14; ++z )
 	{
 		for( i32 y = s_curY; y < s_curY + s_curYExtent; ++y )
 		{
 			const i32 x = s_curX;
-			//for( i32 x = 1; x < 200; ++x )
 			{
-				//async::parallel_for( async::irange( 1, 100 ), [ startingChunkPos, z, y, this ]( int x ) {
 				auto cbChunkPos = startingChunkPos;
 
 				cbChunkPos += cb::Vec3i( x, y, z );
 
 				const CPos chunkPos( cbChunkPos.x, cbChunkPos.y, cbChunkPos.z );
 
-
-				//auto chunk = get( chunkPos );
-
-
 				const auto cubit = TChunk::Ptr( new CubitArr( chunkPos ) );
 
 				cubit->genWorld( this, chunkPos );
 
-				//if( !chunk.has_value() ) chunk = cubit
+				//const auto hashFn = std::hash<CPos>();
+				//const auto hash = hashFn( chunkPos );
 
-				const auto hashFn = std::hash<CPos>();
-				const auto hash = hashFn( chunkPos );
+				chunks[1].push_back( { chunkPos, cubit } );
 
-
-				m_sparse[chunkPos] = cubit;
-
-				//cubit->genGeo( this, pDev, pScene, chunkPos );
-			//} );
-			}
+				//m_sparse[chunkPos] = cubit;
+}
 		}
 	}
+#endif 
 
-	s_curX++;
-
-	//int dummy = 0;
 
 }
 
-//*
-void vox::CubitPlane::genGeo( const cb::Vec3 pos )
+struct VertsIndices
 {
+	std::vector<VertPosNormalUV> Verts;
+	std::vector<u32> Indices;
+};
 
+//*
+void vox::CubitPlane::genGeo( const cb::Vec3 inPos )
+{
 	i32 generated = 0;
-	for(auto it = m_sparse.begin(); it != m_sparse.end(); ++it)
+	std::array<PosChunk, 64> chunks;
+	std::array<VertsIndices, 64> vertsIndices;
+
+
+	for( auto it = m_sparse.begin(); it != m_sparse.end(); ++it )
 	{
 		const auto chunk = it->second;
 
 		if( !chunk->m_generated )
 		{
-			chunk->genGeo( this, it->first );
+			chunks[generated] = { it->first, it->second };
 			chunk->m_generated = true;
-			generated++;
+			++generated;
+
+			if( generated >= 64 ) break;
 		}
 
-		if( generated > 64 )
-		{
-			return;
-		}
+
+	}
+
+	enki::TaskSet task( generated,
+		[&chunks, this, &vertsIndices]( enki::TaskSetPartition range, uint32_t threadnum ) {
+			for( u32 i = range.start; i < range.end; ++i )
+			{
+				chunks[i].Chunk->genGeo( this, chunks[i].Pos, &vertsIndices[i].Verts, &vertsIndices[i].Indices );
+			}
+		});
+
+	dg::App::Info().Task.AddTaskSetToPipe( &task );
+	dg::App::Info().Task.WaitforTask( &task );
+
+	for( auto vertIndex : vertsIndices )
+	{
+		if( vertIndex.Verts.size() == 0 ) continue;
+
+		const auto bufVerts = ResDGBufVertex::createRaw( (u32)( vertIndex.Verts.size() * sizeof( VertPosNormalUV ) ), vertIndex.Verts.data() );
+
+		const auto bufIndices = ResDGBufIndex::createRaw( (u32)( vertIndex.Indices.size() * sizeof( u32 ) ), vertIndex.Indices.data() );
+
+		GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/vox.xml" );
+		ResourceMgr::RemResource( "config/geo/vox.xml" );
+
+		cfg->m_vertexBuf = bufVerts;
+		cfg->m_indexBuf = bufIndices;
+
+
+		cb::Mat3 mat( cb::Mat3::eIdentity );
+
+		cb::Vec3 pos( 0, 0, 0 );
+		cb::Frame3 frame( mat, pos );
+
+
+		GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( ent::EntityId::makeNext(), cfg ) );
+
+		DGRenderer::Inst().addStaticGeo( frame, geo );
 	}
 
 

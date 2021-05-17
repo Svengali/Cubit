@@ -158,7 +158,7 @@ void RSEntity::render( RCDiligent *pContext )
 
 	//num = 64;
 
-	for( i32 i = 0; i < num; ++i )
+	for( i32 i = 0; i < std::min(16, num.load()); ++i )
 	{
 		auto contextDef = dg::App::Info().DeferredContexts()[i];
 
@@ -166,7 +166,7 @@ void RSEntity::render( RCDiligent *pContext )
 
 	}
 
-	for( i32 i = 0; i < num; ++i )
+	for( i32 i = 0; i < std::min( 16, num.load() ); ++i )
 	{
 		contextImm->ExecuteCommandList( cmdLists[i] );
 
@@ -177,7 +177,7 @@ void RSEntity::render( RCDiligent *pContext )
 	}
 
 
-	for( i32 i = 0; i < num; ++i )
+	for( i32 i = 0; i < std::min( 16, num.load() ); ++i )
 	{
 		auto contextDef = dg::App::Info().DeferredContexts()[i];
 

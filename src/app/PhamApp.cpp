@@ -244,7 +244,24 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 	lprintf( "Starting up Cubit\n" );
 	lprintf( "Test\n" );
 
-	m_Camera.SetSpeedUpScales( 4.0f, 20.0f );
+	//Modify this later.
+	//enki::TaskSchedulerConfig enkiCfg;
+
+	dg::App::Info().Task.Initialize( 30 );
+
+
+
+	enki::TaskSet task( 1024, 
+		[]( enki::TaskSetPartition range, uint32_t threadnum ) { 
+			//lprintf( "Thread %d, start %d, end %d\n", threadnum, range.start, range.end ); 
+		});
+
+
+	dg::App::Info().Task.AddTaskSetToPipe( &task );
+	dg::App::Info().Task.WaitforTask( &task );
+
+
+	m_Camera.SetSpeedUpScales( 6.0f, 20.0f );
 
 
 	ent::EntityId::initStartingEntityId( 1024 );
@@ -390,8 +407,8 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 			cb::SetZRotation( &mat, CB_PIf * ( x + y ) / 50.0f );
 
-			cb::Vec3 pos( x, y, -1.0f );
-			cb::Frame3 frame( mat, pos );
+			cb::Vec3 cubePos( x, y, -1.0f );
+			cb::Frame3 frame( mat, cubePos );
 
 
 			//const dg::float4x4 dgTrans = dg::float4x4::RotationZ( CB_PIf * 0.25f ) * dg::float4x4::Translation( c(pos) );

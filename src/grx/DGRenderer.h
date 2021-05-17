@@ -11,7 +11,7 @@
 
 PtrFwd( GeoDiligent );
 
-const i32 k_geoBlockSize = 1 * 1024;
+const i32 k_geoBlockSize = 4 * 1024;
 
 class GeoBlock
 {
