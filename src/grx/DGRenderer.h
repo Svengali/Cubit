@@ -37,12 +37,6 @@ public:
 public:
 
 	void operate( std::function<void( TCom::AllBlocks::TBlock *, const i32 )> );
-
-	/*
-	void updateBlock(const uint64_t dtMs, TCom::AllBlocks::TBlock& blocks, const i32 count);
-
-	void update(const uint64_t dtMs);
-	*/
 };
 
 

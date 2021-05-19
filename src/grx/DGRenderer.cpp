@@ -83,7 +83,7 @@ DGRenderer::~DGRenderer( void )
 
 void DGRenderer::render( RCDiligent *pContext )
 {
-		m_rsStatic->render( pContext );
+	m_rsStatic->render( pContext );
 }
 
 
@@ -97,92 +97,105 @@ void DGRenderer::addStaticGeo( const cb::Frame3 frame, const GeoDiligentPtr &geo
 void RSEntity::render( RCDiligent *pContext )
 {
 
-	
-	std::atomic<i32> num = 0;
-
-	std::array<dg::RefCntAutoPtr<dg::ICommandList>, 16> cmdLists;
+	std::array<bool, 32> activeCmdLists = { false };
+	std::array<dg::RefCntAutoPtr<dg::ICommandList>, 32> cmdLists;
 	//std::array<std::atomic<bool>, 64> waitList;
 
+	auto &geos = m_geos;
 
+	const auto size = (int)geos.m_com.m_blocks.m_block.size();
 
-	m_geos.operate( [pContext, &cmdLists, &num /*, &waitList*/]( GeoBlock::Block *pBlock, const i32 max ){
+	typedef decltype( geos.m_com.m_blocks.m_block ) TBlock;
 
-		const auto *__restrict const pSrcFrame	= pBlock->src<GeoBlock::Frame, cb::Frame3>();
-		const auto *__restrict const pSrcGeo		= pBlock->src<GeoBlock::Geometry, GeoDiligentPtr>();
+	enki::TaskSet task( size,
+		[&cmdLists, &geos, pContext, &activeCmdLists]( enki::TaskSetPartition range, uint32_t threadnum ) {
 
-		const i32 id = num.fetch_add( 1 ) % 16;
+			for( i32 iBlock = range.start; iBlock < (i32)range.end; ++iBlock )
+			{
+				auto *pBlock = geos.m_com.m_blocks.m_block[iBlock].get();
+				auto max = geos.m_com.m_blocks.m_allocated[iBlock];
 
-		/*
-		while( !waitList[id].exchange(true) )
-		{
-		}
-		//*/
+				const auto *__restrict const pSrcFrame = pBlock->src<GeoBlock::Frame, cb::Frame3>();
+				const auto *__restrict const pSrcGeo = pBlock->src<GeoBlock::Geometry, GeoDiligentPtr>();
 
-		/*
-		char buffer[256];
+				const i32 id = threadnum;
 
-		snprintf( buffer, 256, "Rendering id %i\n", id);
+				activeCmdLists[id] = true;
 
-		OutputDebugString( buffer );
-		//*/
+				auto context = dg::App::Info().DeferredContexts()[id];
 
-		auto context = dg::App::Info().DeferredContexts()[id];
+				RCDiligent newRC;
+				newRC.m_devContext = context;
+				newRC.m_renderTarget = pContext->m_renderTarget;
+				newRC.m_viewProj = pContext->m_viewProj;
 
-		RCDiligent newRC;
-		newRC.m_devContext = context;
-		newRC.m_renderTarget = pContext->m_renderTarget;
-		newRC.m_viewProj = pContext->m_viewProj;
-			
-		auto swapChain = dg::App::Info().SwapChain();
-		auto *pRTV = swapChain->GetCurrentBackBufferRTV();
-		context->SetRenderTargets( 1, &pRTV, swapChain->GetDepthBufferDSV(), dg::RESOURCE_STATE_TRANSITION_MODE_VERIFY );
+				auto swapChain = dg::App::Info().SwapChain();
+				auto *pRTV = swapChain->GetCurrentBackBufferRTV();
+				context->SetRenderTargets( 1, &pRTV, swapChain->GetDepthBufferDSV(), dg::RESOURCE_STATE_TRANSITION_MODE_VERIFY );
 
-		for( i32 i = 0; i < max; ++i )
-		{
-			const cb::Frame3 &frame = pSrcFrame[i];
-			const GeoDiligentPtr &geo = pSrcGeo[i];
+				for( i32 i = 0; i < (i32)max; ++i )
+				{
+					const cb::Frame3 &frame = pSrcFrame[i];
+					const GeoDiligentPtr &geo = pSrcGeo[i];
 
-			geo->renderDiligent( &newRC, frame );
-		}
+					geo->renderDiligent( &newRC, frame );
+				}
+			}
+		} );
 
-		/*
-		while( waitList[id].exchange( false ) )
-		{
-		}
-		//*/
-
-	} );
-
+	dg::App::Info().Task.AddTaskSetToPipe( &task );
+	dg::App::Info().Task.WaitforTask( &task );
 
 	auto contextImm = dg::App::Info().ImmContext();
 
 	//num = 64;
 
-	for( i32 i = 0; i < std::min(16, num.load()); ++i )
+	for( i32 i = 0; i < cmdLists.size(); ++i )
 	{
-		auto contextDef = dg::App::Info().DeferredContexts()[i];
+		if( activeCmdLists[i] )
+		{
+			auto contextDef = dg::App::Info().DeferredContexts()[i];
 
-		contextDef->FinishCommandList( &cmdLists[i] );
-
+			if( contextDef )
+			{
+				contextDef->FinishCommandList( &cmdLists[i] );
+			}
+			else
+			{
+				lprinterr( "context def %i is null. Cant finish command list", i );
+			}
+		}
 	}
 
-	for( i32 i = 0; i < std::min( 16, num.load() ); ++i )
+	for( i32 i = 0; i < cmdLists.size(); ++i )
 	{
-		contextImm->ExecuteCommandList( cmdLists[i] );
+		if( activeCmdLists[i] )
+		{
+			contextImm->ExecuteCommandList( cmdLists[i] );
 
-		// Release command lists now to release all outstanding references
-		// In d3d11 mode, command lists hold references to the swap chain's back buffer
-		// that cause swap chain resize to fail
-		cmdLists[i].Release();
+			// Release command lists now to release all outstanding references
+			// In d3d11 mode, command lists hold references to the swap chain's back buffer
+			// that cause swap chain resize to fail
+			cmdLists[i].Release();
+		}
 	}
 
 
-	for( i32 i = 0; i < std::min( 16, num.load() ); ++i )
+	for( i32 i = 0; i < cmdLists.size(); ++i )
 	{
-		auto contextDef = dg::App::Info().DeferredContexts()[i];
+		if( activeCmdLists[i] )
+		{
+			auto contextDef = dg::App::Info().DeferredContexts()[i];
 
-		contextDef->FinishFrame();
-
+			if( contextDef )
+			{
+				contextDef->FinishFrame();
+			}
+			else
+			{
+				lprinterr( "context def %i is null. Cant finish frame", i );
+			}
+		}
 	}
 
 
@@ -212,11 +225,15 @@ void GeoBlock::operate( std::function<void( Block *, const i32 max )> fn )
 {
 	const auto size = (int)m_com.m_blocks.m_block.size();
 
+
+
+
+
 	//*
 	async::parallel_for( async::irange( 0, size ), [fn, this]( int iBlock ) {
-	/*/
-	for( i32 iBlock = 0; iBlock < size; ++iBlock ) {
-	//*/
+		/*/
+		for( i32 iBlock = 0; iBlock < size; ++iBlock ) {
+		//*/
 
 
 		auto &block = m_com.m_blocks.m_block[iBlock];
@@ -229,8 +246,8 @@ void GeoBlock::operate( std::function<void( Block *, const i32 max )> fn )
 		//updateBlock( dtMs, *block.get(), count );
 		}
 		//*
-		);
-		/*/
-		//*/
+	);
+	/*/
+	//*/
 }
 

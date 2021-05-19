@@ -74,7 +74,7 @@ void PhamApp::GetEngineInitializationAttribs(
 
 	EngineCI.Features.DepthClamp = dg::DEVICE_FEATURE_STATE_OPTIONAL;
 
-	EngineCI.NumDeferredContexts = 16;
+	EngineCI.NumDeferredContexts = 32;
 
 #if D3D12_SUPPORTED
 	if( DeviceType == dg::RENDER_DEVICE_TYPE_D3D12 )
@@ -279,9 +279,10 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 	m_Camera.SetReferenceAxes( dg::float3( 1.0f, 0.0f, 0.0f ), dg::float3( 0.0f, 0.0f, 1.0f ), true );
 
-	m_Camera.SetLookAt( dg::float3( 20.0f, 200.0f, 140.0f ) );
+	m_Camera.SetPos( dg::float3( 1.71f, 3.84f, 10.90f ) );
 
-	m_Camera.SetPos( dg::float3( 22.0f, 202.0f, 145.0f ) );
+	m_Camera.SetLookAt( dg::float3( 2.00f, 3.84f, 9.94f ) );
+
 
 
 
@@ -357,6 +358,8 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 
 	m_cubit = vox::CubitPlanePtr( new vox::CubitPlane() );
+	const auto scale = 1.0f / 32.0f;
+	m_cubit->m_scaleFactor = cb::Vec3( scale, scale, scale );
 
 	//*
 	cb::Vec3 pos( 0.0f, 0.0f, 0.0f );
@@ -728,8 +731,10 @@ void PhamApp::UpdateUI()
 			ImGui::Begin( "World" );
 
 			const auto pos = m_Camera.GetPos();
+			const auto fwd = pos + m_Camera.GetWorldAhead();
 
-			ImGui::Text( "%.2f, %.2f, %.2f  ", pos.x, pos.y, pos.z );
+			ImGui::Text( "Pos %.2f, %.2f, %.2f  ", pos.x, pos.y, pos.z );
+			ImGui::Text( "Fwd %.2f, %.2f, %.2f  ", fwd.x, fwd.y, fwd.z );
 
 			ImGui::End();
 		}
@@ -810,6 +815,11 @@ void PhamApp::Update( double CurrTime, double ElapsedTime )
 
 void PhamApp::WindowResize( dg::Uint32 Width, dg::Uint32 Height )
 {
+	float NearPlane = 0.1f;
+	float FarPlane = 10000.f;
+	float AspectRatio = static_cast<float>( Width ) / static_cast<float>( Height );
+	m_Camera.SetProjAttribs( NearPlane, FarPlane, AspectRatio, dg::PI_F / 4.f,
+		m_pSwapChain->GetDesc().PreTransform, m_pDevice->GetDeviceCaps().IsGLDevice() );
 }
 
 

@@ -16,10 +16,13 @@ namespace vox
 
 		using Chunk::Chunk;
 
-		virtual void genWorld( Plane<Cubit> *pPlane, const CPos pos );
+		virtual bool genWorld( Plane<Cubit> *pPlane, const CPos pos );
 		virtual void genGeo( Plane<Cubit> * pPlane, const CPos pos, std::vector<VertPosNormalUV> *pVerts, std::vector<u32> *pIndices );
 
 		bool m_generated = false;
+
+		cb::Vec3 m_translation = cb::Vec3( 0.0f, 0.0f, 0.0f );
+		cb::Vec3 m_scaleFactor = cb::Vec3( 1.0f, 1.0f, 1.0f );
 
 	protected:
 		//gr::AbstractRenderableHandle m_geo;
@@ -34,7 +37,7 @@ namespace vox
 		virtual void set_slow( u8 v, LPos pos ) override;
 		virtual u8 get_slow( LPos pos ) override;
 
-		virtual void genWorld( Plane<Cubit> *pPlane, CPos pos ) override;
+		virtual bool genWorld( Plane<Cubit> *pPlane, CPos pos ) override;
 		virtual void genGeo( Plane<Cubit> * pPlane, const CPos pos, std::vector<VertPosNormalUV> *pVerts, std::vector<u32> *pIndices ) override;
 
 		StorageArr<Cubit> m_arr;
@@ -48,8 +51,11 @@ namespace vox
 	class CubitPlane: public Plane<Cubit>
 	{
 	public:
-		virtual void genWorld( const cb::Vec3 pos );
+		virtual bool genWorld( const cb::Vec3 pos );
 		virtual void genGeo( const cb::Vec3 pos );
+
+		cb::Vec3 m_translation = cb::Vec3( 0.0f, 0.0f, 0.0f );
+		cb::Vec3 m_scaleFactor = cb::Vec3( 1.0f, 1.0f, 1.0f );
 	private:
 	};
 

@@ -841,6 +841,9 @@ m_DeviceType = RENDER_DEVICE_TYPE_D3D12;
 				m_pImGui->EndFrame();
 			}
 		}
+
+		m_pImmediateContext->Flush();
+		m_pImmediateContext->FinishFrame();
 	}
 
 	void App::CompareGoldenImage( const std::string &FileName, ScreenCapture::CaptureInfo &Capture )

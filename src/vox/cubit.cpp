@@ -16,21 +16,33 @@
 
 
 
+namespace cb
+{
+	inline String autoArgConvert( const vox::Cubit::LPos &pos )
+	{
+		char buffer[256];
+		snprintf(buffer, 256, "%i, %i, %i", pos.x, pos.y, pos.z);
+
+		return String(buffer);
+	}
+
+}
 
 
-void vox::CubitArr::set_slow( u8 v, vox::LPos pos )
+
+void vox::CubitArr::set_slow( u8 v, LPos pos )
 {
 
 }
 
-u8 vox::CubitArr::get_slow( vox::LPos pos )
+u8 vox::CubitArr::get_slow( LPos pos )
 {
 	return m_arr.m_arr[m_arr.index( pos )];
 }
 
-void vox::Cubit::genWorld( Plane<Cubit> *pPlane, const CPos pos )
+bool vox::Cubit::genWorld( Plane<Cubit> *pPlane, const CPos pos )
 {
-
+	return false;
 }
 
 
@@ -41,47 +53,81 @@ void vox::Cubit::genGeo( Plane<Cubit> *pPlane, const CPos pos, std::vector<VertP
 //*/
 
 static SimplexNoise noise;
-static f32 s_fractalMultXY = 1.0f / 256.0f;
-static f32 s_fractalMultZ = 1.0f / 64.0f;
+static f32 s_fractalMultXY = 1.0f / 512.0f;
+static f32 s_fractalMultZ  = 1.0f / 128.0f;
 
 
-void vox::CubitArr::genWorld( Plane<Cubit> *pPlane, const CPos pos )
+bool vox::CubitArr::genWorld( Plane<Cubit> *pPlane, const CPos pos )
 {
-	for( i32 z = 0; z < k_edgeSize.size; ++z )
+	
+	bool hasValues = false;
+
+	for( i32 z = 0; z < k_edgeSize; ++z )
 	{
 		const i32 cubeWorldZ = m_gPos.z + z;
-		const f32 worldZ = (f32)cubeWorldZ;
+		const f32 worldZ = (f32)cubeWorldZ + 100.0f;
 
 		const f32 perlinZ = worldZ * s_fractalMultZ;
 
-		for( i32 y = 0; y < k_edgeSize.size; ++y )
+		for( i32 y = 0; y < k_edgeSize; ++y )
 		{
 			const i32 cubeWorldY = m_gPos.y + y;
 			const f32 worldY = (f32)cubeWorldY;
 
 			const f32 perlinY = worldY * s_fractalMultXY;
 
-			for( i32 x = 0; x < k_edgeSize.size; ++x )
+			for( i32 x = 0; x < k_edgeSize; ++x )
 			{
+				const i32 index = m_arr.index( x, y, z );
+
 				const i32 cubeWorldX = m_gPos.x + x;
 				const f32 worldX = (f32)cubeWorldX;
 
 				const f32 perlinX = worldX * s_fractalMultXY;
 
-				const i32 index = m_arr.index( x, y, z );
+				/*
 
-				const f32 rawPerlinValue = noise.fractal( 4, perlinX, perlinY, perlinZ );
 
-				const f32 zFade = ( worldZ - 32.0f ) / 256.0f;
+				const f32 roughnessMapRaw = ( noise.fractal( 3, perlinX + 1000.0f, perlinY + 1000 ) + 1.0f ) * 0.4f;
+
+				const f32 roughnessMap = std::clamp( roughnessMapRaw, 0.0f, 1.0f );
+
+				const size_t octaves = (size_t)( roughnessMap * 8.0f ) + 1;
+
+				const f32 rawPerlinValue = noise.fractal( octaves, perlinX, perlinY, perlinZ );
+
+				const f32 fadeMapRaw = ( noise.fractal( 3, perlinX + 2000.0f, perlinY + 2000 ) + 1.0f ) * 0.4f;
+
+				const f32 fadeMapClamped = 1.0f - std::clamp( fadeMapRaw, 0.0f, 1.0f );
+
+				const f32 fadeMap = fadeMapClamped * fadeMapClamped * fadeMapClamped;
+
+				const f32 fadeMapShifted = fadeMap - 0.5f;
+
+				const f32 zFade = ( (worldZ)*fadeMap ) / ( 256.0f * ( ( fadeMap + 1 ) * 4.0f ) );
 
 				const f32 perlinValue = zFade + rawPerlinValue + perlinZ - 1;
+				*/
+
+				const i32 valX = ( ( ( cubeWorldX ) / 64 ) & 1 );
+				const i32 valY = ( ( ( cubeWorldY ) / 64 ) & 1 );
+
+				const f32 val = (f32)(valX ^ valY);
 
 
+				const auto perlinValue = (f32)(cubeWorldZ / 128.0f) + val * (1.0f / 16.0f);
 
-				m_arr.m_arr[index] = perlinValue < 1.2f;
+					
+				const auto perlinVal = perlinValue < 0.8f;
+
+				hasValues |= perlinVal;
+
+				m_arr.m_arr[index] = perlinVal;
 			}
 		}
 	}
+
+	return hasValues;
 }
 
 
@@ -164,6 +210,7 @@ static u16 CubeIndices[] =
 
 //*
 
+template<typename TCHUNK>
 class ChunkMesh
 {
 public:
@@ -321,7 +368,7 @@ public:
 
 
 
-	void pushSingleCube( Faces faces, std::vector<VertPosNormalUV> *const pVerts, std::vector<u32> *const pInd, const cb::Vec3 pos )
+	void pushSingleCube( Faces faces, std::vector<VertPosNormalUV> *const pVerts, std::vector<u32> *const pInd, const cb::Vec3 pos, const cb::Vec3 scale )
 	{
 		u32 curFace = 1 << 0;
 
@@ -338,7 +385,11 @@ public:
 
 				for( i32 iVert = 0; iVert < 4; ++iVert )
 				{
-					pVerts->push_back( CubeVerts[vertStart + iVert] );
+					const auto rawVert = CubeVerts[vertStart + iVert];
+					//const auto scaledVert = cb::Vec3( rawVert.x * scale.x, )
+
+					pVerts->push_back( rawVert );
+					pVerts->back().pos.ComponentwiseScale( scale );
 					pVerts->back().pos += pos;
 				}
 
@@ -361,8 +412,9 @@ public:
 		std::vector<VertPosNormalUV> *const pVerts,
 		//		std::vector<float> *const pAttr,
 		std::vector<u32> *const pIndices,
-		const vox::LPos pos,
+		const typename TCHUNK::LPos pos,
 		const cb::Vec3 worldPos,
+		const cb::Vec3 scale,
 		const u16 posX,
 		const u16 negX,
 		const u16 posY,
@@ -391,20 +443,22 @@ public:
 		faces = cast<Faces>( faces | ( Faces::ePZ * cast<int>( !posZ ) ) );
 		faces = cast<Faces>( faces | ( Faces::eNZ * cast<int>( !negZ ) ) );
 
-		const auto h = l + cb::Vec3( 1, 1, 1 );
+		const auto h = l + cb::Vec3( 1 * scale.x, 1 * scale.y, 1 * scale.z );
 
 		if( faces )
 		{
 			//const auto startIndex = cast<u16>( pPositions->size() );
 
-			pushSingleCube( faces, pVerts, pIndices, cb::Vec3( worldPos.x + pos.x, worldPos.y + pos.y, worldPos.z + pos.z ) );
+			const auto world = cb::Vec3( worldPos.x + l.x * scale.x, worldPos.y + l.y * scale.y, worldPos.z + l.z * scale.z );
+
+			pushSingleCube( faces, pVerts, pIndices, world, scale );
 		}
 
 	}
 
 
 
-	i32 fill( vox::Plane<vox::Cubit> *pPlane, std::vector<VertPosNormalUV> *pVerts, std::vector<u32> *pIndices, vox::CubitArr *const pCubit, const vox::CPos chunkPos, const cb::Vec3 worldPos )
+	i32 fill( vox::Plane<vox::Cubit> *pPlane, std::vector<VertPosNormalUV> *pVerts, std::vector<u32> *pIndices, vox::CubitArr *const pCubit, const typename TCHUNK::CPos chunkPos, const cb::Vec3 worldPos, const cb::Vec3 scale )
 	{
 		//std::vector<VertPosNormalUV> verts;
 		//std::vector<u32> indices;
@@ -420,13 +474,13 @@ public:
 		const auto uv10 = cb::Vec2( 1, 0 );
 		const auto uv11 = cb::Vec2( 1, 1 );
 
-		for( i32 z = 1; z < pCubit->k_edgeSize.size - 1; ++z )
+		for( i32 z = 1; z < pCubit->k_edgeSize - 1; ++z )
 		{
-			for( i32 y = 1; y < pCubit->k_edgeSize.size - 1; ++y )
+			for( i32 y = 1; y < pCubit->k_edgeSize - 1; ++y )
 			{
-				for( i32 x = 1; x < pCubit->k_edgeSize.size - 1; ++x )
+				for( i32 x = 1; x < pCubit->k_edgeSize - 1; ++x )
 				{
-					const auto pos = vox::LPos( x, y, z );
+					const auto pos = TCHUNK::LPos( x, y, z );
 
 					const u16 posX = pCubit->m_arr.m_arr[pCubit->m_arr.index( pos.x + 1, pos.y + 0, pos.z + 0 )];
 					const u16 negX = pCubit->m_arr.m_arr[pCubit->m_arr.index( pos.x - 1, pos.y + 0, pos.z + 0 )];
@@ -435,7 +489,7 @@ public:
 					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( pos.x + 0, pos.y + 0, pos.z + 1 )];
 					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( pos.x + 0, pos.y + 0, pos.z - 1 )];
 
-					cube( pCubit, pVerts, pIndices, pos, worldPos, posX, negX, posY, negY, posZ, negZ );
+					cube( pCubit, pVerts, pIndices, pos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 
 				}
 			}
@@ -443,7 +497,7 @@ public:
 
 		//*
 		const i32 zSmall = 0;
-		const i32 zBig = pCubit->k_edgeSize.size - 1;
+		const i32 zBig = pCubit->k_edgeSize - 1;
 
 		const auto vPosX = cb::Vec3i( 1, 0, 0 );
 		const auto vNegX = cb::Vec3i( -1, 0, 0 );
@@ -452,12 +506,12 @@ public:
 		const auto vPosZ = cb::Vec3i( 0, 0, 1 );
 		const auto vNegZ = cb::Vec3i( 0, 0, -1 );
 
-		for( i32 y = 0; y < pCubit->k_edgeSize.size; ++y )
+		for( i32 y = 0; y < pCubit->k_edgeSize; ++y )
 		{
-			for( i32 x = 0; x < pCubit->k_edgeSize.size; ++x )
+			for( i32 x = 0; x < pCubit->k_edgeSize; ++x )
 			{
 				{
-					const auto lPos = vox::LPos( x, y, zSmall );
+					const auto lPos = TCHUNK::LPos( x, y, zSmall );
 					const auto gPos = chunkPos + lPos;
 
 					const u16 posX = pPlane->get_slow( gPos + vPosX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
@@ -467,11 +521,11 @@ public:
 					const u16 posZ = pPlane->get_slow( gPos + vPosZ ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
 					const u16 negZ = pPlane->get_slow( gPos + vNegZ ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
 
-					cube( pCubit, pVerts, pIndices, lPos, worldPos, posX, negX, posY, negY, posZ, negZ );
+					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 				}
 
 				{
-					const auto lPos = vox::LPos( x, y, zBig );
+					const auto lPos = TCHUNK::LPos( x, y, zBig );
 					const auto gPos = chunkPos + lPos;
 
 					const u16 posX = pPlane->get_slow( gPos + vPosX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
@@ -481,7 +535,7 @@ public:
 					const u16 posZ = pPlane->get_slow( gPos + vPosZ ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
 					const u16 negZ = pPlane->get_slow( gPos + vNegZ ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
 
-					cube( pCubit, pVerts, pIndices, lPos, worldPos, posX, negX, posY, negY, posZ, negZ );
+					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 				}
 
 
@@ -491,14 +545,14 @@ public:
 
 		//*
 		const i32 ySmall = 0;
-		const i32 yBig = pCubit->k_edgeSize.size - 1;
+		const i32 yBig = pCubit->k_edgeSize - 1;
 
-		for( i32 z = 1; z < pCubit->k_edgeSize.size - 1; ++z )
+		for( i32 z = 1; z < pCubit->k_edgeSize - 1; ++z )
 		{
-			for( i32 x = 0; x < pCubit->k_edgeSize.size - 0; ++x )
+			for( i32 x = 0; x < pCubit->k_edgeSize - 0; ++x )
 			{
 				{
-					const auto lPos = vox::LPos( x, ySmall, z );
+					const auto lPos = TCHUNK::LPos( x, ySmall, z );
 					const auto gPos = chunkPos + lPos;
 
 					const u16 posX = pPlane->get_slow( gPos + vPosX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
@@ -508,11 +562,11 @@ public:
 					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
 					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
 
-					cube( pCubit, pVerts, pIndices, lPos, worldPos, posX, negX, posY, negY, posZ, negZ );
+					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 				}
 
 				{
-					const auto lPos = vox::LPos( x, yBig, z );
+					const auto lPos = TCHUNK::LPos( x, yBig, z );
 					const auto gPos = chunkPos + lPos;
 
 					const u16 posX = pPlane->get_slow( gPos + vPosX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
@@ -522,7 +576,7 @@ public:
 					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
 					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
 
-					cube( pCubit, pVerts, pIndices, lPos, worldPos, posX, negX, posY, negY, posZ, negZ );
+					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 				}
 
 
@@ -532,14 +586,14 @@ public:
 
 		//*
 		const i32 xSmall = 0;
-		const i32 xBig = pCubit->k_edgeSize.size - 1;
+		const i32 xBig = pCubit->k_edgeSize - 1;
 
-		for( i32 z = 1; z < pCubit->k_edgeSize.size - 1; ++z )
+		for( i32 z = 1; z < pCubit->k_edgeSize - 1; ++z )
 		{
-			for( i32 y = 1; y < pCubit->k_edgeSize.size - 1; ++y )
+			for( i32 y = 1; y < pCubit->k_edgeSize - 1; ++y )
 			{
 				{
-					const auto lPos = vox::LPos( xSmall, y, z );
+					const auto lPos = TCHUNK::LPos( xSmall, y, z );
 					const auto gPos = chunkPos + lPos;
 
 					const u16 posX = pPlane->get_slow( gPos + vPosX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
@@ -549,11 +603,11 @@ public:
 					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
 					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
 
-					cube( pCubit, pVerts, pIndices, lPos, worldPos, posX, negX, posY, negY, posZ, negZ );
+					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 				}
 
 				{
-					const auto lPos = vox::LPos( xBig, y, z );
+					const auto lPos = TCHUNK::LPos( xBig, y, z );
 					const auto gPos = chunkPos + lPos;
 
 					const u16 posX = pPlane->get_slow( gPos + vPosX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
@@ -563,7 +617,7 @@ public:
 					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
 					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
 
-					cube( pCubit, pVerts, pIndices, lPos, worldPos, posX, negX, posY, negY, posZ, negZ );
+					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 				}
 			}
 		}
@@ -605,12 +659,17 @@ public:
 
 void vox::CubitArr::genGeo( Plane<Cubit> *pPlane, const CPos pos, std::vector<VertPosNormalUV> *pVerts, std::vector<u32> *pIndices )
 {
-	const auto pGeo = new ChunkMesh();
+	const auto pGeo = new ChunkMesh<Cubit>();
 
-	const auto worldPos = GPos::from( pos );
-	const auto wP = cb::Vec3( (f32)worldPos.x, (f32)worldPos.y, (f32)worldPos.z );
+	const auto worldPosInt = GPos::from( pos );
 
-	const auto vertCount = pGeo->fill( pPlane, pVerts, pIndices, this, pos, wP );
+	const auto worldPosRaw = cb::Vec3( (f32)worldPosInt.x, (f32)worldPosInt.y, (f32)worldPosInt.z );
+
+	const auto worldPosScaled = cb::Vec3( worldPosRaw.x *m_scaleFactor.x, worldPosRaw.y * m_scaleFactor.y, worldPosRaw.z * m_scaleFactor.z );
+
+	const auto worldPos = worldPosScaled + m_translation;
+
+	const auto vertCount = pGeo->fill( pPlane, pVerts, pIndices, this, pos, worldPos, m_scaleFactor );
 
 	if( vertCount == 0 )
 		return;
@@ -618,71 +677,124 @@ void vox::CubitArr::genGeo( Plane<Cubit> *pPlane, const CPos pos, std::vector<Ve
 
 struct PosChunk
 {
-	vox::CPos				Pos;
-	vox::Cubit::Ptr Chunk;
+	vox::Cubit::CPos	Pos;
+	vox::Cubit::Ptr		Chunk;
 };
 
 
+/*
 static i32 s_curX = 1;
 static i32 s_curY = 1;
+
+#ifdef DEBUG
+static i32 s_curYExtent = 16;
+static i32 s_maxX = 50;
+static i32 s_maxY = 50;
+#else
 static i32 s_curYExtent = 30;
 static i32 s_maxX = 100;
 static i32 s_maxY = 100;
+#endif
+*/
 
-void vox::CubitPlane::genWorld( const cb::Vec3 pos )
+static std::vector<vox::Cubit::CPos> s_chunksToMake;
+#ifdef DEBUG
+static i32 s_chunksPerTick = 1;
+static i32 s_maxX = 20;
+static i32 s_maxY = 20;
+#else
+static i32 s_chunksPerTick = 16;
+static i32 s_maxX = 100;
+static i32 s_maxY = 100;
+#endif
+
+bool vox::CubitPlane::genWorld( const cb::Vec3 pos )
 {
 
-	const auto gPos = GPos::from( pos );
+	if( s_chunksPerTick == 0 ) return true;
 
-	const auto v = CPos::from( gPos );
+	const auto gPos = vox::Cubit::GPos::from( pos );
+
+	const auto v = vox::Cubit::CPos::from( gPos );
 
 	const cb::Vec3i startingChunkPos( v.x, v.y, v.z );
 
 
-	if( s_curX > s_maxX )
+
+	if( !s_chunksToMake.size() )
 	{
-		if( s_curY > s_maxY )
+		for( i32 y = s_maxY; y > 0; --y )
 		{
-			return;
+			for( i32 x = s_maxX; x > 0; --x )
+			{
+				for( i32 z = 12; z > 0; --z )
+				{
+					auto cbChunkPos = startingChunkPos;
+
+					cbChunkPos += cb::Vec3i( x, y, z );
+
+					const vox::Cubit::CPos chunkPos( cbChunkPos.x, cbChunkPos.y, cbChunkPos.z );
+
+					s_chunksToMake.push_back( chunkPos );
+				}
+			}
 		}
 	}
 
-
 	std::array<std::vector<PosChunk>, 30> chunks;
 
-	i32 extent = s_curYExtent;
-	if( s_curY + s_curYExtent > s_maxY )
+	for( i32 i = 0; i < s_chunksPerTick; ++i )
 	{
-		extent = s_maxY - s_curY;
+		for( i32 iThread = 0; iThread < 30; ++iThread )
+		{
+			if( !s_chunksToMake.empty() )
+			{
+				const auto chunkPos = s_chunksToMake.back();
+				chunks[iThread].push_back( { chunkPos, nullptr } );
+				s_chunksToMake.pop_back();
+			}
+		}
 	}
 
-	//for( i32 y = s_curY; y < s_curY + s_curYExtent; ++y )
-	//{
-	enki::TaskSet task( extent,
-		[&chunks, startingChunkPos]( enki::TaskSetPartition range, uint32_t threadnum ) {
-			for( i32 z = 1; z < 14; ++z )
+	if( s_chunksToMake.empty() )
+	{
+		s_chunksPerTick = 0;
+	}
+
+	const auto translation = m_translation;
+	const auto scaleFactor = m_scaleFactor;
+
+	enki::TaskSet task( 30,
+		[&chunks, translation, scaleFactor]( enki::TaskSetPartition range, uint32_t threadnum ) {
+
+			for( auto iRange = range.start; iRange < range.end; ++iRange )
 			{
-				for( i32 y = s_curY + range.start; y < s_curY + (i32)range.end; ++y )
+				std::vector<PosChunk> &myList = chunks[iRange];
+
+				for( auto &posChunk : myList )
 				{
-					const i32 x = s_curX;
+					auto cbChunkPos = posChunk.Pos;
+
+					//cbChunkPos += cb::Vec3i( x, y, z );
+
+					const vox::Cubit::CPos chunkPos( cbChunkPos.x, cbChunkPos.y, cbChunkPos.z );
+
+					const auto cubit = TChunk::Ptr( new CubitArr( chunkPos ) );
+
+					cubit->m_translation = translation;
+					cubit->m_scaleFactor = scaleFactor;
+
+					const bool hasValue = cubit->genWorld( nullptr, chunkPos );
+
+					//const auto hashFn = std::hash<CPos>();
+					//const auto hash = hashFn( chunkPos );
+
+					if( hasValue )
 					{
-						auto cbChunkPos = startingChunkPos;
-
-						cbChunkPos += cb::Vec3i( x, y, z );
-
-						const CPos chunkPos( cbChunkPos.x, cbChunkPos.y, cbChunkPos.z );
-
-						const auto cubit = TChunk::Ptr( new CubitArr( chunkPos ) );
-
-						cubit->genWorld( nullptr, chunkPos );
-
-						//const auto hashFn = std::hash<CPos>();
-						//const auto hash = hashFn( chunkPos );
-
-						chunks[threadnum].push_back( { chunkPos, cubit } );
-
-						//m_sparse[chunkPos] = cubit;
+						posChunk.Chunk = cubit;
 					}
+
+					//chunks[threadnum].push_back( { chunkPos, cubit } );
 				}
 			}
 		} );
@@ -694,17 +806,15 @@ void vox::CubitPlane::genWorld( const cb::Vec3 pos )
 	{
 		for( auto pair : vecChunks )
 		{
-			m_sparse[pair.Pos] = pair.Chunk;
+			if( pair.Chunk )
+			{
+				m_sparse[pair.Pos] = pair.Chunk;
+				m_generateGeo[pair.Pos] = pair.Chunk;
+			}
 		}
 	}
 
-	++s_curX;
-	if( s_curX > s_maxX )
-	{
-		s_curX = 1;
-		s_curY += extent;
-	}
-
+	return true;
 
 #if 0 
 	for( i32 z = 1; z < 14; ++z )
@@ -729,7 +839,7 @@ void vox::CubitPlane::genWorld( const cb::Vec3 pos )
 				chunks[1].push_back( { chunkPos, cubit } );
 
 				//m_sparse[chunkPos] = cubit;
-}
+			}
 		}
 	}
 #endif 
@@ -743,15 +853,24 @@ struct VertsIndices
 	std::vector<u32> Indices;
 };
 
+static i32 s_chunkCount = 0;
+static i32 s_triCount = 0;
+
+#ifdef DEBUG
+static const i32 k_maxChunks = 1;
+#else
+static const i32 k_maxChunks = 128;
+#endif
+
 //*
 void vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 {
 	i32 generated = 0;
-	std::array<PosChunk, 64> chunks;
-	std::array<VertsIndices, 64> vertsIndices;
+	std::array<PosChunk, k_maxChunks> chunks;
+	std::array<VertsIndices, k_maxChunks> vertsIndices;
 
 
-	for( auto it = m_sparse.begin(); it != m_sparse.end(); ++it )
+	for( auto it = m_generateGeo.begin(); it != m_generateGeo.end(); ++it )
 	{
 		const auto chunk = it->second;
 
@@ -761,11 +880,20 @@ void vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 			chunk->m_generated = true;
 			++generated;
 
-			if( generated >= 64 ) break;
+			if( generated >= k_maxChunks ) break;
 		}
 
 
 	}
+
+	if( !generated ) return;
+
+	for( int i = 0; i < generated; ++i )
+	{
+		m_generateGeo.erase( chunks[i].Pos );
+	}
+
+
 
 	enki::TaskSet task( generated,
 		[&chunks, this, &vertsIndices]( enki::TaskSetPartition range, uint32_t threadnum ) {
@@ -773,7 +901,7 @@ void vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 			{
 				chunks[i].Chunk->genGeo( this, chunks[i].Pos, &vertsIndices[i].Verts, &vertsIndices[i].Indices );
 			}
-		});
+		} );
 
 	dg::App::Info().Task.AddTaskSetToPipe( &task );
 	dg::App::Info().Task.WaitforTask( &task );
@@ -781,6 +909,8 @@ void vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 	for( auto vertIndex : vertsIndices )
 	{
 		if( vertIndex.Verts.size() == 0 ) continue;
+
+		++s_chunkCount;
 
 		const auto bufVerts = ResDGBufVertex::createRaw( (u32)( vertIndex.Verts.size() * sizeof( VertPosNormalUV ) ), vertIndex.Verts.data() );
 
@@ -792,6 +922,7 @@ void vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 		cfg->m_vertexBuf = bufVerts;
 		cfg->m_indexBuf = bufIndices;
 
+		s_triCount += (i32)( vertIndex.Verts.size() >> 1 );
 
 		cb::Mat3 mat( cb::Mat3::eIdentity );
 
@@ -804,7 +935,7 @@ void vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 		DGRenderer::Inst().addStaticGeo( frame, geo );
 	}
 
-
+	lprintf( "Generated %i chunks %i Triangles\n", s_chunkCount, s_triCount );
 
 }
 //*/
