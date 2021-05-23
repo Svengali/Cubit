@@ -29,6 +29,11 @@ namespace cb
 }
 
 
+cb::Vec3 vox::FramePlane<vox::Cubit>::m_translation = cb::Vec3( 0.0f, 0.0f, 0.0f );
+cb::Vec3 vox::FramePlane<vox::Cubit>::m_scaleFactor = cb::Vec3( 1.0f, 1.0f, 1.0f );
+cb::Vec3 vox::FramePlane<vox::Cubit>::m_invScaleFactor = cb::Vec3( 1.0f, 1.0f, 1.0f );
+
+
 
 void vox::CubitArr::set_slow( u8 v, LPos pos )
 {
@@ -85,9 +90,7 @@ bool vox::CubitArr::genWorld( Plane<Cubit> *pPlane, const CPos pos )
 
 				const f32 perlinX = worldX * s_fractalMultXY;
 
-				/*
-
-
+				//*
 				const f32 roughnessMapRaw = ( noise.fractal( 3, perlinX + 1000.0f, perlinY + 1000 ) + 1.0f ) * 0.4f;
 
 				const f32 roughnessMap = std::clamp( roughnessMapRaw, 0.0f, 1.0f );
@@ -107,15 +110,16 @@ bool vox::CubitArr::genWorld( Plane<Cubit> *pPlane, const CPos pos )
 				const f32 zFade = ( (worldZ)*fadeMap ) / ( 256.0f * ( ( fadeMap + 1 ) * 4.0f ) );
 
 				const f32 perlinValue = zFade + rawPerlinValue + perlinZ - 1;
-				*/
+				/*/
 
 				const i32 valX = ( ( ( cubeWorldX ) / 64 ) & 1 );
 				const i32 valY = ( ( ( cubeWorldY ) / 64 ) & 1 );
 
 				const f32 val = (f32)(valX ^ valY);
 
-
 				const auto perlinValue = (f32)(cubeWorldZ / 128.0f) + val * (1.0f / 16.0f);
+				//*/
+
 
 					
 				const auto perlinVal = perlinValue < 0.8f;
@@ -665,11 +669,14 @@ void vox::CubitArr::genGeo( Plane<Cubit> *pPlane, const CPos pos, std::vector<Ve
 
 	const auto worldPosRaw = cb::Vec3( (f32)worldPosInt.x, (f32)worldPosInt.y, (f32)worldPosInt.z );
 
-	const auto worldPosScaled = cb::Vec3( worldPosRaw.x *m_scaleFactor.x, worldPosRaw.y * m_scaleFactor.y, worldPosRaw.z * m_scaleFactor.z );
+	const auto worldPosScaled = cb::Vec3( 
+		worldPosRaw.x * FramePlane<Cubit>::m_scaleFactor.x, 
+		worldPosRaw.y * FramePlane<Cubit>::m_scaleFactor.y,
+		worldPosRaw.z * FramePlane<Cubit>::m_scaleFactor.z );
 
-	const auto worldPos = worldPosScaled + m_translation;
+	const auto worldPos = worldPosScaled + FramePlane<Cubit>::m_translation;
 
-	const auto vertCount = pGeo->fill( pPlane, pVerts, pIndices, this, pos, worldPos, m_scaleFactor );
+	const auto vertCount = pGeo->fill( pPlane, pVerts, pIndices, this, pos, worldPos, FramePlane<Cubit>::m_scaleFactor );
 
 	if( vertCount == 0 )
 		return;
@@ -713,7 +720,7 @@ bool vox::CubitPlane::genWorld( const cb::Vec3 pos )
 
 	if( s_chunksPerTick == 0 ) return true;
 
-	const auto gPos = vox::Cubit::GPos::from( pos );
+	const auto gPos = from( pos );
 
 	const auto v = vox::Cubit::CPos::from( gPos );
 
@@ -781,8 +788,8 @@ bool vox::CubitPlane::genWorld( const cb::Vec3 pos )
 
 					const auto cubit = TChunk::Ptr( new CubitArr( chunkPos ) );
 
-					cubit->m_translation = translation;
-					cubit->m_scaleFactor = scaleFactor;
+					//cubit->m_translation = translation;
+					//cubit->m_scaleFactor = scaleFactor;
 
 					const bool hasValue = cubit->genWorld( nullptr, chunkPos );
 

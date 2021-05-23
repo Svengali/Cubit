@@ -58,15 +58,10 @@ public:
 
 	ResDGPipelineStatePtr m_pso;
 
-	//ResDGVertexShaderPtr	m_vertexShader;
-	//ResDGPixelShaderPtr		m_pixelShader;
-
 	ResDGBufVertexPtr	m_vertexBuf;
 	ResDGBufIndexPtr	m_indexBuf;
 
 	ResDGTexturePtr	m_texture;
-
-
 };
 
 
@@ -92,7 +87,6 @@ public:
 
 	virtual void renderDiligent( RCDiligent *pRC, const cb::Frame3 &frame );
 
-	//virtual void DoReflection( XMLReader &reader ) override { Reflection<XMLReader>( reader ); }
 	REFLECT_BEGIN( GeoDiligent, Geometry );
 		REFLECT( m_cfg );
 	REFLECT_END();

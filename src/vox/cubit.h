@@ -21,8 +21,8 @@ namespace vox
 
 		bool m_generated = false;
 
-		cb::Vec3 m_translation = cb::Vec3( 0.0f, 0.0f, 0.0f );
-		cb::Vec3 m_scaleFactor = cb::Vec3( 1.0f, 1.0f, 1.0f );
+		//cb::Vec3 m_translation = cb::Vec3( 0.0f, 0.0f, 0.0f );
+		//cb::Vec3 m_scaleFactor = cb::Vec3( 1.0f, 1.0f, 1.0f );
 
 	protected:
 		//gr::AbstractRenderableHandle m_geo;
@@ -48,15 +48,14 @@ namespace vox
 
 	};
 
-	class CubitPlane: public Plane<Cubit>
+	class CubitPlane: public FramePlane<Cubit>
 	{
 	public:
 		virtual bool genWorld( const cb::Vec3 pos );
 		virtual void genGeo( const cb::Vec3 pos );
-
-		cb::Vec3 m_translation = cb::Vec3( 0.0f, 0.0f, 0.0f );
-		cb::Vec3 m_scaleFactor = cb::Vec3( 1.0f, 1.0f, 1.0f );
+	
 	private:
+		std::hash_map<typename Cubit::CPos, typename Cubit::Ptr, PosHash<Cubit>> m_generateGeo;
 	};
 
 	PtrDef(CubitPlane);

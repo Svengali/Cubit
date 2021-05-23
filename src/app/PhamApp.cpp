@@ -358,20 +358,42 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 
 	m_cubit = vox::CubitPlanePtr( new vox::CubitPlane() );
-	const auto scale = 1.0f / 32.0f;
-	m_cubit->m_scaleFactor = cb::Vec3( scale, scale, scale );
+
+	m_freefall = FreefallPlanePtr( new FreefallPlane() );
+
 
 	//*
-	cb::Vec3 pos( 0.0f, 0.0f, 0.0f );
+	{
 
-	m_cubit->genWorld( pos );
+		cb::Vec3 pos( 0.0f, 0.0f, 0.0f );
 
-	m_cubit->genGeo( pos );
+		m_cubit->genWorld( pos );
+
+		m_cubit->genGeo( pos );
+	}
 	//*/
 
 
+	const auto center = cb::Vec3( 100.0f, 100.0f, 50.0f );
+	const auto size = cb::Vec3( 100.0f, 100.0f, 10.0f );
 
+	for( i32 i = 0; i < 1000; ++i )
+	{
+		const auto id = ent::EntityId::makeNext();
 
+		const auto pos = cb::MakeRandomInBox( center, size );
+
+		GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/test.xml" );
+		GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( id, cfg ) );
+
+		const auto rot = cb::Mat3( cb::Mat3::eIdentity );
+
+		const cb::Frame3 frame( rot, pos );
+
+		const cb::Mat3 vel( cb::Mat3::eIdentity );
+
+		m_freefall->add( pos, id, geo, frame, vel );
+	}
 
 
 	//*

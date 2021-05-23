@@ -13,6 +13,8 @@
 
 #include "vox/cubit.h"
 
+#include "ent/free.h"
+
 namespace Diligent
 {
 
@@ -57,6 +59,7 @@ private:
 
     vox::CubitPlanePtr    m_cubit;
 
+    FreefallPlanePtr      m_freefall;
 
 };
 
