@@ -48,10 +48,12 @@ public:
 
 	DGContextPtr m_devContext;
 
-	std::array<std::atomic_bool, 16> activeCmdLists = { false };
-	std::array<ResDGPipelineStatePtr, 16> lastUsedPSO;
-	std::array<std::vector<dg::RefCntAutoPtr<dg::ICommandList>>, 16> cmdLists;
-	std::array<dg::Ptr<dg::IFence>, 32> fences;
+	static const i32 k_maxThreads = 30;
+
+	std::array<std::atomic_bool, k_maxThreads> activeCmdLists = { false };
+	std::array<ResDGPipelineStatePtr, k_maxThreads> lastUsedPSO;
+	std::array<std::vector<dg::RefCntAutoPtr<dg::ICommandList>>, k_maxThreads> cmdLists;
+	std::array<dg::Ptr<dg::IFence>, k_maxThreads> fences;
 
 
 };

@@ -34,7 +34,8 @@
 namespace
 {
 
-Diligent::RENDER_DEVICE_TYPE g_DeviceType = Diligent::RENDER_DEVICE_TYPE_VULKAN;
+  Diligent::RENDER_DEVICE_TYPE g_DeviceType = Diligent::RENDER_DEVICE_TYPE_VULKAN;
+  //Diligent::RENDER_DEVICE_TYPE g_DeviceType = Diligent::RENDER_DEVICE_TYPE_D3D12;
 
 void SetButtonImage(HWND hwndDlg, int buttonId, int imageId, BOOL Enable)
 {

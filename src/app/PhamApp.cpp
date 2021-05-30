@@ -83,7 +83,7 @@ void PhamApp::ModifyEngineInitInfo( const ModifyEngineInitInfoAttribs &Attribs )
 {
 	SampleBase::ModifyEngineInitInfo( Attribs );
 	
-	Attribs.EngineCI.NumDeferredContexts = 16; //std::max( std::thread::hardware_concurrency() - 1, 2u );
+	Attribs.EngineCI.NumDeferredContexts = 32; //std::max( std::thread::hardware_concurrency() - 1, 2u );
 
 #if VULKAN_SUPPORTED
 	if( Attribs.DeviceType == dg::RENDER_DEVICE_TYPE_VULKAN )
@@ -284,16 +284,30 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 	lprintf( "Starting up Cubit\n" );
 	lprintf( "Test\n" );
 
+	auto now = std::chrono::system_clock::now();
+	std::time_t ctimeNow = std::chrono::system_clock::to_time_t( now );
+
+
+
+	const auto nowStr = std::ctime( &ctimeNow );
+	lprintf( "Starting at %s\n", nowStr );
+
+	const i32 srandValue = (i32)ctimeNow;
+
+	lprintf( "Setting srand to %i\n", srandValue );
+
+	srand( srandValue );
+
 	//Modify this later.
 	//enki::TaskSchedulerConfig enkiCfg;
 
-	PhamApp::Info().Task.Initialize( 14 );
+	PhamApp::Info().Task.Initialize( RCDiligent::k_maxThreads );
 
 
 
 	enki::TaskSet task( 1024, 
 		[]( enki::TaskSetPartition range, uint32_t threadnum ) { 
-			//lprintf( "Thread %d, start %d, end %d\n", threadnum, range.start, range.end ); 
+			lprintf( "Thread %d, start %d, end %d\n", threadnum, range.start, range.end ); 
 		});
 
 
@@ -416,7 +430,7 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 #ifdef _DEBUG
 	// We do 2 sets of these, so double it
-	const i32 k_maxMovingObjects = 1;
+	const i32 k_maxMovingObjects = 200;
 #else
 	// We do 2 sets of these, so double it
 	const i32 k_maxMovingObjects = 50000;
@@ -426,8 +440,13 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 	//*
 	lprintf( "Create %i moving objects\n", 2 * k_maxMovingObjects );
 	{
+		/*
 		const auto center = cb::Vec3( 50.0f, 0.0f, 50.0f );
 		const auto size  =  cb::Vec3( 50.0f, 0.0f, 10.0f );
+		/*/
+		const auto center = cb::Vec3( 300.0f, 300.0f, 40.0f );
+		const auto size = cb::Vec3( 300.0f, 300.0f, 10.0f );
+		//*/
 
 		for( i32 i = 0; i < k_maxMovingObjects; ++i )
 		{
@@ -455,8 +474,13 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 	//*
 	{
+		/*
 		const auto center = cb::Vec3( 00.0f, 50.0f, 50.0f );
 		const auto size   = cb::Vec3( 00.0f, 50.0f, 10.0f );
+		/*/
+		const auto center = cb::Vec3( 300.0f, 300.0f, 40.0f );
+		const auto size = cb::Vec3( 300.0f, 300.0f, 10.0f );
+		//*/
 
 		for( i32 i = 0; i < k_maxMovingObjects; ++i )
 		{
@@ -922,7 +946,17 @@ void PhamApp::Update( double CurrTime, double ElapsedTime )
 
 	UpdateUI();
 
-	m_freefall->updateBlocks( ElapsedTime );
+	const auto timeBrace = Timer<>::execution( [&]() {
+		m_freefall->updateBlocks( ElapsedTime );
+		});
+
+	if( (s_frameNum & 0x3f) == 0 )
+	{
+		const auto timeBraceF = (f32)timeBrace;
+
+		lprintf( "Block update in %.3f ms\n", timeBraceF / 1000.0f );
+	}
+
 
 	if( PhamApp::Info().Barriers.size() > 0 )
 	{

@@ -112,7 +112,7 @@ void DGRenderer::render( RCDiligent *pContext )
 
 	m_rsVoxels->render( pContext, "Voxels" );
 
-	//processContexts( pContext );
+	processContexts( pContext );
 
 	/*
 	for( i32 i = 0; i < pContext->cmdLists.size(); ++i )
@@ -307,7 +307,7 @@ void renderEntities( RCDiligent *pContext, std::vector<FreefallData *> *pFreeFal
 		}
 	}
 
-	/*
+	//*
 	auto task = enki::TaskSet( (u32)pFreeFallVec->size(),
 		[pContext, pFreeFallVec]( enki::TaskSetPartition range, uint32_t threadnum ) {
 
@@ -395,12 +395,12 @@ void renderEntities( RCDiligent *pContext, std::vector<FreefallData *> *pFreeFal
 			*/
 
 
-	/*
+	//*
 		} );
 
 	PhamApp::Info().Task.AddTaskSetToPipe( &task );
 	PhamApp::Info().Task.WaitforTask( &task );
-	*/
+	//*/
 
 	//processContexts( pContext );
 }
@@ -419,7 +419,7 @@ void RSEntity::render( RCDiligent *pContext, const char *pDebugRender )
 
 	//typedef decltype( geos.m_com.m_blocks.m_block ) TBlock;
 
-	/*
+	//*
 	enki::TaskSet task( size,
 		[&geos, pContext, pDebugRender]( enki::TaskSetPartition range, uint32_t threadnum ) {
 
@@ -506,7 +506,7 @@ void RSEntity::render( RCDiligent *pContext, const char *pDebugRender )
 			pContext->cmdLists[id].push_back( dg::Ptr<dg::ICommandList>( pCL ) );
 			*/
 
-		/*
+		//*
 
 		} );
 

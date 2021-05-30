@@ -67,6 +67,8 @@ void FreefallPlane::updateBlocks( double dt )
 		v->gatherActiveBlocks( &freeFallVec );
 	}
 
+	//lprintf( "Active blocks %i\n", (i32)freeFallVec.size() );
+
 	auto task = enki::TaskSet( (u32)freeFallVec.size(),
 		[dt, freeFallVec]( enki::TaskSetPartition range, uint32_t threadnum ) {
 

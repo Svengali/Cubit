@@ -58,6 +58,7 @@ typedef  double  f64;
 #include "res/Resource.h"
 #include "res/ResReflect.h"
 
+#include "util/profile/profile.h"
 
 
 // Mostly frozen project includes

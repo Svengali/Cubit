@@ -33,6 +33,7 @@ cb::Vec3 vox::FramePlane<vox::Cubit>::m_translation = cb::Vec3( 0.0f, 0.0f, 0.0f
 cb::Vec3 vox::FramePlane<vox::Cubit>::m_scaleFactor = cb::Vec3( 0.25f, 0.25f, 0.25f );
 cb::Vec3 vox::FramePlane<vox::Cubit>::m_invScaleFactor = cb::Vec3( 4.0f, 4.0f, 4.0f );
 
+static float s_shiftValue = 1.0f;
 
 
 void vox::CubitArr::set_slow( u8 v, LPos pos )
@@ -88,7 +89,7 @@ bool vox::CubitArr::genWorld( Plane<Cubit> *pPlane, const CPos pos )
 				const i32 cubeWorldX = m_gPos.x + x;
 				const f32 worldX = (f32)cubeWorldX;
 
-				const f32 perlinX = worldX * s_fractalMultXY;
+				const f32 perlinX = worldX * s_fractalMultXY + s_shiftValue * 10.0f;
 
 				//*
 				const f32 roughnessMapRaw = ( noise.fractal( 3, perlinX + 1000.0f, perlinY + 1000 ) + 1.0f ) * 0.4f;
@@ -707,13 +708,15 @@ static i32 s_maxY = 100;
 static std::vector<vox::Cubit::CPos> s_chunksToMake;
 #ifdef DEBUG
 static i32 s_chunksPerTick = 1;
-static i32 s_maxX = 1;
-static i32 s_maxY = 1;
+static i32 s_maxX = 10;
+static i32 s_maxY = 10;
 #else
-static i32 s_chunksPerTick = 16;
+static i32 s_chunksPerTick = 30;
 static i32 s_maxX = 100;
 static i32 s_maxY = 100;
 #endif
+
+
 
 bool vox::CubitPlane::genWorld( const cb::Vec3 pos )
 {
@@ -730,6 +733,11 @@ bool vox::CubitPlane::genWorld( const cb::Vec3 pos )
 
 	if( !s_chunksToMake.size() )
 	{
+		const i32 randStart = rand();
+		const f32 fShift = (f32)randStart;
+
+		s_shiftValue = fShift;
+
 		for( i32 y = s_maxY; y > 0; --y )
 		{
 			for( i32 x = s_maxX; x > 0; --x )
