@@ -25,41 +25,50 @@ namespace Diligent
 
 
 
-class PhamApp final : public dg::SampleBase
+class PhamApp final: public dg::SampleBase
 {
 public:
-    ~PhamApp();
-
-    virtual void Initialize(const dg::SampleInitInfo& InitInfo) override final;
-
-    virtual void GetEngineInitializationAttribs( dg::RENDER_DEVICE_TYPE DeviceType,
-      dg::EngineCreateInfo &Attribs,
-      dg::SwapChainDesc &SCDesc ) override final;
 
 
-    virtual void Render() override final;
-    virtual void Update(double CurrTime, double ElapsedTime) override final;
+	static PhamApp &Info();
 
-    virtual const dg::Char* GetSampleName() const override final { return "Pham"; }
 
-    virtual void WindowResize(dg::Uint32 Width, dg::Uint32 Height) override final;
+	~PhamApp();
+
+	virtual void Initialize( const dg::SampleInitInfo &InitInfo ) override final;
+
+	/*
+	virtual void GetEngineInitializationAttribs( dg::RENDER_DEVICE_TYPE DeviceType,
+		dg::EngineCreateInfo &Attribs,
+		dg::SwapChainDesc &SCDesc ) override final;
+		*/
+
+	virtual void ModifyEngineInitInfo( const ModifyEngineInitInfoAttribs &Attribs ) override;
+
+
+	virtual void Render() override final;
+	virtual void Update( double CurrTime, double ElapsedTime ) override final;
+
+	virtual const dg::Char *GetSampleName() const override final { return "Pham"; }
+
+	virtual void WindowResize( dg::Uint32 Width, dg::Uint32 Height ) override final;
 
 
 private:
-    void UpdateUI();
+	void UpdateUI();
 
-    bool   m_ShowDemoWindow    = true;
-    bool   m_ShowAnotherWindow = false;
-    dg::float4 m_ClearColor        = {0.45f, 0.55f, 0.60f, 1.00f};
+	bool   m_ShowDemoWindow = true;
+	bool   m_ShowAnotherWindow = false;
+	dg::float4 m_ClearColor = { 0.45f, 0.55f, 0.60f, 1.00f };
 
 
-    dg::LightAttribs      m_LightAttribs;
-    dg::FirstPersonCamera m_Camera;
-    dg::MouseState        m_LastMouseState;
+	dg::LightAttribs      m_LightAttribs;
+	dg::FirstPersonCamera m_Camera;
+	dg::MouseState        m_LastMouseState;
 
-    vox::CubitPlanePtr    m_cubit;
+	vox::CubitPlanePtr    m_cubit;
 
-    FreefallPlanePtr      m_freefall;
+	FreefallPlanePtr      m_freefall;
 
 };
 

@@ -28,7 +28,7 @@ public:
 public:
 
 
-	typedef df::ComBlocks<k_freefallBlockSize, FreefallData::ESlots, GeoDiligentPtr, cb::Frame3, cb::Mat3> TCom;
+	typedef df::ComBlocks<k_freefallBlockSize, FreefallData::ESlots, GeoDiligentPtr, cb::Frame3, cb::Vec3> TCom;
 	typedef TCom::AllBlocks::TBlock Block;
 
 	TCom m_com;
@@ -38,6 +38,7 @@ public:
 	void operate( std::function<void( TCom::AllBlocks::TBlock *, const i32 )> );
 };
 
+class RCDiligent;
 
 
 class FreefallBlock
@@ -54,6 +55,7 @@ public:
 	void remove( ent::EntityId id )
 	{
 		--m_count;
+		m_data.m_com.remove( id );
 	}
 
 	i32						m_count = 0;
@@ -68,6 +70,8 @@ public:
 	using Chunk::Chunk;
 
 	virtual FreefallBlock *pGet( LPos pos ) = 0;
+
+	virtual void gatherActiveBlocks( std::vector<FreefallData *> *pFreefalVec ) = 0;
 
 protected:
 };
@@ -84,6 +88,10 @@ public:
 
 	FreefallBlock *pGet( LPos pos );
 
+
+	virtual void gatherActiveBlocks( std::vector<FreefallData *> *pFreefallVec ) override;
+
+	//virtual void render( RCDiligent *pContext )
 
 
 	vox::StorageArr<Freefall> m_arr;
@@ -111,8 +119,6 @@ public:
 		return chunkOpt;
 	}
 
-
-
 	template<typename... Args>
 	void add( const cb::Vec3 world, ent::EntityId id, Args... args )
 	{
@@ -137,6 +143,9 @@ public:
 
 		pBlock->insert( id, args...);
 	}
+
+
+	void updateBlocks( double dt );
 
 
 private:

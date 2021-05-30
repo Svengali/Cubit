@@ -83,7 +83,7 @@ if(WIN32)
         LINK_FLAGS "/SUBSYSTEM:WINDOWS"
         VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     )
-    copy_required_dlls(Cubit)
+    #copy_required_dlls(Cubit)
 
 else()
     message(FATAL_ERROR "Unsupported platform")
@@ -98,13 +98,14 @@ PRIVATE
     ../../DiligentTools/Imgui/interface
 )
 
-get_supported_backends(ENGINE_LIBRARIES)
+get_supported_backends(ENGINE_LIBRARIES static)
 
 target_include_directories(Cubit PUBLIC ../../third_party/cblib/src)
 target_include_directories(Cubit PUBLIC ../../third_party/Pham/src)
 target_include_directories(Cubit PUBLIC ../../third_party/enkiTS/src)
 
 
+#${ENGINE_LIBRARIES}
 
 target_link_libraries(Cubit
 PRIVATE 

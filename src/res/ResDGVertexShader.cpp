@@ -27,7 +27,7 @@ ResDGVertexShaderPtr ResDGVertexShader::create( const char *const pFilename, con
 	// we need to create a shader source stream factory
 	dg::RefCntAutoPtr<dg::IShaderSourceInputStreamFactory> pShaderSourceFactory;
 
-	dg::App::Info().EngineFactory()->CreateDefaultShaderSourceStreamFactory( nullptr, &pShaderSourceFactory );
+	PhamApp::Info().EngineFactory()->CreateDefaultShaderSourceStreamFactory( nullptr, &pShaderSourceFactory );
 
 	ShaderCI.pShaderSourceStreamFactory = pShaderSourceFactory;
 	// Create a vertex shader
@@ -40,11 +40,11 @@ ResDGVertexShaderPtr ResDGVertexShader::create( const char *const pFilename, con
 	ShaderCI.EntryPoint      = "main";
 
 	//TODO RES CONFIG
-	ShaderCI.Desc.Name       = "Cube VS";
+	ShaderCI.Desc.Name       = pFilename;
 
 	ShaderCI.FilePath        = pFilename; //"cube.vsh";
 
-	dg::App::Info().Device()->CreateShader( ShaderCI, &pVS );
+	PhamApp::Info().Device()->CreateShader( ShaderCI, &pVS );
 
 	return ResDGVertexShaderPtr( new ResDGVertexShader( ShaderCI, pVS ) );
 }

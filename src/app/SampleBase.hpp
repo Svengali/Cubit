@@ -1,5 +1,5 @@
 /*
- *  Copyright 2019-2020 Diligent Graphics LLC
+ *  Copyright 2019-2021 Diligent Graphics LLC
  *  Copyright 2015-2019 Egor Yusov
  *  
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +27,7 @@
 
 #pragma once
 
-//#include <vector>
+#include <vector>
 
 #include "EngineFactory.h"
 #include "RefCntAutoPtr.hpp"
@@ -44,31 +44,30 @@ class ImGuiImplDiligent;
 
 struct SampleInitInfo
 {
-    IEngineFactory*    pEngineFactory = nullptr;
-    IRenderDevice*     pDevice        = nullptr;
-    IDeviceContext**   ppContexts     = nullptr;
-    Uint32             NumDeferredCtx = 0;
-    ISwapChain*        pSwapChain     = nullptr;
-    ImGuiImplDiligent* pImGui         = nullptr;
+    IEngineFactory*    pEngineFactory  = nullptr;
+    IRenderDevice*     pDevice         = nullptr;
+    IDeviceContext**   ppContexts      = nullptr;
+    Uint32             NumImmediateCtx = 1;
+    Uint32             NumDeferredCtx  = 0;
+    ISwapChain*        pSwapChain      = nullptr;
+    ImGuiImplDiligent* pImGui          = nullptr;
 };
 
 class SampleBase
 {
 public:
-    virtual ~SampleBase()
-    {
-      /*
-      m_pEngineFactory.Release();
-      m_pDevice.Release();
-      m_pImmediateContext.Release();
-      m_pDeferredContexts.clear();
-      m_pSwapChain.Release();
-      */
-      //Unneeded.
-      //delete m_pImGui;
-    }
+  SampleBase();
+    virtual ~SampleBase() {}
 
-    virtual void GetEngineInitializationAttribs(RENDER_DEVICE_TYPE DeviceType, EngineCreateInfo& EngineCI, SwapChainDesc& SCDesc);
+    struct ModifyEngineInitInfoAttribs
+    {
+        IEngineFactory* const    pFactory;
+        const RENDER_DEVICE_TYPE DeviceType;
+
+        EngineCreateInfo& EngineCI;
+        SwapChainDesc&    SCDesc;
+    };
+    virtual void ModifyEngineInitInfo(const ModifyEngineInitInfoAttribs& Attribs);
 
     virtual void Initialize(const SampleInitInfo& InitInfo) = 0;
 
@@ -78,7 +77,7 @@ public:
     virtual void WindowResize(Uint32 Width, Uint32 Height) {}
     virtual bool HandleNativeMessage(const void* pNativeMsgData) { return false; }
 
-    virtual const Char* GetSampleName() const { return "Cubit"; }
+    virtual const Char* GetSampleName() const { return "Diligent Engine Sample"; }
     virtual void        ProcessCommandLine(const char* CmdLine) {}
 
     InputController& GetInputController()
@@ -91,13 +90,29 @@ public:
         m_pSwapChain = pNewSwapChain;
     }
 
-    const RefCntAutoPtr<IEngineFactory>&              EngineFactory()  { return m_pEngineFactory; }
-    const RefCntAutoPtr<IRenderDevice>&               Device()         { return m_pDevice; }
-    const RefCntAutoPtr<IDeviceContext>&              ImmContext()     { return m_pImmediateContext; }
-    const RefCntAutoPtr<ISwapChain>&                  SwapChain() { return m_pSwapChain; }
-    const std::vector<RefCntAutoPtr<IDeviceContext>>& DeferredContexts() { return m_pDeferredContexts; }
+
+    IRenderDevice *Device() { return m_pDevice; }
+    const RefCntAutoPtr<IEngineFactory> &EngineFactory() { return m_pEngineFactory; }
+    const RefCntAutoPtr<IDeviceContext> &ImmContext() { return m_pImmediateContext; }
+    RefCntAutoPtr<ISwapChain> &SwapChain() { return m_pSwapChain; }
+    const std::vector<RefCntAutoPtr<IDeviceContext>> &DeferredContexts() { return m_pDeferredContexts; }
+
+
+    enki::TaskScheduler Task;
+
+    void Barrier( StateTransitionDesc &desc )
+    {
+      std::lock_guard<std::mutex> guard(Mutex);
+
+      Barriers.push_back( std::move(desc));
+    }
+
+    std::vector<StateTransitionDesc> Barriers;
 
 protected:
+  std::mutex Mutex;
+
+
     // Returns projection matrix adjusted to the current screen orientation
     float4x4 GetAdjustedProjectionMatrix(float FOV, float NearPlane, float FarPlane) const;
 
@@ -140,7 +155,7 @@ inline void SampleBase::Initialize(const SampleInitInfo& InitInfo)
     m_pImmediateContext = InitInfo.ppContexts[0];
     m_pDeferredContexts.resize(InitInfo.NumDeferredCtx);
     for (Uint32 ctx = 0; ctx < InitInfo.NumDeferredCtx; ++ctx)
-        m_pDeferredContexts[ctx] = InitInfo.ppContexts[1 + ctx];
+        m_pDeferredContexts[ctx] = InitInfo.ppContexts[InitInfo.NumImmediateCtx + ctx];
     m_pImGui = InitInfo.pImGui;
 }
 

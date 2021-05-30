@@ -8,7 +8,7 @@
 
 #include "grx/RenderContext.h"
 
-
+PtrFwd( ResDGPipelineState );
 
 //Base class for everything that can render diligent geometry
 class RCDiligent : public RenderContext
@@ -20,7 +20,7 @@ public:
 	RCDiligent() = default;
 
 
-	RCDiligent( dg::float4x4 viewProj, DGViewPtr renderTarget, DGContextPrt devContext )
+	RCDiligent( dg::float4x4 viewProj, DGViewPtr renderTarget, DGContextPtr devContext )
 		:
 		m_viewProj( viewProj ),
 		m_renderTarget( renderTarget ),
@@ -35,11 +35,23 @@ public:
 	REFLECT_BEGIN( RCDiligent, RenderContext );
 	REFLECT_END();
 
+	std::atomic_int32_t deferred = 0;
+
+	i32 getDef()
+	{
+		
+	}
+
 	dg::float4x4 m_viewProj;
 
 	DGViewPtr m_renderTarget;
 
-	DGContextPrt m_devContext;
+	DGContextPtr m_devContext;
+
+	std::array<std::atomic_bool, 16> activeCmdLists = { false };
+	std::array<ResDGPipelineStatePtr, 16> lastUsedPSO;
+	std::array<std::vector<dg::RefCntAutoPtr<dg::ICommandList>>, 16> cmdLists;
+	std::array<dg::Ptr<dg::IFence>, 32> fences;
 
 
 };

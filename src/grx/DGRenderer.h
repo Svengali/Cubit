@@ -10,6 +10,8 @@
 #include "RCDiligent.h"
 
 PtrFwd( GeoDiligent );
+PtrFwd( FreefallPlane );
+
 
 const i32 k_geoBlockSize = 4 * 1024;
 
@@ -20,10 +22,10 @@ public:
 
 	enum EDynamicSlots
 	{
-		Status = 0,
-		EntityId = 1,
-		Frame = 2,
-		Geometry = 3,
+		Status		= 0,
+		EntityId	= 1,
+		Frame			= 2,
+		Geometry	= 3,
 	};
 
 public:
@@ -51,7 +53,7 @@ public:
 
 	virtual void add( const cb::Frame3 frame, const GeoDiligentPtr &ptr ) = 0;
 
-	virtual void render( RCDiligent *pContext ) = 0;
+	virtual void render( RCDiligent *pContext, const char *pDebugRender ) = 0;
 
 };
 
@@ -63,12 +65,15 @@ public:
 
 	CLASS( RSEntity, DGRenderableSystem );
 
-	virtual void render( RCDiligent *pContext ) override;
+	virtual void render( RCDiligent *pContext, const char *pDebugRender ) override;
 
 	// Inherited via DGRenderableSystem
 	virtual void add( const cb::Frame3 frame, const GeoDiligentPtr &ptr ) override;
 
 	GeoBlock m_geos;
+
+	FreefallPlanePtr m_freefall;
+
 
 private:
 	//std::vector<GeoDiligentPtr> m_geos;
@@ -97,20 +102,23 @@ public:
 	REFLECT_BEGIN( DGRenderer, Renderer );
 	REFLECT_END();
 
-	void addStaticGeo( const cb::Frame3 frame, const GeoDiligentPtr &geo );
+	//void addStaticGeo( const cb::Frame3 frame, const GeoDiligentPtr &geo );
 
 
 
 	void render( RCDiligent *pContext );
 
 
+	RSEntityPtr m_rsFreefall;
+	RSEntityPtr m_rsVoxels;
+	RSEntityPtr m_rsCubes;
 
 
 private:
-	DGRenderableSystemPtr m_rsStatic;;
 
 
 };
 
 PtrDef( DGRenderer );
 
+void processContexts( RCDiligent *pContext );

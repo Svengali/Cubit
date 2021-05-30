@@ -54,8 +54,10 @@ void ResDGPipelineState::onPostLoad()
 		};
 
 		createRaw( m_vs, m_ps, LayoutElems );
-
 	}
+
+
+
 
 }
 
@@ -68,9 +70,10 @@ void ResDGPipelineState::createRaw(
 	)
 {
 
-	// Pipeline state object encompasses configuration of all GPU stages
-	dg::PipelineStateCreateInfo PSOCreateInfo;
+	dg::GraphicsPipelineStateCreateInfo PSOCreateInfo;
 	dg::PipelineStateDesc &PSODesc = PSOCreateInfo.PSODesc;
+	dg::PipelineResourceLayoutDesc &ResourceLayout = PSODesc.ResourceLayout;
+	dg::GraphicsPipelineDesc &GraphicsPipeline = PSOCreateInfo.GraphicsPipeline;
 
 	char buffer[256];
 
@@ -83,33 +86,33 @@ void ResDGPipelineState::createRaw(
 	//TODO CONFIG
 	PSODesc.PipelineType = dg::PIPELINE_TYPE_GRAPHICS;
 
-	//TODO CONFIG
-	PSODesc.GraphicsPipeline.NumRenderTargets             = 1;
-
-	PSODesc.GraphicsPipeline.RTVFormats[0]                = dg::App::Info().SwapChain()->GetDesc().ColorBufferFormat;
-	
-	PSODesc.GraphicsPipeline.DSVFormat                    = dg::App::Info().SwapChain()->GetDesc().DepthBufferFormat;
-
-	//TODO CONFIG	
-	PSODesc.GraphicsPipeline.PrimitiveTopology            = dg::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-	
-	//TODO CONFIG	
-	PSODesc.GraphicsPipeline.RasterizerDesc.CullMode      = dg::CULL_MODE_BACK;
-	
-	//TODO CONFIG	
-	PSODesc.GraphicsPipeline.DepthStencilDesc.DepthEnable = dg::True;
-	
-
-	PSODesc.GraphicsPipeline.pVS = vs->m_vs;
-	PSODesc.GraphicsPipeline.pPS = ps->PS();
 
 	//TODO CONFIG
-	//dg::CreateUniformBuffer( dg::App::Info().Device(), sizeof( dg::float4x4 ), "VS constants CB", &m_VSConstants );
+	PSOCreateInfo.GraphicsPipeline.NumRenderTargets             = 1;
+
+	GraphicsPipeline.RTVFormats[0]                = PhamApp::Info().SwapChain()->GetDesc().ColorBufferFormat;
+	
+	GraphicsPipeline.DSVFormat                    = PhamApp::Info().SwapChain()->GetDesc().DepthBufferFormat;
+
+	//TODO CONFIG	
+	GraphicsPipeline.PrimitiveTopology            = dg::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	
+	//TODO CONFIG	
+	GraphicsPipeline.RasterizerDesc.CullMode      = dg::CULL_MODE_BACK;
+	
+	//TODO CONFIG	
+	GraphicsPipeline.DepthStencilDesc.DepthEnable = dg::True;
+	
+	PSOCreateInfo.pVS = vs->m_vs;
+	PSOCreateInfo.pPS = ps->PS();
+
+	//TODO CONFIG
+	//dg::CreateUniformBuffer( PhamApp::Info().Device(), sizeof( dg::float4x4 ), "VS constants CB", &m_VSConstants );
 
 
 	//TODO CONFIG	
-	PSODesc.GraphicsPipeline.InputLayout.LayoutElements = layout.data();
-	PSODesc.GraphicsPipeline.InputLayout.NumElements    = (u32)layout.size();
+	GraphicsPipeline.InputLayout.LayoutElements = layout.data();
+	GraphicsPipeline.InputLayout.NumElements    = (u32)layout.size();
 
 	// Define variable type that will be used by default
 	PSODesc.ResourceLayout.DefaultVariableType = dg::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
@@ -129,18 +132,17 @@ void ResDGPipelineState::createRaw(
 			dg::FILTER_TYPE_LINEAR, dg::FILTER_TYPE_LINEAR, dg::FILTER_TYPE_LINEAR,
 			dg::TEXTURE_ADDRESS_CLAMP, dg::TEXTURE_ADDRESS_CLAMP, dg::TEXTURE_ADDRESS_CLAMP
 	};
-
-	//TODO CONFIG
-	dg::StaticSamplerDesc StaticSamplers[] =
+	dg::ImmutableSamplerDesc ImtblSamplers[] =
 	{
 			{dg::SHADER_TYPE_PIXEL, "g_Texture", SamLinearClampDesc}
 	};
 
 	//TODO CONFIG	
-	PSODesc.ResourceLayout.StaticSamplers    = StaticSamplers;
-	PSODesc.ResourceLayout.NumStaticSamplers = _countof( StaticSamplers );
+	ResourceLayout.ImmutableSamplers = ImtblSamplers;
+	ResourceLayout.NumImmutableSamplers = _countof( ImtblSamplers );
 
-	dg::App::Info().Device()->CreatePipelineState( PSOCreateInfo, &m_pso );
+
+	PhamApp::Info().Device()->CreateGraphicsPipelineState( PSOCreateInfo, &m_pso );
 
 	// Since we did not explcitly specify the type for 'Constants' variable, default
 	// type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables

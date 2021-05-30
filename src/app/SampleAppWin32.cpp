@@ -1,5 +1,5 @@
 /*
- *  Copyright 2019-2020 Diligent Graphics LLC
+ *  Copyright 2019-2021 Diligent Graphics LLC
  *  Copyright 2015-2019 Egor Yusov
  *  
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,20 +25,16 @@
 *  of the possibility of such damages.
 */
 
-//#include <limits>
-
+#include <limits>
 
 #include "SampleApp.hpp"
 #include "resources/Win32AppResource.h"
 #include "ImGuiImplWin32.hpp"
 
-#include "NativeAppBase.hpp"
-
-
 namespace
 {
 
-Diligent::RENDER_DEVICE_TYPE g_DeviceType = Diligent::RENDER_DEVICE_TYPE_UNDEFINED;
+Diligent::RENDER_DEVICE_TYPE g_DeviceType = Diligent::RENDER_DEVICE_TYPE_VULKAN;
 
 void SetButtonImage(HWND hwndDlg, int buttonId, int imageId, BOOL Enable)
 {
@@ -120,7 +116,7 @@ INT_PTR CALLBACK SelectDeviceTypeDialogProc(HWND   hwndDlg,
 namespace Diligent
 {
 
-class SampleAppWin32 final : public App
+class SampleAppWin32 final : public SampleApp
 {
 public:
     virtual LRESULT HandleWin32Message(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) override final
@@ -166,18 +162,6 @@ public:
                 break;
         }
 
-
-        struct WindowsMessageData
-        {
-          HWND   hWnd;
-          UINT   message;
-          WPARAM wParam;
-          LPARAM lParam;
-        } MsgData = { hWnd, message, wParam, lParam };
-
-        m_TheSample->GetInputController().HandleNativeMessage( &MsgData );
-
-
         if (m_pImGui)
         {
             auto Handled = static_cast<ImGuiImplWin32*>(m_pImGui.get())->Win32_ProcHandler(hWnd, message, wParam, lParam);
@@ -185,6 +169,14 @@ public:
                 return Handled;
         }
 
+        struct WindowsMessageData
+        {
+            HWND   hWnd;
+            UINT   message;
+            WPARAM wParam;
+            LPARAM lParam;
+        } MsgData = {hWnd, message, wParam, lParam};
+        m_TheSample->GetInputController().HandleNativeMessage(&MsgData);
         return m_TheSample->HandleNativeMessage(&MsgData);
     }
 
@@ -271,7 +263,7 @@ protected:
             // We must exit full screen window first.
             ToggleFullscreenWindow();
         }
-        App::SetFullscreenMode(DisplayMode);
+        SampleApp::SetFullscreenMode(DisplayMode);
     }
 
     virtual void SetWindowedMode() override
@@ -281,7 +273,7 @@ protected:
             // Exit full screen window
             ToggleFullscreenWindow();
         }
-        App::SetWindowedMode();
+        SampleApp::SetWindowedMode();
     }
 
     virtual void SelectDeviceType() override final

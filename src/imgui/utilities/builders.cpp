@@ -11,6 +11,7 @@
 # define IMGUI_DEFINE_MATH_OPERATORS
 # include <imgui_internal.h>
 
+#if IMGUI_BP
 
 //------------------------------------------------------------------------------
 namespace ed   = ax::NodeEditor;
@@ -307,3 +308,5 @@ void ne_util::BlueprintNodeBuilder::EndPin()
     // ImGui::GetWindowDrawList()->AddRectFilled(
     //     ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), IM_COL32(255, 0, 0, 64));
 }
+
+#endif

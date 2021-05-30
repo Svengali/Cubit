@@ -104,7 +104,7 @@ ResDGBufVertexPtr grx::gen::createCenteredCubeVertices( const float s )
   /*
   dg::RefCntAutoPtr<dg::IBuffer> cubeVerticies;
 
-  dg::App::Info().Device()->CreateBuffer( VertBuffDesc, &VBData, &cubeVerticies );
+  PhamApp::Info().Device()->CreateBuffer( VertBuffDesc, &VBData, &cubeVerticies );
   */
 }
 
@@ -125,7 +125,7 @@ ResDGBufIndexPtr  grx::gen::createCenteredCubeIndicies()
 
   dg::BufferDesc IndBuffDesc;
   IndBuffDesc.Name          = "Cube index buffer";
-  IndBuffDesc.Usage         = dg::USAGE_STATIC;
+  IndBuffDesc.Usage         = dg::USAGE_DEFAULT;
   IndBuffDesc.BindFlags     = dg::BIND_INDEX_BUFFER;
   IndBuffDesc.uiSizeInBytes = sizeof( indicies );
   dg::BufferData IBData;

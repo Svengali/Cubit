@@ -24,7 +24,7 @@ ResDGPixelShaderPtr ResDGPixelShader::create( const char *const pFilename, const
 
   // Create a shader source stream factory to load shaders from files.
   dg::RefCntAutoPtr<dg::IShaderSourceInputStreamFactory> pShaderSourceFactory;
-  dg::App::Info().EngineFactory()->CreateDefaultShaderSourceStreamFactory( nullptr, &pShaderSourceFactory );
+  PhamApp::Info().EngineFactory()->CreateDefaultShaderSourceStreamFactory( nullptr, &pShaderSourceFactory );
   ShaderCI.pShaderSourceStreamFactory = pShaderSourceFactory;
   // Create a vertex shader
 
@@ -32,9 +32,9 @@ ResDGPixelShaderPtr ResDGPixelShader::create( const char *const pFilename, const
   dg::RefCntAutoPtr<dg::IShader> pPS;
   ShaderCI.Desc.ShaderType = dg::SHADER_TYPE_PIXEL;
   ShaderCI.EntryPoint      = "main";
-  ShaderCI.Desc.Name       = "Cube PS";
+  ShaderCI.Desc.Name       = pFilename;
   ShaderCI.FilePath        = pFilename; //"cube.psh";
-  dg::App::Info().Device()->CreateShader( ShaderCI, &pPS );
+  PhamApp::Info().Device()->CreateShader( ShaderCI, &pPS );
 
 	return ResDGPixelShaderPtr( new ResDGPixelShader( ShaderCI, pPS ) );
 }

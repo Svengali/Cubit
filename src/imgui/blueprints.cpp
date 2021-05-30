@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <utility>
 
+#ifdef IMGUI_BP
 
 static inline ImRect ImGui_GetItemRect()
 {
@@ -1772,3 +1773,5 @@ ImTextureID ImGui_LoadTexture( const char *path )
 	else
 		return nullptr;
 }
+
+#endif

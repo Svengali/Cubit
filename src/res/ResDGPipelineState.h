@@ -51,7 +51,9 @@ public:
 	void createRaw( const ResDGVertexShaderPtr &vs, const ResDGPixelShaderPtr &ps, const std::vector<dg::LayoutElement> &layout );
 
 	// REFLECTION
-	ResDGPipelineState() {}
+	ResDGPipelineState()
+	{
+	}
 
 	virtual ~ResDGPipelineState();
 
@@ -69,7 +71,9 @@ public:
 	ResDGVertexShaderPtr m_vs;
 	ResDGPixelShaderPtr  m_ps;
 	std::vector<NamedBuffer> m_namedBuffers;
+
 	dg::RefCntAutoPtr<dg::IPipelineState> m_pso;
+	dg::RefCntAutoPtr<dg::IShaderResourceBinding> m_srb;
 
 private:
 	ResDGPipelineState( const dg::RefCntAutoPtr<dg::IPipelineState> &pso );

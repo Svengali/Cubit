@@ -30,8 +30,8 @@ namespace cb
 
 
 cb::Vec3 vox::FramePlane<vox::Cubit>::m_translation = cb::Vec3( 0.0f, 0.0f, 0.0f );
-cb::Vec3 vox::FramePlane<vox::Cubit>::m_scaleFactor = cb::Vec3( 1.0f, 1.0f, 1.0f );
-cb::Vec3 vox::FramePlane<vox::Cubit>::m_invScaleFactor = cb::Vec3( 1.0f, 1.0f, 1.0f );
+cb::Vec3 vox::FramePlane<vox::Cubit>::m_scaleFactor = cb::Vec3( 0.25f, 0.25f, 0.25f );
+cb::Vec3 vox::FramePlane<vox::Cubit>::m_invScaleFactor = cb::Vec3( 4.0f, 4.0f, 4.0f );
 
 
 
@@ -707,8 +707,8 @@ static i32 s_maxY = 100;
 static std::vector<vox::Cubit::CPos> s_chunksToMake;
 #ifdef DEBUG
 static i32 s_chunksPerTick = 1;
-static i32 s_maxX = 20;
-static i32 s_maxY = 20;
+static i32 s_maxX = 1;
+static i32 s_maxY = 1;
 #else
 static i32 s_chunksPerTick = 16;
 static i32 s_maxX = 100;
@@ -806,8 +806,8 @@ bool vox::CubitPlane::genWorld( const cb::Vec3 pos )
 			}
 		} );
 
-	dg::App::Info().Task.AddTaskSetToPipe( &task );
-	dg::App::Info().Task.WaitforTask( &task );
+	PhamApp::Info().Task.AddTaskSetToPipe( &task );
+	PhamApp::Info().Task.WaitforTask( &task );
 
 	for( auto &vecChunks : chunks )
 	{
@@ -910,8 +910,8 @@ void vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 			}
 		} );
 
-	dg::App::Info().Task.AddTaskSetToPipe( &task );
-	dg::App::Info().Task.WaitforTask( &task );
+	PhamApp::Info().Task.AddTaskSetToPipe( &task );
+	PhamApp::Info().Task.WaitforTask( &task );
 
 	for( auto vertIndex : vertsIndices )
 	{
@@ -924,7 +924,6 @@ void vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 		const auto bufIndices = ResDGBufIndex::createRaw( (u32)( vertIndex.Indices.size() * sizeof( u32 ) ), vertIndex.Indices.data() );
 
 		GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/vox.xml" );
-		ResourceMgr::RemResource( "config/geo/vox.xml" );
 
 		cfg->m_vertexBuf = bufVerts;
 		cfg->m_indexBuf = bufIndices;
@@ -939,7 +938,9 @@ void vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 
 		GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( ent::EntityId::makeNext(), cfg ) );
 
-		DGRenderer::Inst().addStaticGeo( frame, geo );
+		ResourceMgr::RemResource( "config/geo/vox.xml" );
+
+		DGRenderer::Inst().m_rsVoxels->add( frame, geo );
 	}
 
 	lprintf( "Generated %i chunks %i Triangles\n", s_chunkCount, s_triCount );

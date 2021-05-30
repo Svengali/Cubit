@@ -1,5 +1,5 @@
 /*
- *  Copyright 2019-2020 Diligent Graphics LLC
+ *  Copyright 2019-2021 Diligent Graphics LLC
  *  Copyright 2015-2019 Egor Yusov
  *  
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,9 +32,16 @@
 namespace Diligent
 {
 
-void SampleBase::GetEngineInitializationAttribs(RENDER_DEVICE_TYPE DeviceType, EngineCreateInfo& EngineCI, SwapChainDesc& /*SCDesc*/)
+SampleBase::SampleBase()
 {
-    switch (DeviceType)
+}
+
+
+void SampleBase::ModifyEngineInitInfo(const ModifyEngineInitInfoAttribs& Attribs)
+{
+    Attribs.EngineCI.Features = DeviceFeatures{DEVICE_FEATURE_STATE_OPTIONAL};
+
+    switch (Attribs.DeviceType)
     {
 #if D3D11_SUPPORTED
         case RENDER_DEVICE_TYPE_D3D11:
@@ -47,14 +54,12 @@ void SampleBase::GetEngineInitializationAttribs(RENDER_DEVICE_TYPE DeviceType, E
 #if D3D12_SUPPORTED
         case RENDER_DEVICE_TYPE_D3D12:
         {
-            EngineD3D12CreateInfo& EngineD3D12CI                  = static_cast<EngineD3D12CreateInfo&>(EngineCI);
+            EngineD3D12CreateInfo& EngineD3D12CI                  = static_cast<EngineD3D12CreateInfo&>(Attribs.EngineCI);
             EngineD3D12CI.GPUDescriptorHeapDynamicSize[0]         = 32768;
             EngineD3D12CI.GPUDescriptorHeapSize[1]                = 128;
             EngineD3D12CI.GPUDescriptorHeapDynamicSize[1]         = 2048 - 128;
             EngineD3D12CI.DynamicDescriptorAllocationChunkSize[0] = 32;
             EngineD3D12CI.DynamicDescriptorAllocationChunkSize[1] = 8; // D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER
-
-            EngineD3D12CI.NumDeferredContexts = 16;
         }
         break;
 #endif
@@ -62,7 +67,7 @@ void SampleBase::GetEngineInitializationAttribs(RENDER_DEVICE_TYPE DeviceType, E
 #if VULKAN_SUPPORTED
         case RENDER_DEVICE_TYPE_VULKAN:
         {
-            //EngineVkCreateInfo& EngVkAttribs = static_cast<EngineVkCreateInfo&>(EngineCI);
+            // EngineVkCreateInfo& EngVkAttribs = static_cast<EngineVkCreateInfo&>(EngineCI);
         }
         break;
 #endif
@@ -122,7 +127,7 @@ float4x4 SampleBase::GetAdjustedProjectionMatrix(float FOV, float NearPlane, flo
     float4x4 Proj;
     Proj._11 = XScale;
     Proj._22 = YScale;
-    Proj.SetNearFarClipPlanes(NearPlane, FarPlane, m_pDevice->GetDeviceCaps().IsGLDevice());
+    Proj.SetNearFarClipPlanes(NearPlane, FarPlane, m_pDevice->GetDeviceInfo().IsGLDevice());
     return Proj;
 }
 

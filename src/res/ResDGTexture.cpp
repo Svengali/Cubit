@@ -17,15 +17,17 @@ ResDGTexturePtr ResDGTexture::create( const char *const pFilename, const util::S
 	dg::TextureLoadInfo loadInfo;
 	loadInfo.IsSRGB = true;
 
-	dg::RefCntAutoPtr<dg::ITexture> texture;
-	dg::CreateTextureFromFile( pFilename, loadInfo, dg::App::Info().Device(), &texture );
+	dg::ITexture *pTexture = nullptr;
+
+	dg::CreateTextureFromFile( pFilename, loadInfo, PhamApp::Info().Device(), &pTexture );
+
+	dg::Ptr<dg::ITexture> tex( pTexture );
 
 	// Get shader resource view from the texture
 	//m_TextureSRV = Tex->GetDefaultView( dg::TEXTURE_VIEW_SHADER_RESOURCE );
-	dg::App::Info().Barriers.emplace_back( texture, dg::RESOURCE_STATE_UNKNOWN, dg::RESOURCE_STATE_SHADER_RESOURCE, true );
 
 
-	return ResDGTexturePtr( new ResDGTexture( texture ) );
+	return ResDGTexturePtr( new ResDGTexture( tex ) );
 }
 
 

@@ -53,18 +53,32 @@
 #include "app/SampleApp.hpp"
 
 
-
 #include "cblib_includes.h"
 
 #include "pham_core.h"
 
+namespace enki
+{
+PtrDef( TaskSet );
+}
 
 
 namespace dg = Diligent;
-typedef dg::RefCntAutoPtr<dg::IBuffer>				DGBufferPtr;
-typedef dg::RefCntAutoPtr<dg::ITextureView>		DGViewPtr;
-typedef dg::RefCntAutoPtr<dg::ISampler>				DGSamplerPtr;
-typedef dg::RefCntAutoPtr<dg::IPipelineState> DGPipelinePtr;
-typedef dg::RefCntAutoPtr<dg::IDeviceContext> DGContextPrt;
 
-typedef dg::RefCntAutoPtr<dg::IShaderResourceBinding> DGShaderResPtr;
+namespace Diligent
+{
+template< typename T >
+using Ptr = RefCntAutoPtr<T>;
+}
+
+typedef dg::Ptr<dg::IBuffer>				DGBufferPtr;
+typedef dg::Ptr<dg::ITextureView>		DGViewPtr;
+typedef dg::Ptr<dg::ISampler>				DGSamplerPtr;
+typedef dg::Ptr<dg::IPipelineState> DGPipelinePtr;
+typedef dg::Ptr<dg::IDeviceContext> DGContextPtr;
+typedef dg::Ptr<dg::ICommandList>		DGCommandListPtr;
+
+typedef dg::Ptr<dg::IShaderResourceBinding> DGShaderResPtr;
+
+
+#include "app/PhamApp.h"
