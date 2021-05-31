@@ -84,6 +84,8 @@ DGRenderer::~DGRenderer( void )
 {
 }
 
+static i32 s_localFrameNum = 0;
+
 void DGRenderer::render( RCDiligent *pContext )
 {
 	//lprintf( "RENDERING NEW FRAME\n" );
@@ -105,14 +107,60 @@ void DGRenderer::render( RCDiligent *pContext )
 	}
 	//*/
 
+	const auto timeFreefall = Timer<>::execution( [&]() {
 
-	m_rsFreefall->render( pContext, "Freefall" );
+		m_rsFreefall->render( pContext, "Freefall" );
 
-	m_rsCubes->render( pContext, "Cubes" );
+		} );
 
-	m_rsVoxels->render( pContext, "Voxels" );
+	if( ( s_localFrameNum & 0xff ) == 0 )
+	{
+		const auto timeBraceF = (f32)timeFreefall;
 
-	processContexts( pContext );
+		lprintf( "timeFreefall in %.3f ms\n", timeBraceF / 1000.0f );
+	}
+
+	const auto timeCubes = Timer<>::execution( [&]() {
+
+		m_rsCubes->render( pContext, "Cubes" );
+
+		} );
+
+	if( ( s_localFrameNum & 0xff ) == 0 )
+	{
+		const auto timeBraceF = (f32)timeCubes;
+
+		lprintf( "timeCubes in %.3f ms\n", timeBraceF / 1000.0f );
+	}
+
+	const auto timeVoxels = Timer<>::execution( [&]() {
+
+		m_rsVoxels->render( pContext, "Voxels" );
+
+		} );
+
+	if( ( s_localFrameNum & 0xff ) == 0 )
+	{
+		const auto timeBraceF = (f32)timeVoxels;
+
+		lprintf( "timeVoxels in %.3f ms\n", timeBraceF / 1000.0f );
+	}
+
+	const auto timeProcess = Timer<>::execution( [&]() {
+
+		processContexts( pContext );
+
+		} );
+
+	if( ( s_localFrameNum & 0xff ) == 0 )
+	{
+		const auto timeBraceF = (f32)timeProcess;
+
+		lprintf( "timeProcess in %.3f ms\n", timeBraceF / 1000.0f );
+	}
+
+
+	++s_localFrameNum;
 
 	/*
 	for( i32 i = 0; i < pContext->cmdLists.size(); ++i )

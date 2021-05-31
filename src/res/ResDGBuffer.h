@@ -121,6 +121,50 @@ inline void fillInRes( ResDGBufVertex *pT )
 
 
 
+class ResDGCubeCreator: public ResCreator
+{
+public:
+	CLASS( ResDGCubeCreator, ResCreator );
+
+	std::string name = "<unknown>";
+
+	f32 length = 0.5f;
+	f32 width  = 0.5f;
+	f32 height = 0.5f;
+
+	REFLECT_BEGIN_ROOT( ResDGCubeCreator )
+		REFLECT( length );
+		REFLECT( width );
+		REFLECT( height );
+	REFLECT_END();
+
+	//static ResDGBufferPtr create( const ResDGBufferCreator &info ) { return nullptr; };
+
+
+	// Inherited via ResCreator
+	virtual ResourcePtr create() const override;
+
+};
+
+template<>
+struct cb::TypeTraits<ResDGCubeCreator>
+{
+	BoolAsType_True  hasReflection;
+	BoolAsType_False isPrimitive;
+	BoolAsType_False ioBytes;
+};
+
+template <>
+struct CreatorTraits<ResDGBufVertex>
+{
+	CreatorBoolAsType_True hasACustomCreator;
+	typedef ResDGCubeCreator Creator;
+};
+
+
+
+
+
 PtrFwd( ResDGBufIndex );
 
 

@@ -17,6 +17,7 @@ namespace gen
 
 	// s is the size of the cube.
 ResDGBufVertexPtr createCenteredCubeVertices( const float s );
+ResDGBufVertexPtr createArbitraryCube( const cb::Vec3 size, const cb::Vec3 offset );
 ResDGBufIndexPtr  createCenteredCubeIndicies(  );
 
 

@@ -12,11 +12,13 @@
 #include <grx/Generate.h>
 
 SERIALIZABLE( ResDGBufferCreator );
+SERIALIZABLE( ResDGCubeCreator );
 
 template <>
 void XMLReader::operator() < ResDGBuffer > ( const TiXmlElement *const pNamedElem, ResDGBuffer &val )
 {
 }
+
 
 
 ResDGBufferPtr ResDGBuffer::create( dg::RefCntAutoPtr<dg::IBuffer> &buffer )
@@ -224,4 +226,17 @@ ResourcePtr ResDGBufferCreator::create() const
 
 	auto bufferPtr = dg::RefCntAutoPtr( pBuffer );
 	return ResDGBuffer::create( bufferPtr );
+}
+
+
+
+ResourcePtr ResDGCubeCreator::create() const
+{
+
+	const auto size = cb::Vec3( length, width, height );
+	const auto off  = cb::Vec3( 0, 0, 0 );
+
+	const auto buf = grx::gen::createArbitraryCube( size, off );
+
+	return buf;
 }

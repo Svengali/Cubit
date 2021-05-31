@@ -100,9 +100,9 @@ void FreefallPlane::updateBlocks( double dt )
 
 						 const auto fmVel = srcVel * (f32)dt;
 
-						 const auto fwdVel = srcFm.GetMatrix().GetRowX() * fmVel.x;
-						 const auto rgtVel = srcFm.GetMatrix().GetRowY() * fmVel.y;
-						 const auto uppVel = srcFm.GetMatrix().GetRowZ() * fmVel.z;
+						 const auto fwdVel = srcFm.GetMatrix().GetColumnX() * fmVel.x;
+						 const auto rgtVel = srcFm.GetMatrix().GetColumnY() * fmVel.y;
+						 const auto uppVel = srcFm.GetMatrix().GetColumnZ() * fmVel.z;
 
 						 auto newPos = srcFm.GetTranslation() + fwdVel + rgtVel + uppVel;
 

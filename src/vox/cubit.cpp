@@ -21,9 +21,9 @@ namespace cb
 	inline String autoArgConvert( const vox::Cubit::LPos &pos )
 	{
 		char buffer[256];
-		snprintf(buffer, 256, "%i, %i, %i", pos.x, pos.y, pos.z);
+		snprintf( buffer, 256, "%i, %i, %i", pos.x, pos.y, pos.z );
 
-		return String(buffer);
+		return String( buffer );
 	}
 
 }
@@ -60,12 +60,12 @@ void vox::Cubit::genGeo( Plane<Cubit> *pPlane, const CPos pos, std::vector<VertP
 
 static SimplexNoise noise;
 static f32 s_fractalMultXY = 1.0f / 512.0f;
-static f32 s_fractalMultZ  = 1.0f / 128.0f;
+static f32 s_fractalMultZ = 1.0f / 128.0f;
 
 
 bool vox::CubitArr::genWorld( Plane<Cubit> *pPlane, const CPos pos )
 {
-	
+
 	bool hasValues = false;
 
 	for( i32 z = 0; z < k_edgeSize; ++z )
@@ -122,7 +122,7 @@ bool vox::CubitArr::genWorld( Plane<Cubit> *pPlane, const CPos pos )
 				//*/
 
 
-					
+
 				const auto perlinVal = perlinValue < 0.8f;
 
 				hasValues |= perlinVal;
@@ -670,8 +670,8 @@ void vox::CubitArr::genGeo( Plane<Cubit> *pPlane, const CPos pos, std::vector<Ve
 
 	const auto worldPosRaw = cb::Vec3( (f32)worldPosInt.x, (f32)worldPosInt.y, (f32)worldPosInt.z );
 
-	const auto worldPosScaled = cb::Vec3( 
-		worldPosRaw.x * FramePlane<Cubit>::m_scaleFactor.x, 
+	const auto worldPosScaled = cb::Vec3(
+		worldPosRaw.x * FramePlane<Cubit>::m_scaleFactor.x,
 		worldPosRaw.y * FramePlane<Cubit>::m_scaleFactor.y,
 		worldPosRaw.z * FramePlane<Cubit>::m_scaleFactor.z );
 
@@ -721,7 +721,7 @@ static i32 s_maxY = 100;
 bool vox::CubitPlane::genWorld( const cb::Vec3 pos )
 {
 
-	if( s_chunksPerTick == 0 ) return true;
+	if( s_chunksPerTick == 0 ) return false;
 
 	const auto gPos = from( pos );
 
@@ -903,53 +903,69 @@ void vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 
 	if( !generated ) return;
 
-	for( int i = 0; i < generated; ++i )
-	{
-		m_generateGeo.erase( chunks[i].Pos );
-	}
+	const auto timeWorldgen = Timer<>::execution( [&]() {
+
+
+		for( int i = 0; i < generated; ++i )
+		{
+			m_generateGeo.erase( chunks[i].Pos );
+		}
 
 
 
-	enki::TaskSet task( generated,
-		[&chunks, this, &vertsIndices]( enki::TaskSetPartition range, uint32_t threadnum ) {
-			for( u32 i = range.start; i < range.end; ++i )
-			{
-				chunks[i].Chunk->genGeo( this, chunks[i].Pos, &vertsIndices[i].Verts, &vertsIndices[i].Indices );
-			}
+		enki::TaskSet task( generated,
+			[&chunks, this, &vertsIndices]( enki::TaskSetPartition range, uint32_t threadnum ) {
+				for( u32 i = range.start; i < range.end; ++i )
+				{
+					chunks[i].Chunk->genGeo( this, chunks[i].Pos, &vertsIndices[i].Verts, &vertsIndices[i].Indices );
+				}
+			} );
+
+		PhamApp::Info().Task.AddTaskSetToPipe( &task );
+		PhamApp::Info().Task.WaitforTask( &task );
+
+
+
+
+		for( auto vertIndex : vertsIndices )
+		{
+			if( vertIndex.Verts.size() == 0 ) continue;
+
+			++s_chunkCount;
+
+			const auto bufVerts = ResDGBufVertex::createRaw( (u32)( vertIndex.Verts.size() * sizeof( VertPosNormalUV ) ), vertIndex.Verts.data() );
+
+			const auto bufIndices = ResDGBufIndex::createRaw( (u32)( vertIndex.Indices.size() * sizeof( u32 ) ), vertIndex.Indices.data() );
+
+			GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/vox.xml" );
+
+			cfg->m_vertexBuf = bufVerts;
+			cfg->m_indexBuf = bufIndices;
+
+			s_triCount += (i32)( vertIndex.Verts.size() >> 1 );
+
+			cb::Mat3 mat( cb::Mat3::eIdentity );
+
+			cb::Vec3 pos( 0, 0, 0 );
+			cb::Frame3 frame( mat, pos );
+
+
+			GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( ent::EntityId::makeNext(), cfg ) );
+
+			ResourceMgr::RemResource( "config/geo/vox.xml" );
+
+			DGRenderer::Inst().m_rsVoxels->add( frame, geo );
+		}
+
 		} );
 
-	PhamApp::Info().Task.AddTaskSetToPipe( &task );
-	PhamApp::Info().Task.WaitforTask( &task );
 
-	for( auto vertIndex : vertsIndices )
 	{
-		if( vertIndex.Verts.size() == 0 ) continue;
+		const auto timeBraceF = (f32)timeWorldgen;
 
-		++s_chunkCount;
-
-		const auto bufVerts = ResDGBufVertex::createRaw( (u32)( vertIndex.Verts.size() * sizeof( VertPosNormalUV ) ), vertIndex.Verts.data() );
-
-		const auto bufIndices = ResDGBufIndex::createRaw( (u32)( vertIndex.Indices.size() * sizeof( u32 ) ), vertIndex.Indices.data() );
-
-		GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/vox.xml" );
-
-		cfg->m_vertexBuf = bufVerts;
-		cfg->m_indexBuf = bufIndices;
-
-		s_triCount += (i32)( vertIndex.Verts.size() >> 1 );
-
-		cb::Mat3 mat( cb::Mat3::eIdentity );
-
-		cb::Vec3 pos( 0, 0, 0 );
-		cb::Frame3 frame( mat, pos );
-
-
-		GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( ent::EntityId::makeNext(), cfg ) );
-
-		ResourceMgr::RemResource( "config/geo/vox.xml" );
-
-		DGRenderer::Inst().m_rsVoxels->add( frame, geo );
+		lprintf( "timeWorldgen %.3f ms\n", timeBraceF / 1000.0f );
 	}
+
 
 	lprintf( "Generated %i chunks %i Triangles\n", s_chunkCount, s_triCount );
 

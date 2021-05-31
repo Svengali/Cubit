@@ -82,14 +82,14 @@ PhamApp::~PhamApp()
 void PhamApp::ModifyEngineInitInfo( const ModifyEngineInitInfoAttribs &Attribs )
 {
 	SampleBase::ModifyEngineInitInfo( Attribs );
-	
+
 	Attribs.EngineCI.NumDeferredContexts = 32; //std::max( std::thread::hardware_concurrency() - 1, 2u );
 
 #if VULKAN_SUPPORTED
 	if( Attribs.DeviceType == dg::RENDER_DEVICE_TYPE_VULKAN )
 	{
 		auto &EngineVkCI = static_cast<dg::EngineVkCreateInfo &>( Attribs.EngineCI );
-		EngineVkCI.DynamicHeapSize = 26 << 20; // Enough space for 32x32x32x256 bytes allocations for 3 frames
+		EngineVkCI.DynamicHeapSize = 26 << 22; // Enough space for 32x32x32x256 bytes allocations for 3 frames
 	}
 #endif
 
@@ -305,10 +305,10 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 
 
-	enki::TaskSet task( 1024, 
-		[]( enki::TaskSetPartition range, uint32_t threadnum ) { 
-			lprintf( "Thread %d, start %d, end %d\n", threadnum, range.start, range.end ); 
-		});
+	enki::TaskSet task( 1024,
+		[]( enki::TaskSetPartition range, uint32_t threadnum ) {
+			lprintf( "Thread %d, start %d, end %d\n", threadnum, range.start, range.end );
+		} );
 
 
 	PhamApp::Info().Task.AddTaskSetToPipe( &task );
@@ -436,8 +436,9 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 	const i32 k_maxMovingObjects = 50000;
 #endif
 
+	const f32 invRandMaxF = 1.0f / cast<f32>( RAND_MAX );
 
-	//*
+#if 1
 	lprintf( "Create %i moving objects\n", 2 * k_maxMovingObjects );
 	{
 		/*
@@ -454,25 +455,26 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 			const auto pos = cb::MakeRandomInBox( center, size );
 
-			GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/vehicle.xml" );
+			GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/tank.xml" );
 			GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( id, cfg ) );
 
 			auto rot = cb::Mat3( cb::Mat3::eIdentity );
 
-			f32 uniform = cast<f32>( rand() % 0xff ) / 255.0f;
+			f32 speed = cast<f32>( rand() ) * invRandMaxF;
+			f32 rotUF = cast<f32>( rand() ) * invRandMaxF;
 
-			cb::SetZRotation( &rot, CB_PIf * ( uniform ) );
+			cb::SetZRotation( &rot, 2 * CB_PIf * rotUF );
 
 			const cb::Frame3 frame( rot, pos );
 
-			const cb::Vec3 vel( uniform * 1.25f, 0.0f, 0.0f );
+			const cb::Vec3 vel( speed * 1.25f, 0.0f, 0.0f );
 
 			m_freefall->add( pos, id, geo, frame, vel );
 		}
 	}
-	//*/
+#endif
 
-	//*
+#if 1
 	{
 		/*
 		const auto center = cb::Vec3( 00.0f, 50.0f, 50.0f );
@@ -493,7 +495,7 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 			auto rot = cb::Mat3( cb::Mat3::eIdentity );
 
-			cb::SetZRotation( &rot, CB_PIf * ( ((f32)i / 65.0f) ) );
+			cb::SetZRotation( &rot, CB_PIf * ( ( (f32)i / 65.0f ) ) );
 
 			const cb::Frame3 frame( rot, pos );
 
@@ -503,7 +505,30 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 		}
 	}
 	lprintf( "Done creating %i moving objects\n", 2 * k_maxMovingObjects );
-	//*/
+#endif
+
+
+	{
+		const auto id = ent::EntityId::makeNext();
+
+		const auto pos = cb::Vec3::zero;
+
+		GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/tank.xml" );
+		GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( id, cfg ) );
+
+		auto rot = cb::Mat3( cb::Mat3::eIdentity );
+
+		f32 uniform = cast<f32>( rand() % 0xff ) / 255.0f;
+
+		cb::SetZRotation( &rot, CB_PIf / 4.0f );
+
+		const cb::Frame3 frame( rot, pos );
+
+		const cb::Vec3 vel( 1.0f, 0.0f, 0.0f );
+
+		m_freefall->add( pos, id, geo, frame, vel );
+	}
+
 
 
 
@@ -575,23 +600,20 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 	//const auto pso = ResDGPipelineState::create( )
 
-	// BUG BUG BUG BUG BUG BUG
-	// 
-	// If this is turned on, the WORLD rotates!  
-	// 
-	// BUG BUG BUG BUG BUG BUG
-
 
 	//* Single Geo test
 	const auto id = ent::EntityId::makeNext();
 
+	/*
 	const auto x = cast<f32>( 10 );
-
 	cb::Mat3 mat( cb::Mat3::eIdentity );
-
 	cb::SetZRotation( &mat, CB_PIf * ( x + 1 ) / 50.0f );
-
 	cb::Vec3 pos( x, 1, 0 );
+	/*/
+	cb::Mat3 mat( cb::Mat3::eIdentity );
+	cb::Vec3 pos( 0, 0, 0 );
+	//*/
+
 	cb::Frame3 frame( mat, pos );
 
 
@@ -919,7 +941,18 @@ void PhamApp::Render()
 
 		RCDiligent context( viewProj, DGViewPtr( pRTV ), m_pImmediateContext );
 
-		DGRenderer::Inst().render( &context );
+		const auto timeFullRender = Timer<>::execution( [&]() {
+
+			DGRenderer::Inst().render( &context );
+
+		} );
+
+		if( ( s_frameNum & 0xff ) == 0 )
+		{
+			const auto timeBraceF = (f32)timeFullRender;
+
+			lprintf( "Block update in %.3f ms\n", timeBraceF / 1000.0f );
+		}
 	}
 
 
@@ -948,9 +981,9 @@ void PhamApp::Update( double CurrTime, double ElapsedTime )
 
 	const auto timeBrace = Timer<>::execution( [&]() {
 		m_freefall->updateBlocks( ElapsedTime );
-		});
+		} );
 
-	if( (s_frameNum & 0x3f) == 0 )
+	if( ( s_frameNum & 0xff ) == 0 )
 	{
 		const auto timeBraceF = (f32)timeBrace;
 

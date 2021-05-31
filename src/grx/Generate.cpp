@@ -14,7 +14,7 @@
 #include "res/ResDGBuffer.h"
 
 
-
+// TODO LATER Just use the arbitrary cube code instead of its own code.
 ResDGBufVertexPtr grx::gen::createCenteredCubeVertices( const float s )
 {
 
@@ -107,6 +107,111 @@ ResDGBufVertexPtr grx::gen::createCenteredCubeVertices( const float s )
   PhamApp::Info().Device()->CreateBuffer( VertBuffDesc, &VBData, &cubeVerticies );
   */
 }
+
+
+
+ResDGBufVertexPtr grx::gen::createArbitraryCube( const cb::Vec3 size, const cb::Vec3 offset )
+{
+
+  // Cube vertices
+
+  //      (-1,+1,+1)________________(+1,+1,+1)
+  //               /|              /|
+  //              / |             / |
+  //             /  |            /  |
+  //            /   |           /   |
+  //(-1,-1,+1) /____|__________/(+1,-1,+1)
+  //           |    |__________|____|
+  //           |   /(-1,+1,-1) |    /(+1,+1,-1)
+  //           |  /            |   /
+  //           | /             |  /
+  //           |/              | /
+  //           /_______________|/
+  //        (-1,-1,-1)       (+1,-1,-1)
+  //
+
+  // clang-format off
+  // This time we have to duplicate verices because texture coordinates cannot
+  // be shared
+
+  /*
+  const cb::Vec3 v1 ( -1, -1, -1 );
+  const cb::Vec3 v2 { -1, -1, -1 };
+
+
+  dg::float3 ft { -1, -1, -1 };
+
+
+  VertPosUV verPos1 ={ cb::Vec3 { -1,-1,-1 }, cb::Vec2{ 0,1 } };
+  //VertPosUV verPos2 ={ { -1,-1,-1 }, { 0,1 } };
+  */
+
+  const f32 x = size.x * 0.5f;
+  const f32 y = size.y * 0.5f;
+  const f32 z = size.z * 0.5f;
+
+  const f32 dx = offset.x;
+  const f32 dy = offset.y;
+  const f32 dz = offset.z;
+
+
+  VertPosUV CubeVerts[] =
+  {
+      {cb::Vec3( -x+dx,-y+dy,-z+dz ), cb::Vec2( 0,1 )},
+      {cb::Vec3( -x+dx,+y+dy,-z+dz ), cb::Vec2( 0,0 )},
+      {cb::Vec3( +x+dx,+y+dy,-z+dz ), cb::Vec2( 1,0 )},
+      {cb::Vec3( +x+dx,-y+dy,-z+dz ), cb::Vec2( 1,1 )},
+
+      {cb::Vec3( -x+dx,-y+dy,-z+dz ), cb::Vec2( 0,1 )},
+      {cb::Vec3( -x+dx,-y+dy,+z+dz ), cb::Vec2( 0,0 )},
+      {cb::Vec3( +x+dx,-y+dy,+z+dz ), cb::Vec2( 1,0 )},
+      {cb::Vec3( +x+dx,-y+dy,-z+dz ), cb::Vec2( 1,1 )},
+
+      {cb::Vec3( +x+dx,-y+dy,-z+dz ), cb::Vec2( 0,1 )},
+      {cb::Vec3( +x+dx,-y+dy,+z+dz ), cb::Vec2( 1,1 )},
+      {cb::Vec3( +x+dx,+y+dy,+z+dz ), cb::Vec2( 1,0 )},
+      {cb::Vec3( +x+dx,+y+dy,-z+dz ), cb::Vec2( 0,0 )},
+
+      {cb::Vec3( +x+dx,+y+dy,-z+dz ), cb::Vec2( 0,1 )},
+      {cb::Vec3( +x+dx,+y+dy,+z+dz ), cb::Vec2( 0,0 )},
+      {cb::Vec3( -x+dx,+y+dy,+z+dz ), cb::Vec2( 1,0 )},
+      {cb::Vec3( -x+dx,+y+dy,-z+dz ), cb::Vec2( 1,1 )},
+
+      {cb::Vec3( -x+dx,+y+dy,-z+dz ), cb::Vec2( 1,0 )},
+      {cb::Vec3( -x+dx,+y+dy,+z+dz ), cb::Vec2( 0,0 )},
+      {cb::Vec3( -x+dx,-y+dy,+z+dz ), cb::Vec2( 0,1 )},
+      {cb::Vec3( -x+dx,-y+dy,-z+dz ), cb::Vec2( 1,1 )},
+
+      {cb::Vec3( -x+dx,-y+dy,+z+dz ), cb::Vec2( 1,1 )},
+      {cb::Vec3( +x+dx,-y+dy,+z+dz ), cb::Vec2( 0,1 )},
+      {cb::Vec3( +x+dx,+y+dy,+z+dz ), cb::Vec2( 0,0 )},
+      {cb::Vec3( -x+dx,+y+dy,+z+dz ), cb::Vec2( 1,0 )}
+  };
+  // clang-format on
+
+  /*
+  dg::BufferDesc VertBuffDesc;
+  VertBuffDesc.Name          = "Cube vertex buffer";
+  VertBuffDesc.Usage         = dg::USAGE_STATIC;
+  VertBuffDesc.BindFlags     = dg::BIND_VERTEX_BUFFER;
+  VertBuffDesc.uiSizeInBytes = sizeof( CubeVerts );
+
+  dg::BufferData VBData;
+  VBData.pData    = CubeVerts;
+  VBData.DataSize = sizeof( CubeVerts );
+  */
+
+  const auto buf = ResDGBufVertex::createRaw( sizeof( CubeVerts ), CubeVerts );
+
+  return buf;
+
+  /*
+  dg::RefCntAutoPtr<dg::IBuffer> cubeVerticies;
+
+  PhamApp::Info().Device()->CreateBuffer( VertBuffDesc, &VBData, &cubeVerticies );
+  */
+}
+
 
 
 ResDGBufIndexPtr  grx::gen::createCenteredCubeIndicies()
