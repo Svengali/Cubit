@@ -26,7 +26,7 @@ namespace cb
 		return String( buffer );
 	}
 
-}
+} 
 
 
 cb::Vec3 vox::FramePlane<vox::Cubit>::m_translation = cb::Vec3( 0.0f, 0.0f, 0.0f );
@@ -38,7 +38,7 @@ static float s_shiftValue = 1.0f;
 
 void vox::CubitArr::set_slow( u8 v, LPos pos )
 {
-
+	ASSERT( false && "Unused right now" );
 }
 
 u8 vox::CubitArr::get_slow( LPos pos )
@@ -57,6 +57,141 @@ void vox::Cubit::genGeo( Plane<Cubit> *pPlane, const CPos pos, std::vector<VertP
 {
 }
 //*/
+
+
+void vox::CubitPlane::collide( const cb::Segment &seg, cb::SegmentResults *pRes )
+{
+	cb::AxialBox box;
+	box.SetEnclosing( seg );
+
+	//8 at the WORST case for any small segment. 
+	//We should likely build a collideLarge or somesuch for huge segments 
+	//relative to the 
+	std::array< Cubit::Ptr, 8 > overlapping;
+	i32 count = 0;
+
+	const auto min = box.GetMin();
+	const auto max = box.GetMax();
+
+	// TODO Combine these?  Go directly from worldpos to 
+	const auto gMin = Cubit::GPos::from( min ) + Cubit::GPos(-1,-1,-1 );
+	const auto gMax = Cubit::GPos::from( max ) + Cubit::GPos( 1, 1, 1 );
+
+	const auto cMin = Cubit::CPos::from( gMin );
+	const auto cMax = Cubit::CPos::from( gMax );
+
+	findOverlapping( cMin, cMax, &overlapping, &count );
+
+	cb::SegmentResults finalRes;
+
+	for( i32 i = 0; i < count; ++i )
+	{
+		Cubit::Ptr chunk = overlapping[i];
+
+		const auto lMinRaw = Cubit::LPos::from( chunk->m_cPos, gMin );
+		const auto lMaxRaw = Cubit::LPos::from( chunk->m_cPos, gMax );
+
+		const auto lMin = Cubit::LPos::MakeMax( lMinRaw, Cubit::LPos( 0, 0, 0 ) );
+		const auto lMax = Cubit::LPos::MakeMin( lMaxRaw, Cubit::LMax - Cubit::LPos( 1, 1, 1 ) );
+
+
+		std::vector<cb::AxialBox> boxes;
+
+		for( i32 iz = lMax.z; iz >= lMin.z; --iz )
+		{
+			genAxialBoxes( chunk, iz, lMin, lMax, &boxes );
+
+			if( !boxes.empty() )
+			{
+				for( auto box : boxes )
+				{
+					cb::SegmentResults res;
+					box.IntersectSurface( seg, &res );
+
+					if( res.time < finalRes.time )
+					{
+						finalRes = res;
+					}
+				}
+
+				boxes.clear();
+			}
+		}
+
+		*pRes = finalRes;
+
+		/*
+			for( i32 iy = lMin.y; iy < lMax.y; ++iy )
+			{
+				for( i32 ix = lMin.x; ix < lMax.x; ++ix )
+				{
+					const Cubit::LPos pos( ix, iy, iz );
+
+
+				}
+			}
+			*/
+	}
+
+}
+
+void vox::CubitPlane::genAxialBoxes( Cubit::Ptr chunk, const i32 iz, const Cubit::LPos lMin, const Cubit::LPos lMax, std::vector<cb::AxialBox> *pBoxes )
+{
+	for( i32 iy = lMin.y; iy <= lMax.y; ++iy )
+	{
+		for( i32 ix = lMin.x; ix <= lMax.x; ++ix )
+		{
+			const Cubit::LPos pos( ix, iy, iz );
+
+			const Cubit *pChunk = chunk.get();
+
+			// PORT ISSUE.  Any change to our types will need to take this into account
+			const CubitArr *pChunkArr = static_cast<const CubitArr *>( pChunk );
+
+			const auto arrIndex = pChunkArr->m_faces.index( pos );
+
+			const auto hasFaces = !!pChunkArr->m_faces.m_arr[arrIndex];
+
+			const auto hasType = !!chunk->get_slow( pos );
+
+			if( hasFaces & hasType )
+			{
+				const auto gPos = Cubit::GPos::from( chunk->m_cPos, pos );
+				const auto wPos = gPos.toWorld();
+
+				// PORT ISSUE, make 0.25 generic
+				cb::Vec3 wMin = wPos - 0.125f;
+				cb::Vec3 wMax = wPos + 0.125f;
+
+				cb::AxialBox box( wMin, wMax );
+
+				pBoxes->emplace_back( std::move( box ) );
+			}
+		}
+	}
+
+}
+
+
+template< size_t size >
+void vox::CubitPlane::findOverlapping( const Cubit::CPos min, const Cubit::CPos max, std::array< Cubit::Ptr, size > *pArr, i32 *pCount )
+{
+
+	i32 index = 0;
+
+	for( auto [pos, ptr] : m_sparse )
+	{
+		if( ( pos >= min ) & ( pos <= max ) )
+		{
+			(*pArr)[index] = ptr;
+			++index;
+		}
+	}
+
+	*pCount = index;
+}
+
+
 
 static SimplexNoise noise;
 static f32 s_fractalMultXY = 1.0f / 512.0f;
@@ -450,6 +585,9 @@ public:
 
 		const auto h = l + cb::Vec3( 1 * scale.x, 1 * scale.y, 1 * scale.z );
 
+		pCubit->m_faces.index( pos );
+		pCubit->m_faces.m_arr[index] = faces;
+
 		if( faces )
 		{
 			//const auto startIndex = cast<u16>( pPositions->size() );
@@ -504,12 +642,12 @@ public:
 		const i32 zSmall = 0;
 		const i32 zBig = pCubit->k_edgeSize - 1;
 
-		const auto vPosX = cb::Vec3i( 1, 0, 0 );
-		const auto vNegX = cb::Vec3i( -1, 0, 0 );
-		const auto vPosY = cb::Vec3i( 0, 1, 0 );
-		const auto vNegY = cb::Vec3i( 0, -1, 0 );
-		const auto vPosZ = cb::Vec3i( 0, 0, 1 );
-		const auto vNegZ = cb::Vec3i( 0, 0, -1 );
+		const auto vPosX = TCHUNK::GPos( 1, 0, 0 );
+		const auto vNegX = TCHUNK::GPos( -1, 0, 0 );
+		const auto vPosY = TCHUNK::GPos( 0, 1, 0 );
+		const auto vNegY = TCHUNK::GPos( 0, -1, 0 );
+		const auto vPosZ = TCHUNK::GPos( 0, 0, 1 );
+		const auto vNegZ = TCHUNK::GPos( 0, 0, -1 );
 
 		for( i32 y = 0; y < pCubit->k_edgeSize; ++y )
 		{
@@ -681,6 +819,11 @@ void vox::CubitArr::genGeo( Plane<Cubit> *pPlane, const CPos pos, std::vector<Ve
 
 	if( vertCount == 0 )
 		return;
+}
+
+void vox::CubitArr::genCollision( Plane<Cubit> *pPlane, CPos pos )
+{
+	//Placeholder.  Do nothing for now
 }
 
 struct PosChunk
@@ -909,6 +1052,9 @@ void vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 		for( int i = 0; i < generated; ++i )
 		{
 			m_generateGeo.erase( chunks[i].Pos );
+
+			// TODO STATIC COLLISION
+			//m_genColl[chunks[i].Pos] = chunks[i].Chunk;
 		}
 
 
@@ -971,6 +1117,5 @@ void vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 
 }
 //*/
-
 
 

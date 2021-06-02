@@ -81,4 +81,11 @@ typedef dg::Ptr<dg::ICommandList>		DGCommandListPtr;
 typedef dg::Ptr<dg::IShaderResourceBinding> DGShaderResPtr;
 
 
+
+inline cb::Vec3 toVec3( const dg::float3 &f3 )
+{
+	return cb::Vec3( f3.x, f3.y, f3.z );
+}
+
+
 #include "app/PhamApp.h"

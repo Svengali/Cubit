@@ -315,7 +315,7 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 	PhamApp::Info().Task.WaitforTask( &task );
 
 
-	m_Camera.SetSpeedUpScales( 6.0f, 20.0f );
+	m_Camera.SetSpeedUpScales( 0.25f, 20.0f );
 
 
 	ent::EntityId::initStartingEntityId( 1024 );
@@ -467,7 +467,7 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 			const cb::Frame3 frame( rot, pos );
 
-			const cb::Vec3 vel( speed * 1.25f, 0.0f, 0.0f );
+			const cb::Vec3 vel( speed * 5.25f, 0.0f, 0.0f );
 
 			m_freefall->add( pos, id, geo, frame, vel );
 		}
@@ -490,16 +490,19 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 			const auto pos = cb::MakeRandomInBox( center, size );
 
-			GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/vehicle.xml" );
+			GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/robot.xml" );
 			GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( id, cfg ) );
 
 			auto rot = cb::Mat3( cb::Mat3::eIdentity );
 
-			cb::SetZRotation( &rot, CB_PIf * ( ( (f32)i / 65.0f ) ) );
+			f32 speed = cast<f32>( rand() ) * invRandMaxF;
+			f32 rotUF = cast<f32>( rand() ) * invRandMaxF;
+
+			cb::SetZRotation( &rot, 2 * CB_PIf * rotUF );
 
 			const cb::Frame3 frame( rot, pos );
 
-			const cb::Vec3 vel( 0.1f, 0.0f, 0.0f );
+			const cb::Vec3 vel( speed * 1.25f, 0.0f, 0.0f );
 
 			m_freefall->add( pos, id, geo, frame, vel );
 		}
@@ -602,38 +605,74 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 
 	//* Single Geo test
-	const auto id = ent::EntityId::makeNext();
+#if 0
+	{
 
-	/*
-	const auto x = cast<f32>( 10 );
-	cb::Mat3 mat( cb::Mat3::eIdentity );
-	cb::SetZRotation( &mat, CB_PIf * ( x + 1 ) / 50.0f );
-	cb::Vec3 pos( x, 1, 0 );
-	/*/
-	cb::Mat3 mat( cb::Mat3::eIdentity );
-	cb::Vec3 pos( 0, 0, 0 );
+		const auto id = ent::EntityId::makeNext();
+
+		/*
+		const auto x = cast<f32>( 10 );
+		cb::Mat3 mat( cb::Mat3::eIdentity );
+		cb::SetZRotation( &mat, CB_PIf * ( x + 1 ) / 50.0f );
+		cb::Vec3 pos( x, 1, 0 );
+		/*/
+		cb::Mat3 mat( cb::Mat3::eIdentity );
+		cb::Vec3 pos( 0, 0, 0 );
+		//*/
+
+		cb::Frame3 frame( mat, pos );
+
+
+		//const dg::float4x4 dgTrans = dg::float4x4::RotationZ( CB_PIf * 0.25f ) * dg::float4x4::Translation( c(pos) );
+
+		//const cb::Mat4 mat4( frame );
+
+
+		//const dg::float4x4 another = dg::float4x4::MakeMatrix( mat4.GetData() );
+		GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/test.xml" );
+
+		GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( id, cfg ) );
+
+		DGRenderer::Inst().m_rsCubes->add( frame, geo );
+		//*/
+	}
+#endif 
+
+	///*
+	{
+		// P L A Y E R
+		m_playerId = ent::EntityId::makeNext();
+
+		GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/hit.xml" );
+
+		GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( m_playerId, cfg ) );
+
+		//DGRenderer::Inst().m_player = geo;
+
+		cb::Mat3 rot( cb::Mat3::eIdentity );
+
+		cb::Frame3 fm( rot, cb::Vec3::zero );
+
+		//DGRenderer::Inst().m_playerPos = fm;
+
+		DGRenderer::Inst().m_debugGeos.m_com.insert( m_playerId, geo, fm, cb::Vec3::zero );
+
+	}
+	{
+		// F O R W A R D
+		m_forwardId = ent::EntityId::makeNext();
+
+		GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/hit.xml" );
+
+		GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( m_forwardId, cfg ) );
+
+		cb::Mat3 rot( cb::Mat3::eIdentity );
+		cb::Frame3 fm( rot, cb::Vec3::zero );
+
+		DGRenderer::Inst().m_debugGeos.m_com.insert( m_forwardId, geo, fm, cb::Vec3::zero );
+
+	}
 	//*/
-
-	cb::Frame3 frame( mat, pos );
-
-
-	//const dg::float4x4 dgTrans = dg::float4x4::RotationZ( CB_PIf * 0.25f ) * dg::float4x4::Translation( c(pos) );
-
-	//const cb::Mat4 mat4( frame );
-
-
-	//const dg::float4x4 another = dg::float4x4::MakeMatrix( mat4.GetData() );
-	GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/test.xml" );
-
-	// PSO FIX
-	//auto pso = ResDGPipelineState::createRaw( cfg->m_vertexShader, cfg->m_pixelShader, cfg->m_namedBuffers.front().m_buffer );
-
-	GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( id, cfg ) );
-
-
-	DGRenderer::Inst().m_rsCubes->add( frame, geo );
-	//*/
-
 
 }
 
@@ -903,6 +942,58 @@ void PhamApp::UpdateUI()
 
 			ImGui::Text( "Pos %.2f, %.2f, %.2f  ", pos.x, pos.y, pos.z );
 			ImGui::Text( "Fwd %.2f, %.2f, %.2f  ", fwd.x, fwd.y, fwd.z );
+
+			const auto plPos = toVec3( pos );
+			const cb::Vec3 toDown( pos.x, pos.y, pos.z - 4.0f );
+
+			const cb::Vec3 toFwd = toVec3(pos + m_Camera.GetWorldAhead() * 1.0f);
+
+			const auto shiftedPlPos = cb::Vec3( pos.x, pos.y, pos.z + 2.0f );
+
+			cb::Segment segDown( plPos, toDown, 0.05f );
+			cb::Segment segFwd ( plPos, toFwd,  0.05f );
+
+			cb::SegmentResults resDown;
+			cb::SegmentResults resFwd;
+
+			m_cubit->collide( segDown, &resDown );
+
+			m_cubit->collide( segFwd, &resFwd );
+
+
+			ImGui::Text( "C O L L I S I O N" );
+			ImGui::Text( "Time: %f Normal %.2f, %.2f, %.2f", resDown.time, resDown.normal.x, resDown.normal.y, resDown.normal.z );
+			ImGui::Text( "Point %.2f, %.2f, %.2f", resDown.collidedPoint.x, resDown.collidedPoint.y, resDown.collidedPoint.z );
+
+			if( resDown.Collided() )
+			{
+				const auto rot = cb::Mat3::identity;
+				const auto fm  = cb::Frame3( rot, resDown.collidedPoint );
+
+				DGRenderer::Inst().m_debugGeos.m_com.debug_set<FreefallData::Frame>( m_playerId, fm );
+			}
+			else
+			{
+				const auto rot = cb::Mat3::identity;
+				const auto fm  = cb::Frame3( rot, shiftedPlPos );
+
+				DGRenderer::Inst().m_debugGeos.m_com.debug_set<FreefallData::Frame>( m_playerId, fm );
+			}
+
+			if( resFwd.Collided() )
+			{
+				const auto rot = cb::Mat3::identity;
+				const auto fm = cb::Frame3( rot, resFwd.collidedPoint );
+
+				DGRenderer::Inst().m_debugGeos.m_com.debug_set<FreefallData::Frame>( m_forwardId, fm );
+			}
+			else
+			{
+				const auto rot = cb::Mat3::identity;
+				const auto fm = cb::Frame3( rot, toFwd );
+
+				DGRenderer::Inst().m_debugGeos.m_com.debug_set<FreefallData::Frame>( m_forwardId, fm );
+			}
 
 			ImGui::End();
 		}

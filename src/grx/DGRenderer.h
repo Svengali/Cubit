@@ -82,7 +82,11 @@ private:
 
 PtrDef( RSEntity );
 
-
+struct DebugGeo
+{
+	const cb::Frame3 frame;
+	const GeoDiligentPtr geo;
+};
 
 //Class for everything that can render diligent geometry
 class DGRenderer: public Renderer
@@ -113,6 +117,14 @@ public:
 	RSEntityPtr m_rsVoxels;
 	RSEntityPtr m_rsCubes;
 
+	// TODO HACK just setting the players info here. 
+	//GeoDiligentPtr m_player;
+	//cb::Frame3     m_playerPos;
+
+
+	//std::vector<DebugGeo> m_debugGeos;
+
+	FreefallData m_debugGeos;
 
 private:
 

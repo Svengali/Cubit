@@ -70,5 +70,8 @@ private:
 
 	FreefallPlanePtr      m_freefall;
 
+	ent::EntityId					m_playerId;
+	ent::EntityId					m_forwardId;
+
 };
 

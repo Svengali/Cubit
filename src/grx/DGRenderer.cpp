@@ -86,6 +86,128 @@ DGRenderer::~DGRenderer( void )
 
 static i32 s_localFrameNum = 0;
 
+
+
+
+
+
+
+void renderEntities( RCDiligent *pContext, std::vector<FreefallData *> *pFreeFallVec )
+{
+
+	for( i32 i = 0; i < pContext->activeCmdLists.size(); ++i )
+	{
+		if( pContext->activeCmdLists[i].load() )
+		{
+			//lprinterr( "Context %i is active!\n", i );
+		}
+	}
+
+	//*
+	auto task = enki::TaskSet( (u32)pFreeFallVec->size(),
+		[pContext, pFreeFallVec]( enki::TaskSetPartition range, uint32_t threadnum ) {
+
+			const i32 id = threadnum;
+
+			auto context = PhamApp::Info().DeferredContexts()[id];
+
+			RCDiligent newRC;
+			newRC.m_devContext = context;
+			newRC.m_renderTarget = pContext->m_renderTarget;
+			newRC.m_viewProj = pContext->m_viewProj;
+
+			if( !pContext->activeCmdLists[id] )
+			{
+				pContext->activeCmdLists[id] = true;
+
+				context->Begin( 0 );
+			}
+			/*/
+			const auto range = enki::TaskSetPartition{ 0, (u32)pFreeFallVec->size() };
+			RCDiligent newRC;
+			newRC.m_devContext = pContext->m_devContext;
+			newRC.m_renderTarget = pContext->m_renderTarget;
+			newRC.m_viewProj = pContext->m_viewProj;
+			auto context = pContext->m_devContext;
+
+			//*/
+
+
+			for( u32 iData = range.start; iData < range.end; ++iData )
+			{
+				auto *pData = ( *pFreeFallVec )[iData];
+
+				const auto blockCount = pData->m_com.m_blocks.m_block.size();
+
+				for( i32 bIndex = 0; bIndex < blockCount; ++bIndex )
+				{
+					auto *pBlock = pData->m_com.m_blocks.m_block[bIndex].get();
+					auto max = pData->m_com.m_blocks.m_allocated[bIndex];
+
+					const auto *__restrict const pSrcFrame = pBlock->src<FreefallData::Frame, cb::Frame3>();
+					const auto *__restrict const pSrcGeo = pBlock->src<FreefallData::Geometry, GeoDiligentPtr>();
+
+
+
+					auto swapChain = PhamApp::Info().SwapChain();
+					auto *pRTV = swapChain->GetCurrentBackBufferRTV();
+					context->SetRenderTargets( 1, &pRTV, swapChain->GetDepthBufferDSV(), dg::RESOURCE_STATE_TRANSITION_MODE_VERIFY );
+
+					for( i32 i = 0; i < (i32)max; ++i )
+					{
+						const cb::Frame3 &frame = pSrcFrame[i];
+						const GeoDiligentPtr &geo = pSrcGeo[i];
+
+						/*
+						if( pContext->lastUsedPSO[id] != geo->m_cfg->m_pso )
+						{
+							if( !pContext->lastUsedPSO[id] )
+							{
+							}
+							else
+							{
+								//DGCommandListPtr ptr( nullptr );
+								//pContext->cmdLists[id].push_back( ptr );
+								//pContext->m_devContext->FinishCommandList( &pContext->cmdLists[id].back() );
+							}
+
+							pContext->lastUsedPSO[id] = geo->m_cfg->m_pso;
+						}
+						*/
+
+						geo->renderDiligent( &newRC, frame );
+
+					}
+				}
+			}
+
+
+			/*
+			dg::ICommandList *pCL = nullptr;
+			context->FinishCommandList( &pCL );
+
+			pContext->cmdLists[id].push_back( dg::Ptr<dg::ICommandList>( pCL ) );
+			*/
+
+
+			//*
+		} );
+
+	PhamApp::Info().Task.AddTaskSetToPipe( &task );
+	PhamApp::Info().Task.WaitforTask( &task );
+	//*/
+
+	//processContexts( pContext );
+}
+
+
+
+
+
+
+
+
+
 void DGRenderer::render( RCDiligent *pContext )
 {
 	//lprintf( "RENDERING NEW FRAME\n" );
@@ -99,6 +221,7 @@ void DGRenderer::render( RCDiligent *pContext )
 
 	pContext->fences[0] = pFence;
 	*/
+
 
 	//*
 	for( i32 i = 0; i < pContext->activeCmdLists.size(); ++i )
@@ -145,6 +268,22 @@ void DGRenderer::render( RCDiligent *pContext )
 
 		lprintf( "timeVoxels in %.3f ms\n", timeBraceF / 1000.0f );
 	}
+
+	{
+		auto swapChain = PhamApp::Info().SwapChain();
+		auto *pRTV = swapChain->GetCurrentBackBufferRTV();
+		pContext->m_devContext->SetRenderTargets( 1, &pRTV, swapChain->GetDepthBufferDSV(), dg::RESOURCE_STATE_TRANSITION_MODE_VERIFY );
+
+		std::vector<FreefallData *> vec;
+
+		vec.push_back( &this->m_debugGeos );
+
+		renderEntities( pContext, &vec );
+
+		//m_player->renderDiligent( pContext, m_playerPos );
+	}
+
+
 
 	const auto timeProcess = Timer<>::execution( [&]() {
 
@@ -341,118 +480,6 @@ void processContexts( RCDiligent *pContext )
 	//contextImm->WaitForIdle();
 
 }
-
-
-
-void renderEntities( RCDiligent *pContext, std::vector<FreefallData *> *pFreeFallVec )
-{
-
-	for( i32 i = 0; i < pContext->activeCmdLists.size(); ++i )
-	{
-		if( pContext->activeCmdLists[i].load() )
-		{
-			//lprinterr( "Context %i is active!\n", i );
-		}
-	}
-
-	//*
-	auto task = enki::TaskSet( (u32)pFreeFallVec->size(),
-		[pContext, pFreeFallVec]( enki::TaskSetPartition range, uint32_t threadnum ) {
-
-			const i32 id = threadnum;
-
-			auto context = PhamApp::Info().DeferredContexts()[id];
-
-			RCDiligent newRC;
-			newRC.m_devContext = context;
-			newRC.m_renderTarget = pContext->m_renderTarget;
-			newRC.m_viewProj = pContext->m_viewProj;
-
-			if( !pContext->activeCmdLists[id] )
-			{
-				pContext->activeCmdLists[id] = true;
-
-				auto context = PhamApp::Info().DeferredContexts()[id];
-				context->Begin( 0 );
-			}
-		/*/
-		const auto range = enki::TaskSetPartition{ 0, (u32)pFreeFallVec->size() };
-		RCDiligent newRC;
-		newRC.m_devContext = pContext->m_devContext;
-		newRC.m_renderTarget = pContext->m_renderTarget;
-		newRC.m_viewProj = pContext->m_viewProj;
-		auto context = pContext->m_devContext;
-
-		//*/
-
-
-			for( u32 iData = range.start; iData < range.end; ++iData )
-			{
-				auto *pData = ( *pFreeFallVec )[iData];
-
-				const auto blockCount = pData->m_com.m_blocks.m_block.size();
-
-				for( i32 bIndex = 0; bIndex < blockCount; ++bIndex )
-				{
-					auto *pBlock = pData->m_com.m_blocks.m_block[bIndex].get();
-					auto max = pData->m_com.m_blocks.m_allocated[bIndex];
-
-					const auto *__restrict const pSrcFrame = pBlock->src<FreefallData::Frame, cb::Frame3>();
-					const auto *__restrict const pSrcGeo = pBlock->src<FreefallData::Geometry, GeoDiligentPtr>();
-
-
-
-					auto swapChain = PhamApp::Info().SwapChain();
-					auto *pRTV = swapChain->GetCurrentBackBufferRTV();
-					context->SetRenderTargets( 1, &pRTV, swapChain->GetDepthBufferDSV(), dg::RESOURCE_STATE_TRANSITION_MODE_VERIFY );
-
-					for( i32 i = 0; i < (i32)max; ++i )
-					{
-						const cb::Frame3 &frame = pSrcFrame[i];
-						const GeoDiligentPtr &geo = pSrcGeo[i];
-
-						/*
-						if( pContext->lastUsedPSO[id] != geo->m_cfg->m_pso )
-						{
-							if( !pContext->lastUsedPSO[id] )
-							{
-							}
-							else
-							{
-								//DGCommandListPtr ptr( nullptr );
-								//pContext->cmdLists[id].push_back( ptr );
-								//pContext->m_devContext->FinishCommandList( &pContext->cmdLists[id].back() );
-							}
-
-							pContext->lastUsedPSO[id] = geo->m_cfg->m_pso;
-						}
-						*/
-
-						geo->renderDiligent( &newRC, frame );
-
-					}
-				}
-			}
-
-
-			/*
-			dg::ICommandList *pCL = nullptr;
-			context->FinishCommandList( &pCL );
-
-			pContext->cmdLists[id].push_back( dg::Ptr<dg::ICommandList>( pCL ) );
-			*/
-
-
-	//*
-		} );
-
-	PhamApp::Info().Task.AddTaskSetToPipe( &task );
-	PhamApp::Info().Task.WaitforTask( &task );
-	//*/
-
-	//processContexts( pContext );
-}
-
 
 
 void RSEntity::render( RCDiligent *pContext, const char *pDebugRender )
