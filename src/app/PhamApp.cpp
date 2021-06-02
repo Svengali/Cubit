@@ -643,21 +643,17 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 		// P L A Y E R
 		m_playerId = ent::EntityId::makeNext();
 
-		GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/hit.xml" );
+		GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/robot.xml" );
 
 		GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( m_playerId, cfg ) );
-
-		//DGRenderer::Inst().m_player = geo;
 
 		cb::Mat3 rot( cb::Mat3::eIdentity );
 
 		cb::Frame3 fm( rot, cb::Vec3::zero );
 
-		//DGRenderer::Inst().m_playerPos = fm;
-
-		DGRenderer::Inst().m_debugGeos.m_com.insert( m_playerId, geo, fm, cb::Vec3::zero );
-
+		DGRenderer::Inst().m_players.m_com.insert( m_playerId, geo, fm, cb::Vec3::zero, 0, 0 );
 	}
+
 	{
 		// F O R W A R D
 		m_forwardId = ent::EntityId::makeNext();
@@ -670,7 +666,6 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 		cb::Frame3 fm( rot, cb::Vec3::zero );
 
 		DGRenderer::Inst().m_debugGeos.m_com.insert( m_forwardId, geo, fm, cb::Vec3::zero );
-
 	}
 	//*/
 
@@ -937,16 +932,24 @@ void PhamApp::UpdateUI()
 		{
 			ImGui::Begin( "World" );
 
-			const auto pos = m_Camera.GetPos();
-			const auto fwd = pos + m_Camera.GetWorldAhead();
+			const auto pos = toVec3( m_Camera.GetPos() );
+			const auto fwdTest = pos + toVec3( m_Camera.GetWorldAhead() );
 
 			ImGui::Text( "Pos %.2f, %.2f, %.2f  ", pos.x, pos.y, pos.z );
-			ImGui::Text( "Fwd %.2f, %.2f, %.2f  ", fwd.x, fwd.y, fwd.z );
+			ImGui::Text( "Fwd %.2f, %.2f, %.2f  ", fwdTest.x, fwdTest.y, fwdTest.z );
 
-			const auto plPos = toVec3( pos );
+			/*
+
+				
+
+
+			*/
+
+
+			const auto plPos = pos;
 			const cb::Vec3 toDown( pos.x, pos.y, pos.z - 4.0f );
 
-			const cb::Vec3 toFwd = toVec3(pos + m_Camera.GetWorldAhead() * 1.0f);
+			const cb::Vec3 toFwd = pos + toVec3( m_Camera.GetWorldAhead() ) * 1.0f;
 
 			const auto shiftedPlPos = cb::Vec3( pos.x, pos.y, pos.z + 2.0f );
 
@@ -964,36 +967,6 @@ void PhamApp::UpdateUI()
 			ImGui::Text( "C O L L I S I O N" );
 			ImGui::Text( "Time: %f Normal %.2f, %.2f, %.2f", resDown.time, resDown.normal.x, resDown.normal.y, resDown.normal.z );
 			ImGui::Text( "Point %.2f, %.2f, %.2f", resDown.collidedPoint.x, resDown.collidedPoint.y, resDown.collidedPoint.z );
-
-			if( resDown.Collided() )
-			{
-				const auto rot = cb::Mat3::identity;
-				const auto fm  = cb::Frame3( rot, resDown.collidedPoint );
-
-				DGRenderer::Inst().m_debugGeos.m_com.debug_set<FreefallData::Frame>( m_playerId, fm );
-			}
-			else
-			{
-				const auto rot = cb::Mat3::identity;
-				const auto fm  = cb::Frame3( rot, shiftedPlPos );
-
-				DGRenderer::Inst().m_debugGeos.m_com.debug_set<FreefallData::Frame>( m_playerId, fm );
-			}
-
-			if( resFwd.Collided() )
-			{
-				const auto rot = cb::Mat3::identity;
-				const auto fm = cb::Frame3( rot, resFwd.collidedPoint );
-
-				DGRenderer::Inst().m_debugGeos.m_com.debug_set<FreefallData::Frame>( m_forwardId, fm );
-			}
-			else
-			{
-				const auto rot = cb::Mat3::identity;
-				const auto fm = cb::Frame3( rot, toFwd );
-
-				DGRenderer::Inst().m_debugGeos.m_com.debug_set<FreefallData::Frame>( m_forwardId, fm );
-			}
 
 			ImGui::End();
 		}
@@ -1051,27 +1024,117 @@ void PhamApp::Render()
 }
 
 
-void PhamApp::Update( double CurrTime, double ElapsedTime )
+void PhamApp::Update( double CurrTime, double dt )
 {
 
-	SampleBase::Update( CurrTime, ElapsedTime );
+	SampleBase::Update( CurrTime, dt );
 
 	//*
-	cb::Vec3 pos( 0.0f, 0.0f, 0.0f );
+	{
+		cb::Vec3 pos( 0.0f, 0.0f, 0.0f );
 
-	m_cubit->genWorld( pos );
+		m_cubit->genWorld( pos );
 
-	m_cubit->genGeo( pos );
+		m_cubit->genGeo( pos );
+	}
 	//*/
 
+	m_Camera.Update( m_InputController, cast<float>( dt ), false );
 
 
-	m_Camera.Update( m_InputController, cast<float>( ElapsedTime ) );
+	if( !m_findSpawnLoc )
+	{
+		const auto pos = toVec3( m_Camera.GetPos() );
+		const auto fwdTest = pos + toVec3( m_Camera.GetWorldAhead() );
+
+		ent::PlayerController::TCom::TTuple playerData;
+		DGRenderer::Inst().m_players.m_com.debug_get( m_playerId, &playerData );
+
+		const auto yaw = m_Camera.m_fYawAngle;
+
+		const auto XYRot = cb::MakeZRotation( -yaw - CB_HALF_PIf );
+
+		const auto fwd = XYRot.GetColumnX();
+		const auto rgt = XYRot.GetColumnY();
+
+		const auto velDt = m_Camera.m_moveDir.x * dt;
+		const auto velRgtDt = m_Camera.m_moveDir.y * dt;
+
+
+		const auto fwdDt = fwd * (f32)velDt;
+		const auto rgtDt = rgt * (f32)velRgtDt;
+
+	  const auto newPos = pos + fwdDt + rgtDt;
+
+		const cb::Vec3 toDown( newPos.x, newPos.y, newPos.z - 4.0f );
+
+		cb::Segment segDown( newPos, toDown, 0.15f );
+
+		cb::SegmentResults resDown;
+
+		m_cubit->collide( segDown, &resDown );
+
+		if( resDown.Collided() )
+		{
+			const auto rot = cb::Mat3::identity;
+
+			const auto invNormal = cb::Vec3::unitZneg;
+
+			const auto groundPos = newPos + invNormal * (4.0f * resDown.time + 0.15f );
+
+			const auto finalPos = groundPos + cb::Vec3::unitZ * 2.0f;
+
+			//const auto finalPos = resDown.collidedPoint + ( resDown.normal * ( 1.0f - segDown.GetRadius() ) );
+
+			const cb::Frame3 fm = cb::Frame3( rot, finalPos );
+
+			m_Camera.SetPos( dg::float3( finalPos.x, finalPos.y, finalPos.z ));
+
+			DGRenderer::Inst().m_players.m_com.debug_set<ent::PlayerController::Frame>( m_playerId, fm );
+
+
+
+		}
+		else
+		{
+			const auto finalPos = pos - fwdDt;
+
+			m_Camera.SetPos( dg::float3( finalPos.x, finalPos.y, finalPos.z ) );
+		}
+
+	}
+	else
+	{
+		if( CurrTime > 1.0 )
+		{
+			const auto center = cb::Vec3( 24.0f, 24.0f, 62.0f );
+			const auto size   = cb::Vec3( 16.0f, 16.0f,  2.0f );
+
+			const auto start = cb::MakeRandomInBox( center, size );
+
+			const cb::Vec3 end  ( start.x, start.y, 16.0f );
+
+			cb::Segment seg( start, end, 0.1f );
+
+			cb::SegmentResults res;
+
+			m_cubit->collide( seg, &res );
+
+			if( res.Collided() )
+			{
+				m_findSpawnLoc = false;
+
+				const auto spawnPt = res.collidedPoint + res.normal * 2.0f;
+
+				m_Camera.SetPos( dg::float3( spawnPt.x, spawnPt.y, spawnPt.z ));
+			}
+		}
+	}
 
 	UpdateUI();
 
 	const auto timeBrace = Timer<>::execution( [&]() {
-		m_freefall->updateBlocks( ElapsedTime );
+		m_freefall->updateBlocks( dt );
 		} );
 
 	if( ( s_frameNum & 0xff ) == 0 )

@@ -70,6 +70,8 @@ private:
 
 	FreefallPlanePtr      m_freefall;
 
+	bool									m_findSpawnLoc = true;
+
 	ent::EntityId					m_playerId;
 	ent::EntityId					m_forwardId;
 

@@ -8,6 +8,7 @@
 
 #include "grx/Renderer.h"
 #include "RCDiligent.h"
+#include "ent/controller.h"
 
 PtrFwd( GeoDiligent );
 PtrFwd( FreefallPlane );
@@ -125,6 +126,9 @@ public:
 	//std::vector<DebugGeo> m_debugGeos;
 
 	FreefallData m_debugGeos;
+
+	//This is silly, but it is what it is
+	ent::PlayerController m_players;
 
 private:
 

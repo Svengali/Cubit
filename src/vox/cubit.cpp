@@ -61,17 +61,17 @@ void vox::Cubit::genGeo( Plane<Cubit> *pPlane, const CPos pos, std::vector<VertP
 
 void vox::CubitPlane::collide( const cb::Segment &seg, cb::SegmentResults *pRes )
 {
-	cb::AxialBox box;
-	box.SetEnclosing( seg );
+	cb::AxialBox segmentBox;
+	segmentBox.SetEnclosing( seg );
 
 	//8 at the WORST case for any small segment. 
 	//We should likely build a collideLarge or somesuch for huge segments 
 	//relative to the 
-	std::array< Cubit::Ptr, 8 > overlapping;
+	std::array< Cubit::Ptr, 16 > overlapping;
 	i32 count = 0;
 
-	const auto min = box.GetMin();
-	const auto max = box.GetMax();
+	const auto min = segmentBox.GetMin();
+	const auto max = segmentBox.GetMax();
 
 	// TODO Combine these?  Go directly from worldpos to 
 	const auto gMin = Cubit::GPos::from( min ) + Cubit::GPos(-1,-1,-1 );
@@ -185,6 +185,12 @@ void vox::CubitPlane::findOverlapping( const Cubit::CPos min, const Cubit::CPos 
 		{
 			(*pArr)[index] = ptr;
 			++index;
+
+			if( index >= size )
+			{
+				lprinterr( "Blew out the overlapping list of %i\n", index );
+				return;
+			}
 		}
 	}
 

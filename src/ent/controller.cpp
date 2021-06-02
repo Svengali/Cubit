@@ -4,15 +4,17 @@
 //
 // copyright 2005-2021 Marc Hernandez
 
-#pragma once
+#include "../stdafx.h"
 
-#include <com/Component.h>
 
+#include "unit.h"
 
 namespace ent
 {
-
-
+//SERIALIZABLE( EntityConfig );
 }
+
+
+
 
 

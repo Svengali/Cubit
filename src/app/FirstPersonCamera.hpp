@@ -37,7 +37,8 @@ namespace Diligent
 class FirstPersonCamera
 {
 public:
-    void Update(InputController& Controller, float ElapsedTime);
+    void Update(InputController& Controller, float ElapsedTime, const bool updatePos);
+
     void SetRotation(float Yaw, float Pitch);
     void SetLookAt(const float3& LookAt);
     void SetMoveSpeed(float MoveSpeed) { m_fMoveSpeed = MoveSpeed; }
@@ -86,6 +87,13 @@ public:
         m_fHandness = IsRightHanded ? +1.f : -1.f;
     }
 
+    float m_fYawAngle          = 0; // Yaw angle of camera
+    float m_fPitchAngle        = 0; // Pitch angle of camera
+
+    float    m_fCurrentSpeed = 0.f;
+
+    float3 m_moveDir;
+
 protected:
     float4x4 GetReferenceRotiation() const;
 
@@ -104,10 +112,7 @@ protected:
     float4x4 m_ProjMatrix;
     float    m_fRotationSpeed = 0.01f;
     float    m_fMoveSpeed     = 1.f;
-    float    m_fCurrentSpeed  = 0.f;
 
-    float m_fYawAngle          = 0; // Yaw angle of camera
-    float m_fPitchAngle        = 0; // Pitch angle of camera
     float m_fSpeedUpScale      = 1.f;
     float m_fSuperSpeedUpScale = 1.f;
     float m_fHandness          = 1.f; // -1 - left handed

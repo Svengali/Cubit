@@ -31,41 +31,45 @@
 namespace Diligent
 {
 
-void FirstPersonCamera::Update(InputController& Controller, float ElapsedTime)
+void FirstPersonCamera::Update(InputController& Controller, float ElapsedTime, const bool updatePos )
 {
-    float3 MoveDirection = float3(0, 0, 0);
+    m_moveDir = float3(0, 0, 0);
+
     // Update acceleration vector based on keyboard state
     if (Controller.IsKeyDown(InputKeys::MoveForward))
-        MoveDirection.z += 1.0f;
+        m_moveDir.x += 1.0f;
     if (Controller.IsKeyDown(InputKeys::MoveBackward))
-        MoveDirection.z -= 1.0f;
+        m_moveDir.x -= 1.0f;
 
     if (Controller.IsKeyDown(InputKeys::MoveRight))
-        MoveDirection.x += 1.0f;
+        m_moveDir.y += 1.0f;
     if (Controller.IsKeyDown(InputKeys::MoveLeft))
-        MoveDirection.x -= 1.0f;
+        m_moveDir.y -= 1.0f;
 
     if (Controller.IsKeyDown(InputKeys::MoveUp))
-        MoveDirection.y += 1.0f;
+        m_moveDir.z += 1.0f;
     if (Controller.IsKeyDown(InputKeys::MoveDown))
-        MoveDirection.y -= 1.0f;
+        m_moveDir.z -= 1.0f;
 
     // Normalize vector so if moving in 2 dirs (left & forward),
     // the camera doesn't move faster than if moving in 1 dir
-    auto len = length(MoveDirection);
-    if (len != 0.0)
-        MoveDirection /= len;
+    auto len = length(m_moveDir);
+    if( len != 0.0 )
+    {
+      const auto invLen = 1.0f / len;
+      m_moveDir *= invLen;
+    }
 
     bool IsSpeedUpScale      = Controller.IsKeyDown(InputKeys::ShiftDown);
     bool IsSuperSpeedUpScale = Controller.IsKeyDown(InputKeys::ControlDown);
 
-    MoveDirection *= m_fMoveSpeed;
-    if (IsSpeedUpScale) MoveDirection *= m_fSpeedUpScale;
-    if (IsSuperSpeedUpScale) MoveDirection *= m_fSuperSpeedUpScale;
+    m_moveDir *= m_fMoveSpeed;
+    if (IsSpeedUpScale) m_moveDir *= m_fSpeedUpScale;
+    if (IsSuperSpeedUpScale) m_moveDir *= m_fSuperSpeedUpScale;
 
-    m_fCurrentSpeed = length(MoveDirection);
+    m_fCurrentSpeed = length(m_moveDir);
 
-    float3 PosDelta = MoveDirection * ElapsedTime;
+    float3 PosDelta = m_moveDir * ElapsedTime;
 
     {
         const auto& mouseState = Controller.GetMouseState();
@@ -98,8 +102,11 @@ void FirstPersonCamera::Update(InputController& Controller, float ElapsedTime)
         ReferenceRotation;
     float4x4 WorldRotation = CameraRotation.Transpose();
 
-    float3 PosDeltaWorld = PosDelta * WorldRotation;
-    m_Pos += PosDeltaWorld;
+    if( updatePos )
+    {
+      float3 PosDeltaWorld = PosDelta * WorldRotation;
+      m_Pos += PosDeltaWorld;
+    }
 
     m_ViewMatrix  = float4x4::Translation(-m_Pos) * CameraRotation;
     m_WorldMatrix = WorldRotation * float4x4::Translation(m_Pos);
@@ -148,10 +155,10 @@ void FirstPersonCamera::SetLookAt(const float3& LookAt)
 
     ViewDir = ViewDir * GetReferenceRotiation();
 
-    m_fYawAngle = atan2f(ViewDir.x, ViewDir.z);
+    m_fYawAngle = atan2f(ViewDir.x, ViewDir.y);
 
-    float fXZLen  = sqrtf(ViewDir.z * ViewDir.z + ViewDir.x * ViewDir.x);
-    m_fPitchAngle = -atan2f(ViewDir.y, fXZLen);
+    float fXZLen  = sqrtf(ViewDir.y * ViewDir.y + ViewDir.x * ViewDir.x);
+    m_fPitchAngle = -atan2f(ViewDir.z, fXZLen);
 }
 
 void FirstPersonCamera::SetRotation(float Yaw, float Pitch)
