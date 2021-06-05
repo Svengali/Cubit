@@ -418,6 +418,7 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 
 	//*
+	if( m_continueWorldgen )
 	{
 
 		cb::Vec3 pos( 0.0f, 0.0f, 0.0f );
@@ -428,87 +429,6 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 	}
 	//*/
 
-#ifdef _DEBUG
-	// We do 2 sets of these, so double it
-	const i32 k_maxMovingObjects = 200;
-#else
-	// We do 2 sets of these, so double it
-	const i32 k_maxMovingObjects = 50000;
-#endif
-
-	const f32 invRandMaxF = 1.0f / cast<f32>( RAND_MAX );
-
-#if 1
-	lprintf( "Create %i moving objects\n", 2 * k_maxMovingObjects );
-	{
-		/*
-		const auto center = cb::Vec3( 50.0f, 0.0f, 50.0f );
-		const auto size  =  cb::Vec3( 50.0f, 0.0f, 10.0f );
-		/*/
-		const auto center = cb::Vec3( 300.0f, 300.0f, 40.0f );
-		const auto size = cb::Vec3( 300.0f, 300.0f, 10.0f );
-		//*/
-
-		for( i32 i = 0; i < k_maxMovingObjects; ++i )
-		{
-			const auto id = ent::EntityId::makeNext();
-
-			const auto pos = cb::MakeRandomInBox( center, size );
-
-			GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/tank.xml" );
-			GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( id, cfg ) );
-
-			auto rot = cb::Mat3( cb::Mat3::eIdentity );
-
-			f32 speed = cast<f32>( rand() ) * invRandMaxF;
-			f32 rotUF = cast<f32>( rand() ) * invRandMaxF;
-
-			cb::SetZRotation( &rot, 2 * CB_PIf * rotUF );
-
-			const cb::Frame3 frame( rot, pos );
-
-			const cb::Vec3 vel( speed * 5.25f, 0.0f, 0.0f );
-
-			m_freefall->add( pos, id, geo, frame, vel );
-		}
-	}
-#endif
-
-#if 1
-	{
-		/*
-		const auto center = cb::Vec3( 00.0f, 50.0f, 50.0f );
-		const auto size   = cb::Vec3( 00.0f, 50.0f, 10.0f );
-		/*/
-		const auto center = cb::Vec3( 300.0f, 300.0f, 40.0f );
-		const auto size = cb::Vec3( 300.0f, 300.0f, 10.0f );
-		//*/
-
-		for( i32 i = 0; i < k_maxMovingObjects; ++i )
-		{
-			const auto id = ent::EntityId::makeNext();
-
-			const auto pos = cb::MakeRandomInBox( center, size );
-
-			GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/robot.xml" );
-			GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( id, cfg ) );
-
-			auto rot = cb::Mat3( cb::Mat3::eIdentity );
-
-			f32 speed = cast<f32>( rand() ) * invRandMaxF;
-			f32 rotUF = cast<f32>( rand() ) * invRandMaxF;
-
-			cb::SetZRotation( &rot, 2 * CB_PIf * rotUF );
-
-			const cb::Frame3 frame( rot, pos );
-
-			const cb::Vec3 vel( speed * 1.25f, 0.0f, 0.0f );
-
-			m_freefall->add( pos, id, geo, frame, vel );
-		}
-	}
-	lprintf( "Done creating %i moving objects\n", 2 * k_maxMovingObjects );
-#endif
 
 
 	{
@@ -529,7 +449,7 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 		const cb::Vec3 vel( 1.0f, 0.0f, 0.0f );
 
-		m_freefall->add( pos, id, geo, frame, vel );
+		m_freefall->add( pos, id, geo, frame, vel, cb::Vec3::zero, cb::Vec3::zero );
 	}
 
 
@@ -665,10 +585,115 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 		cb::Mat3 rot( cb::Mat3::eIdentity );
 		cb::Frame3 fm( rot, cb::Vec3::zero );
 
-		DGRenderer::Inst().m_debugGeos.m_com.insert( m_forwardId, geo, fm, cb::Vec3::zero );
+		DGRenderer::Inst().m_debugGeos.m_com.insert( m_forwardId, geo, fm, cb::Vec3::zero, cb::Vec3::zero, cb::Vec3::zero );
 	}
 	//*/
 
+}
+
+void PhamApp::spawnBallisticsFrame()
+{
+#ifdef _DEBUG
+	// We do 2 sets of these, so double it
+	const i32 k_maxMovingObjects = 20;
+#else
+	// We do 2 sets of these, so double it
+	const i32 k_maxMovingObjects = 50000;
+#endif
+
+	const f32 invRandMaxF = 1.0f / cast<f32>( RAND_MAX );
+
+#if 1
+	lprintf( "Create %i moving objects\n", 2 * k_maxMovingObjects );
+	{
+		/*
+		const auto center = cb::Vec3( 50.0f, 0.0f, 50.0f );
+		const auto size  =  cb::Vec3( 50.0f, 0.0f, 10.0f );
+		/*/
+		const auto center = cb::Vec3( 300.0f, 300.0f, 40.0f );
+		const auto size = cb::Vec3( 300.0f, 300.0f, 10.0f );
+		//*/
+
+		for( i32 i = 0; i < k_maxMovingObjects; ++i )
+		{
+			const auto id = ent::EntityId::makeNext();
+
+			const auto pos = cb::MakeRandomInBox( center, size );
+
+			GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/tank.xml" );
+			GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( id, cfg ) );
+
+			auto rot = cb::Mat3( cb::Mat3::eIdentity );
+
+			f32 speed = cast<f32>( rand() ) * invRandMaxF;
+			f32 rotUF = cast<f32>( rand() ) * invRandMaxF;
+
+			cb::SetZRotation( &rot, 2 * CB_PIf * rotUF );
+
+			const cb::Frame3 frame( rot, pos );
+
+			const auto up = 10.0f * cast<f32>( rand() ) * invRandMaxF;
+			const auto accelScaler = 10.0f * cast<f32>( rand() ) * invRandMaxF;
+
+			const auto dirRot = CB_TWO_PIf * cast<f32>( rand() ) * invRandMaxF;
+			const auto rotMat = cb::MakeZRotation( dirRot );
+
+			const auto dir = accelScaler * rotMat.GetColumnX();
+
+			const cb::Vec3 vel( 0.0f, 0.0f, 0.0f );
+			const cb::Vec3 accel( dir.x, dir.y, up );
+			const cb::Vec3 force( 0.0f, 0.0f, 0.0f );
+
+			m_freefall->add( pos, id, geo, frame, vel, accel, force );
+		}
+	}
+#endif
+
+#if 1
+	{
+		/*
+		const auto center = cb::Vec3( 00.0f, 50.0f, 50.0f );
+		const auto size   = cb::Vec3( 00.0f, 50.0f, 10.0f );
+		/*/
+		const auto center = cb::Vec3( 300.0f, 300.0f, 40.0f );
+		const auto size = cb::Vec3( 300.0f, 300.0f, 10.0f );
+		//*/
+
+		for( i32 i = 0; i < k_maxMovingObjects; ++i )
+		{
+			const auto id = ent::EntityId::makeNext();
+
+			const auto pos = cb::MakeRandomInBox( center, size );
+
+			GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/robot.xml" );
+			GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( id, cfg ) );
+
+			auto rot = cb::Mat3( cb::Mat3::eIdentity );
+
+			f32 speed = cast<f32>( rand() ) * invRandMaxF;
+			f32 rotUF = cast<f32>( rand() ) * invRandMaxF;
+
+			cb::SetZRotation( &rot, 2 * CB_PIf * rotUF );
+
+			const cb::Frame3 frame( rot, pos );
+
+			const auto up = 35.0f * cast<f32>( rand() ) * invRandMaxF;
+			const auto accelScaler = 35.0f * cast<f32>( rand() ) * invRandMaxF;
+
+			const auto dirRot = CB_TWO_PIf * cast<f32>( rand() ) * invRandMaxF;
+			const auto rotMat = cb::MakeZRotation( dirRot );
+
+			const auto dir = accelScaler * rotMat.GetColumnX();
+
+			const cb::Vec3 vel( 0.0f, 0.0f, 0.0f );
+			const cb::Vec3 accel( dir.x, dir.y, up );
+			const cb::Vec3 force( 0.0f, 0.0f, 0.0f );
+
+			m_freefall->add( pos, id, geo, frame, vel, accel, force );
+		}
+	}
+	lprintf( "Done creating %i moving objects\n", 2 * k_maxMovingObjects );
+#endif
 }
 
 void node( const u32 nodeIdBase )
@@ -1030,14 +1055,32 @@ void PhamApp::Update( double CurrTime, double dt )
 	SampleBase::Update( CurrTime, dt );
 
 	//*
+	if( m_continueWorldgen )
 	{
+
 		cb::Vec3 pos( 0.0f, 0.0f, 0.0f );
 
-		m_cubit->genWorld( pos );
+		m_continueWorldgen  = m_cubit->genWorld( pos );
 
-		m_cubit->genGeo( pos );
+		m_continueWorldgen |= m_cubit->genGeo( pos );
+
+		//Worldgen is done
+		if( !m_continueWorldgen )
+		{
+			spawnBallisticsFrame();
+
+			m_nextSpawnTime = CurrTime + 1000000000000.0;
+		}
 	}
 	//*/
+
+	if( m_nextSpawnTime < CurrTime )
+	{
+		//spawnBallisticsFrame();
+
+		// TODO CONFIG
+		m_nextSpawnTime = CurrTime + 10.0;
+	}
 
 	m_Camera.Update( m_InputController, cast<float>( dt ), false );
 

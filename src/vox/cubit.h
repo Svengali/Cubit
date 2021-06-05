@@ -67,7 +67,7 @@ namespace vox
 	{
 	public:
 		virtual bool genWorld( const cb::Vec3 pos );
-		virtual void genGeo( const cb::Vec3 pos );
+		virtual bool genGeo( const cb::Vec3 pos );
 	
 		void collide( const cb::Segment &seg, cb::SegmentResults *pRes );
 

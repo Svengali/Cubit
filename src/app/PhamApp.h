@@ -37,6 +37,8 @@ public:
 
 	virtual void Initialize( const dg::SampleInitInfo &InitInfo ) override final;
 
+	void spawnBallisticsFrame();
+
 	/*
 	virtual void GetEngineInitializationAttribs( dg::RENDER_DEVICE_TYPE DeviceType,
 		dg::EngineCreateInfo &Attribs,
@@ -61,6 +63,7 @@ private:
 	bool   m_ShowAnotherWindow = false;
 	dg::float4 m_ClearColor = { 0.45f, 0.55f, 0.60f, 1.00f };
 
+	double m_nextSpawnTime = 0.0;
 
 	dg::LightAttribs      m_LightAttribs;
 	dg::FirstPersonCamera m_Camera;
@@ -71,6 +74,8 @@ private:
 	FreefallPlanePtr      m_freefall;
 
 	bool									m_findSpawnLoc = true;
+
+	bool                  m_continueWorldgen = true;
 
 	ent::EntityId					m_playerId;
 	ent::EntityId					m_forwardId;

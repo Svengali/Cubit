@@ -23,12 +23,14 @@ public:
 		Geometry	= 2,
 		Frame			= 3,
 		Velocity	= 4,
+		Accel     = 5,
+		Force			= 6,
 	};
 
 public:
 
 
-	typedef df::ComBlocks<k_freefallBlockSize, FreefallData::ESlots, GeoDiligentPtr, cb::Frame3, cb::Vec3> TCom;
+	typedef df::ComBlocks<k_freefallBlockSize, FreefallData::ESlots, GeoDiligentPtr, cb::Frame3, cb::Vec3, cb::Vec3, cb::Vec3> TCom;
 	typedef TCom::AllBlocks::TBlock Block;
 
 	TCom m_com;

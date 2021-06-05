@@ -154,6 +154,7 @@ void vox::CubitPlane::genAxialBoxes( Cubit::Ptr chunk, const i32 iz, const Cubit
 
 			const auto hasType = !!chunk->get_slow( pos );
 
+			//These are bools, so convert the occasional 2 branches into a jump
 			if( hasFaces & hasType )
 			{
 				const auto gPos = Cubit::GPos::from( chunk->m_cPos, pos );
@@ -201,7 +202,7 @@ void vox::CubitPlane::findOverlapping( const Cubit::CPos min, const Cubit::CPos 
 
 static SimplexNoise noise;
 static f32 s_fractalMultXY = 1.0f / 512.0f;
-static f32 s_fractalMultZ = 1.0f / 128.0f;
+static f32 s_fractalMultZ  = 1.0f / 128.0f;
 
 
 bool vox::CubitArr::genWorld( Plane<Cubit> *pPlane, const CPos pos )
@@ -857,8 +858,8 @@ static i32 s_maxY = 100;
 static std::vector<vox::Cubit::CPos> s_chunksToMake;
 #ifdef DEBUG
 static i32 s_chunksPerTick = 1;
-static i32 s_maxX = 10;
-static i32 s_maxY = 10;
+static i32 s_maxX = 30;
+static i32 s_maxY = 30;
 #else
 static i32 s_chunksPerTick = 30;
 static i32 s_maxX = 100;
@@ -1027,7 +1028,7 @@ static const i32 k_maxChunks = 128;
 #endif
 
 //*
-void vox::CubitPlane::genGeo( const cb::Vec3 inPos )
+bool vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 {
 	i32 generated = 0;
 	std::array<PosChunk, k_maxChunks> chunks;
@@ -1050,7 +1051,7 @@ void vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 
 	}
 
-	if( !generated ) return;
+	if( !generated ) return false;
 
 	const auto timeWorldgen = Timer<>::execution( [&]() {
 
@@ -1121,6 +1122,8 @@ void vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 
 	lprintf( "Generated %i chunks %i Triangles\n", s_chunkCount, s_triCount );
 
+
+	return true;
 }
 //*/
 

@@ -124,7 +124,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int cmdShow)
         else
         {
             auto CurrTime    = Timer.GetElapsedTime();
-            auto ElapsedTime = CurrTime - PrevTime;
+            auto ElapsedTime = std::min( 0.1, CurrTime - PrevTime );
             PrevTime         = CurrTime;
 
             if (g_pTheApp->IsReady())

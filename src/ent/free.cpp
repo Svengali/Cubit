@@ -80,36 +80,55 @@ void FreefallPlane::updateBlocks( double dt )
 
 				for( i32 bIndex = 0; bIndex < blockCount; ++bIndex )
 				{
-					 auto *pBlock = pData->m_com.m_blocks.m_block[bIndex].get();
-					 auto max = pData->m_com.m_blocks.m_allocated[bIndex];
+					auto *pBlock = pData->m_com.m_blocks.m_block[bIndex].get();
+					auto max = pData->m_com.m_blocks.m_allocated[bIndex];
 
-					 const auto *__restrict const pSrcFrame = pBlock->src<FreefallData::Frame, cb::Frame3>();
-					 const auto *__restrict const pSrcVel = pBlock->src<FreefallData::Velocity, cb::Vec3>();
+					const auto *__restrict const pSrcFrame = pBlock->src<FreefallData::Frame, cb::Frame3>();
+					const auto *__restrict const pSrcVel = pBlock->src<FreefallData::Velocity, cb::Vec3>();
+					const auto *__restrict const pSrcAccel = pBlock->src<FreefallData::Accel, cb::Vec3>();
 
 
-					 auto *__restrict pDstFrame = pBlock->dst<FreefallData::Frame, cb::Frame3>();
+					auto *__restrict pDstFrameArr = pBlock->dst<FreefallData::Frame, cb::Frame3>();
+					auto *__restrict pDstVelArr = pBlock->dst<FreefallData::Velocity, cb::Vec3>();
+					auto *__restrict pDstAccelArr = pBlock->dst<FreefallData::Accel, cb::Vec3>();
 
-					 //const auto *__restrict const pSrcGeo = pBlock->src<FreefallData::Geometry, GeoDiligentPtr>();
+					//const auto *__restrict const pSrcGeo = pBlock->src<FreefallData::Geometry, GeoDiligentPtr>();
 
-					 for( i32 i = 0; i < (i32)max; ++i )
-					 {
-						 const auto &srcFm = pSrcFrame[i];
-						 const auto srcVel = pSrcVel[i];
+					for( i32 i = 0; i < (i32)max; ++i )
+					{
+						const auto &srcFm = pSrcFrame[i];
+						const auto &srcVel = pSrcVel[i];
+						const auto &srcAccel = pSrcAccel[i];
 
-						 auto pDstFm = &( pDstFrame[i] );
+						auto *pDstFm = &( pDstFrameArr[i] );
+						auto *pDstVel = &( pDstVelArr[i] );
+						auto *pDstAccel = &( pDstAccelArr[i] );
 
-						 const auto fmVel = srcVel * (f32)dt;
+						const auto newAccel = srcAccel + cb::Vec3( 0, 0, -2.8 ) * dt;
+						const auto newVel = srcVel + newAccel * dt;
+						const auto newPos = srcFm.GetTranslation() + newVel * dt;
 
-						 const auto fwdVel = srcFm.GetMatrix().GetColumnX() * fmVel.x;
-						 const auto rgtVel = srcFm.GetMatrix().GetColumnY() * fmVel.y;
-						 const auto uppVel = srcFm.GetMatrix().GetColumnZ() * fmVel.z;
+						*pDstAccel = newAccel;
+						*pDstVel = newVel;
+						pDstFm->SetTranslation( newPos );
 
-						 auto newPos = srcFm.GetTranslation() + fwdVel + rgtVel + uppVel;
+						int dummy = 1;
 
-						 pDstFm->SetTranslation( newPos );
-					 }
 
-					 pBlock->swap();
+						/*
+						const auto fmVel = srcVel * (f32)dt;
+
+						const auto fwdVel = srcFm.GetMatrix().GetColumnX() * fmVel.x;
+						const auto rgtVel = srcFm.GetMatrix().GetColumnY() * fmVel.y;
+						const auto uppVel = srcFm.GetMatrix().GetColumnZ() * fmVel.z;
+
+						auto newPos = srcFm.GetTranslation() + fwdVel + rgtVel + uppVel;
+
+						pDstFm->SetTranslation( newPos );
+						*/
+					}
+
+					pBlock->swap();
 
 				}
 
@@ -168,7 +187,7 @@ void FreefallPlane::updateBlocks( double dt )
 
 		auto taskPtr = enki::TaskSetPtr( pTask );
 		PhamApp::Info().Task.AddTaskSetToPipe( pTask );
-	}
+}
 #endif
 
 
