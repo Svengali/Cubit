@@ -231,7 +231,7 @@ bool vox::CubitArr::genWorld( Plane<Cubit> *pPlane, const CPos pos )
 				const i32 cubeWorldX = m_gPos.x + x;
 				const f32 worldX = (f32)cubeWorldX;
 
-				const f32 perlinX = worldX * s_fractalMultXY + s_shiftValue * 10.0f;
+				const f32 perlinX = (worldX + s_shiftValue) * s_fractalMultXY;
 
 				//*
 				const f32 roughnessMapRaw = ( noise.fractal( 3, perlinX + 1000.0f, perlinY + 1000 ) + 1.0f ) * 0.4f;
@@ -883,6 +883,13 @@ bool vox::CubitPlane::genWorld( const cb::Vec3 pos )
 
 	if( !s_chunksToMake.size() )
 	{
+		//srand();
+
+		for( auto i = 0; i < 1000; ++i )
+		{
+			rand();
+		}
+
 		const i32 randStart = rand();
 		const f32 fShift = (f32)randStart;
 
@@ -1024,7 +1031,7 @@ static i32 s_triCount = 0;
 #ifdef DEBUG
 static const i32 k_maxChunks = 1;
 #else
-static const i32 k_maxChunks = 128;
+static const i32 k_maxChunks = 64;
 #endif
 
 //*

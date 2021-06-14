@@ -55,6 +55,7 @@ public:
 
 	virtual void WindowResize( dg::Uint32 Width, dg::Uint32 Height ) override final;
 
+	vox::CubitPlanePtr    m_cubit;
 
 private:
 	void UpdateUI();
@@ -69,7 +70,6 @@ private:
 	dg::FirstPersonCamera m_Camera;
 	dg::MouseState        m_LastMouseState;
 
-	vox::CubitPlanePtr    m_cubit;
 
 	FreefallPlanePtr      m_freefall;
 

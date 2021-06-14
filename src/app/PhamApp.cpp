@@ -598,7 +598,7 @@ void PhamApp::spawnBallisticsFrame()
 	const i32 k_maxMovingObjects = 20;
 #else
 	// We do 2 sets of these, so double it
-	const i32 k_maxMovingObjects = 50000;
+	const i32 k_maxMovingObjects = 10000;
 #endif
 
 	const f32 invRandMaxF = 1.0f / cast<f32>( RAND_MAX );

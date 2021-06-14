@@ -104,16 +104,26 @@ void FreefallPlane::updateBlocks( double dt )
 						auto *pDstVel = &( pDstVelArr[i] );
 						auto *pDstAccel = &( pDstAccelArr[i] );
 
+						const auto srcPos = srcFm.GetTranslation();
+
 						const auto newAccel = srcAccel + cb::Vec3( 0, 0, -2.8 ) * dt;
 						const auto newVel = srcVel + newAccel * dt;
-						const auto newPos = srcFm.GetTranslation() + newVel * dt;
+						const auto newPos = srcPos + newVel * dt;
 
 						*pDstAccel = newAccel;
 						*pDstVel = newVel;
 						pDstFm->SetTranslation( newPos );
 
-						int dummy = 1;
+						cb::Segment seg(srcPos, newPos, 0.1f);
 
+						cb::SegmentResults res;
+
+						PhamApp::Info().m_cubit->collide( seg, &res );
+
+						if( res.Collided() )
+						{
+							//lprintf( "X" );
+						}
 
 						/*
 						const auto fmVel = srcVel * (f32)dt;
