@@ -100,42 +100,50 @@ void FreefallPlane::updateBlocks( double dt )
 						const auto &srcVel = pSrcVel[i];
 						const auto &srcAccel = pSrcAccel[i];
 
-						auto *pDstFm = &( pDstFrameArr[i] );
-						auto *pDstVel = &( pDstVelArr[i] );
-						auto *pDstAccel = &( pDstAccelArr[i] );
+						auto *__restrict pDstFm = &( pDstFrameArr[i] );
+						auto *__restrict pDstVel = &( pDstVelArr[i] );
+						auto *__restrict pDstAccel = &( pDstAccelArr[i] );
 
 						const auto srcPos = srcFm.GetTranslation();
 
-						const auto newAccel = srcAccel + cb::Vec3( 0, 0, -2.8 ) * dt;
-						const auto newVel = srcVel + newAccel * dt;
-						const auto newPos = srcPos + newVel * dt;
+						const auto newAccel = srcAccel + cb::Vec3( 0, 0, -2.8f ) * cast<f32>( dt );
+						const auto newVel = srcVel + newAccel * cast<f32>( dt );
+						const auto newPos = srcPos + newVel * cast<f32>( dt );
 
-						*pDstAccel = newAccel;
-						*pDstVel = newVel;
-						pDstFm->SetTranslation( newPos );
-
-						cb::Segment seg(srcPos, newPos, 0.1f);
-
-						cb::SegmentResults res;
-
-						PhamApp::Info().m_cubit->collide( seg, &res );
-
-						if( res.Collided() )
+						//TODO @@@@@ Move this check somewhere else.  
+						if( newPos.z >= 0 )
 						{
-							//lprintf( "X" );
+
+							cb::Segment seg( srcPos, newPos, 0.1f );
+
+							cb::SegmentResults res;
+
+							PhamApp::Info().m_cubit->collide( seg, &res );
+
+							if( !res.Collided() )
+							{
+								*pDstAccel = newAccel;
+								*pDstVel = newVel;
+								pDstFm->SetTranslation( newPos );
+							}
+							else
+							{
+								*pDstAccel = cb::Vec3::zero;
+								*pDstVel = cb::Vec3::zero;
+							}
+
+							/*
+							const auto fmVel = srcVel * (f32)dt;
+
+							const auto fwdVel = srcFm.GetMatrix().GetColumnX() * fmVel.x;
+							const auto rgtVel = srcFm.GetMatrix().GetColumnY() * fmVel.y;
+							const auto uppVel = srcFm.GetMatrix().GetColumnZ() * fmVel.z;
+
+							auto newPos = srcFm.GetTranslation() + fwdVel + rgtVel + uppVel;
+
+							pDstFm->SetTranslation( newPos );
+							*/
 						}
-
-						/*
-						const auto fmVel = srcVel * (f32)dt;
-
-						const auto fwdVel = srcFm.GetMatrix().GetColumnX() * fmVel.x;
-						const auto rgtVel = srcFm.GetMatrix().GetColumnY() * fmVel.y;
-						const auto uppVel = srcFm.GetMatrix().GetColumnZ() * fmVel.z;
-
-						auto newPos = srcFm.GetTranslation() + fwdVel + rgtVel + uppVel;
-
-						pDstFm->SetTranslation( newPos );
-						*/
 					}
 
 					pBlock->swap();

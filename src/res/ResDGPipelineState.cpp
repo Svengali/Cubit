@@ -26,7 +26,7 @@ ResDGPipelineStatePtr ResDGPipelineState::create( const char *const pFilename, c
 void ResDGPipelineState::onPostLoad()
 {
 	// TODO HACK Properly find out the layouts
-	const auto it = m_filename.find( "VertPosNormalUV" );
+	const auto it = m_filename.find( "VertPosNormalColorUV" );
 
 	if( it < m_filename.size() )
 	{
@@ -36,8 +36,10 @@ void ResDGPipelineState::onPostLoad()
 			dg::LayoutElement{0, 0, 3, dg::VT_FLOAT32, dg::False},
 			// Attribute 1 - normal
 			dg::LayoutElement{1, 0, 3, dg::VT_FLOAT32, dg::False},
-			// Attribute 2 - texture coordinates
-			dg::LayoutElement{2, 0, 2, dg::VT_FLOAT32, dg::False}
+			// Attribute 2 - color
+			dg::LayoutElement{2, 0, 4, dg::VT_FLOAT32, dg::False},
+			// Attribute 3 - texture coordinates
+			dg::LayoutElement{3, 0, 2, dg::VT_FLOAT32, dg::False}
 		};
 
 		createRaw( m_vs, m_ps, LayoutElems );

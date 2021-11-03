@@ -598,7 +598,7 @@ void PhamApp::spawnBallisticsFrame()
 	const i32 k_maxMovingObjects = 20;
 #else
 	// We do 2 sets of these, so double it
-	const i32 k_maxMovingObjects = 10000;
+	const i32 k_maxMovingObjects = 20000;
 #endif
 
 	const f32 invRandMaxF = 1.0f / cast<f32>( RAND_MAX );
@@ -1103,6 +1103,7 @@ void PhamApp::Update( double CurrTime, double dt )
 		const auto velDt = m_Camera.m_moveDir.x * dt;
 		const auto velRgtDt = m_Camera.m_moveDir.y * dt;
 
+		//lprintf("%.2f, %.2f", velDt, velRgtDt);
 
 		const auto fwdDt = fwd * (f32)velDt;
 		const auto rgtDt = rgt * (f32)velRgtDt;
@@ -1140,7 +1141,7 @@ void PhamApp::Update( double CurrTime, double dt )
 		}
 		else
 		{
-			const auto finalPos = pos - fwdDt;
+			const auto finalPos = pos + fwdDt + rgtDt;
 
 			m_Camera.SetPos( dg::float3( finalPos.x, finalPos.y, finalPos.z ) );
 		}

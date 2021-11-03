@@ -16,6 +16,7 @@ inline dg::LayoutElement LayoutElementFromType( const u32 count, const T &val )
 {
 	// If youre getting an error here about  must return a value
 	// You need to add the type below 
+	lprintf( "ERROR" );
 }
 
 template<>
@@ -28,6 +29,12 @@ template<>
 inline dg::LayoutElement LayoutElementFromType( const u32 count, const cb::Vec2 &val )
 {
 	return dg::LayoutElement{ count, 0, 2, dg::VT_FLOAT32, dg::False };
+}
+
+template<>
+inline dg::LayoutElement LayoutElementFromType( const u32 count, const cb::Vec4 &val )
+{
+	return dg::LayoutElement{ count, 0, 4, dg::VT_FLOAT32, dg::False };
 }
 
 
@@ -98,25 +105,24 @@ struct VertPosUV: public VertexBase
 	cb::Vec2 uv;
 };
 
-struct VertPosNormalUV: public VertexBase
+struct VertPosNormalColorUV: public VertexBase
 {
 	STRUCT( VertPosUV, VertexBase );
 
 	REFLECT_BEGIN( VertPosUV, VertexBase )
 		REFLECT( pos );
 		REFLECT( normal );
+		REFLECT( color );
 		REFLECT( uv );
 	REFLECT_END();
 
-	VertPosNormalUV()
-	{
+	VertPosNormalColorUV() = default;
 
-	}
-
-	VertPosNormalUV( const cb::Vec3 &_pos, const cb::Vec3 &_normal, const cb::Vec2 &_uv )
+	VertPosNormalColorUV( const cb::Vec3 &_pos, const cb::Vec3 &_normal, const cb::Vec4 _color, const cb::Vec2 &_uv )
 		:
 		pos( _pos ),
 		normal( _normal ),
+		color( _color ),
 		uv( _uv )
 	{
 
@@ -124,6 +130,7 @@ struct VertPosNormalUV: public VertexBase
 
 	cb::Vec3 pos;
 	cb::Vec3 normal;
+	cb::Vec4 color;
 	cb::Vec2 uv;
 };
 

@@ -53,7 +53,7 @@ bool vox::Cubit::genWorld( Plane<Cubit> *pPlane, const CPos pos )
 
 
 //*
-void vox::Cubit::genGeo( Plane<Cubit> *pPlane, const CPos pos, std::vector<VertPosNormalUV> *pVerts, std::vector<u32> *pIndices )
+void vox::Cubit::genGeo( Plane<Cubit> *pPlane, const CPos pos, std::vector<VertPosNormalColorUV> *pVerts, std::vector<u32> *pIndices )
 {
 }
 //*/
@@ -180,6 +180,35 @@ void vox::CubitPlane::findOverlapping( const Cubit::CPos min, const Cubit::CPos 
 
 	i32 index = 0;
 
+	for( auto cz = min.z; cz <= max.z; ++cz )
+	{
+		for( auto cy = min.y; cy <= max.y; ++cy )
+		{
+			for( auto cx = min.x; cx <= max.x; ++cx )
+			{
+				const auto cPos = Cubit::CPos( cx, cy, cz );
+
+				const auto ptr = m_sparse.find( cPos );
+
+				if( ptr != m_sparse.end() )
+				{
+					( *pArr )[index] = ptr->second;
+					++index;
+
+					if( index >= size )
+					{
+						lprinterr( "Blew out the overlapping list of %i\n", index );
+						return;
+					}
+				}
+
+			}
+
+		}
+
+	}
+
+	/*
 	for( auto [pos, ptr] : m_sparse )
 	{
 		if( ( pos >= min ) & ( pos <= max ) )
@@ -194,6 +223,7 @@ void vox::CubitPlane::findOverlapping( const Cubit::CPos min, const Cubit::CPos 
 			}
 		}
 	}
+	*/
 
 	*pCount = index;
 }
@@ -312,37 +342,39 @@ enum Faces
 };
 #endif
 
-static VertPosNormalUV CubeVerts[] =
+
+
+static VertPosNormalColorUV CubeVerts[] =
 {
-		{cb::Vec3( +S,-S,-S ), cb::Vec3( P, Z, Z ), cb::Vec2( 0,1 )},
-		{cb::Vec3( +S,-S,+S ), cb::Vec3( P, Z, Z ), cb::Vec2( 1,1 )},
-		{cb::Vec3( +S,+S,+S ), cb::Vec3( P, Z, Z ), cb::Vec2( 1,0 )},
-		{cb::Vec3( +S,+S,-S ), cb::Vec3( P, Z, Z ), cb::Vec2( 0,0 )},
+		{cb::Vec3( +S,-S,-S ), cb::Vec3( P, Z, Z ), cb::Vec4( 1, 0, 0, 0 ), cb::Vec2( 0,1 )},
+		{cb::Vec3( +S,-S,+S ), cb::Vec3( P, Z, Z ), cb::Vec4( 1, 0, 0, 0 ), cb::Vec2( 1,1 )},
+		{cb::Vec3( +S,+S,+S ), cb::Vec3( P, Z, Z ), cb::Vec4( 1, 0, 0, 0 ), cb::Vec2( 1,0 )},
+		{cb::Vec3( +S,+S,-S ), cb::Vec3( P, Z, Z ), cb::Vec4( 1, 0, 0, 0 ), cb::Vec2( 0,0 )},
 
-		{cb::Vec3( -S,+S,-S ), cb::Vec3( N, Z, Z ), cb::Vec2( 1,0 )},
-		{cb::Vec3( -S,+S,+S ), cb::Vec3( N, Z, Z ), cb::Vec2( 0,0 )},
-		{cb::Vec3( -S,-S,+S ), cb::Vec3( N, Z, Z ), cb::Vec2( 0,1 )},
-		{cb::Vec3( -S,-S,-S ), cb::Vec3( N, Z, Z ), cb::Vec2( 1,1 )},
+		{cb::Vec3( -S,+S,-S ), cb::Vec3( N, Z, Z ), cb::Vec4( 1, 0, 0, 0 ), cb::Vec2( 1,0 )},
+		{cb::Vec3( -S,+S,+S ), cb::Vec3( N, Z, Z ), cb::Vec4( 1, 0, 0, 0 ), cb::Vec2( 0,0 )},
+		{cb::Vec3( -S,-S,+S ), cb::Vec3( N, Z, Z ), cb::Vec4( 1, 0, 0, 0 ), cb::Vec2( 0,1 )},
+		{cb::Vec3( -S,-S,-S ), cb::Vec3( N, Z, Z ), cb::Vec4( 1, 0, 0, 0 ), cb::Vec2( 1,1 )},
 
-		{cb::Vec3( +S,+S,-S ), cb::Vec3( Z, P, Z ), cb::Vec2( 0,1 )},
-		{cb::Vec3( +S,+S,+S ), cb::Vec3( Z, P, Z ), cb::Vec2( 0,0 )},
-		{cb::Vec3( -S,+S,+S ), cb::Vec3( Z, P, Z ), cb::Vec2( 1,0 )},
-		{cb::Vec3( -S,+S,-S ), cb::Vec3( Z, P, Z ), cb::Vec2( 1,1 )},
+		{cb::Vec3( +S,+S,-S ), cb::Vec3( Z, P, Z ), cb::Vec4( 0, 1, 0, 0 ), cb::Vec2( 0,1 )},
+		{cb::Vec3( +S,+S,+S ), cb::Vec3( Z, P, Z ), cb::Vec4( 0, 1, 0, 0 ), cb::Vec2( 0,0 )},
+		{cb::Vec3( -S,+S,+S ), cb::Vec3( Z, P, Z ), cb::Vec4( 0, 1, 0, 0 ), cb::Vec2( 1,0 )},
+		{cb::Vec3( -S,+S,-S ), cb::Vec3( Z, P, Z ), cb::Vec4( 0, 1, 0, 0 ), cb::Vec2( 1,1 )},
 
-		{cb::Vec3( -S,-S,-S ), cb::Vec3( Z, N, Z ), cb::Vec2( 0,1 )},
-		{cb::Vec3( -S,-S,+S ), cb::Vec3( Z, N, Z ), cb::Vec2( 0,0 )},
-		{cb::Vec3( +S,-S,+S ), cb::Vec3( Z, N, Z ), cb::Vec2( 1,0 )},
-		{cb::Vec3( +S,-S,-S ), cb::Vec3( Z, N, Z ), cb::Vec2( 1,1 )},
+		{cb::Vec3( -S,-S,-S ), cb::Vec3( Z, N, Z ), cb::Vec4( 0, 1, 0, 0 ), cb::Vec2( 0,1 )},
+		{cb::Vec3( -S,-S,+S ), cb::Vec3( Z, N, Z ), cb::Vec4( 0, 1, 0, 0 ), cb::Vec2( 0,0 )},
+		{cb::Vec3( +S,-S,+S ), cb::Vec3( Z, N, Z ), cb::Vec4( 0, 1, 0, 0 ), cb::Vec2( 1,0 )},
+		{cb::Vec3( +S,-S,-S ), cb::Vec3( Z, N, Z ), cb::Vec4( 0, 1, 0, 0 ), cb::Vec2( 1,1 )},
 
-		{cb::Vec3( +S,-S,+S ), cb::Vec3( Z, Z, P ), cb::Vec2( 0,1 )},
-		{cb::Vec3( -S,-S,+S ), cb::Vec3( Z, Z, P ), cb::Vec2( 1,1 )},
-		{cb::Vec3( -S,+S,+S ), cb::Vec3( Z, Z, P ), cb::Vec2( 1,0 )},
-		{cb::Vec3( +S,+S,+S ), cb::Vec3( Z, Z, P ), cb::Vec2( 0,0 )},
+		{cb::Vec3( +S,-S,+S ), cb::Vec3( Z, Z, P ), cb::Vec4( 0, 0, 1, 0 ), cb::Vec2( 0,1 )},
+		{cb::Vec3( -S,-S,+S ), cb::Vec3( Z, Z, P ), cb::Vec4( 0, 0, 1, 0 ), cb::Vec2( 1,1 )},
+		{cb::Vec3( -S,+S,+S ), cb::Vec3( Z, Z, P ), cb::Vec4( 0, 0, 1, 0 ), cb::Vec2( 1,0 )},
+		{cb::Vec3( +S,+S,+S ), cb::Vec3( Z, Z, P ), cb::Vec4( 0, 0, 1, 0 ), cb::Vec2( 0,0 )},
 
-		{cb::Vec3( -S,-S,-S ), cb::Vec3( Z, Z, N ), cb::Vec2( 0,1 )},
-		{cb::Vec3( +S,-S,-S ), cb::Vec3( Z, Z, N ), cb::Vec2( 1,1 )},
-		{cb::Vec3( +S,+S,-S ), cb::Vec3( Z, Z, N ), cb::Vec2( 1,0 )},
-		{cb::Vec3( -S,+S,-S ), cb::Vec3( Z, Z, N ), cb::Vec2( 0,0 )},
+		{cb::Vec3( -S,-S,-S ), cb::Vec3( Z, Z, N ), cb::Vec4( 0, 0, 1, 0 ), cb::Vec2( 0,1 )},
+		{cb::Vec3( +S,-S,-S ), cb::Vec3( Z, Z, N ), cb::Vec4( 0, 0, 1, 0 ), cb::Vec2( 1,1 )},
+		{cb::Vec3( +S,+S,-S ), cb::Vec3( Z, Z, N ), cb::Vec4( 0, 0, 1, 0 ), cb::Vec2( 1,0 )},
+		{cb::Vec3( -S,+S,-S ), cb::Vec3( Z, Z, N ), cb::Vec4( 0, 0, 1, 0 ), cb::Vec2( 0,0 )},
 
 };
 
@@ -515,7 +547,7 @@ public:
 
 
 
-	void pushSingleCube( Faces faces, std::vector<VertPosNormalUV> *const pVerts, std::vector<u32> *const pInd, const cb::Vec3 pos, const cb::Vec3 scale )
+	void pushSingleCube( Faces faces, std::vector<VertPosNormalColorUV> *const pVerts, std::vector<u32> *const pInd, const cb::Vec3 pos, const cb::Vec3 scale )
 	{
 		u32 curFace = 1 << 0;
 
@@ -530,19 +562,26 @@ public:
 				const i32 vertStart = iFace * 4;
 				const i32 indicesStart = (i32)pVerts->size();
 
+				//pVerts->reserve( pVerts->size() + 4 );
+
 				for( i32 iVert = 0; iVert < 4; ++iVert )
 				{
-					const auto rawVert = CubeVerts[vertStart + iVert];
+					//const auto rawVert = ;
 					//const auto scaledVert = cb::Vec3( rawVert.x * scale.x, )
 
-					pVerts->push_back( rawVert );
-					pVerts->back().pos.ComponentwiseScale( scale );
-					pVerts->back().pos += pos;
+					pVerts->emplace_back( CubeVerts[vertStart + iVert] );
+
+					auto &rBack = pVerts->back();
+
+					rBack.pos.ComponentwiseScale( scale );
+					rBack.pos += pos;
 				}
+
+				//pInd->reserve( pInd->size() + 6 )
 
 				for( i32 iIndex = 0; iIndex < 6; ++iIndex )
 				{
-					pInd->push_back( (u32)( CubeIndices[iIndex] + indicesStart ) );
+					pInd->emplace_back( (u32)( CubeIndices[iIndex] + indicesStart ) );
 				}
 			}
 
@@ -556,7 +595,7 @@ public:
 
 	void cube(
 		vox::CubitArr *const pCubit,
-		std::vector<VertPosNormalUV> *const pVerts,
+		std::vector<VertPosNormalColorUV> *const pVerts,
 		//		std::vector<float> *const pAttr,
 		std::vector<u32> *const pIndices,
 		const typename TCHUNK::LPos pos,
@@ -579,6 +618,7 @@ public:
 		//If its air, skip
 		if( !cur ) return;
 
+		/*
 		Faces faces = (Faces)0;
 
 		faces = cast<Faces>( faces | ( Faces::ePX * cast<int>( !posX ) ) );
@@ -589,6 +629,21 @@ public:
 
 		faces = cast<Faces>( faces | ( Faces::ePZ * cast<int>( !posZ ) ) );
 		faces = cast<Faces>( faces | ( Faces::eNZ * cast<int>( !negZ ) ) );
+		/*/
+		i32 iFaces = 0;
+
+		iFaces |= Faces::ePX * !posX;
+		iFaces |= Faces::eNX * !negX;
+
+		iFaces |= Faces::ePY * !posY;
+		iFaces |= Faces::eNY * !negY;
+
+		iFaces |= Faces::ePZ * !posZ;
+		iFaces |= Faces::eNZ * !negZ;
+
+		//*/
+
+		Faces faces = cast<Faces>( iFaces );
 
 		const auto h = l + cb::Vec3( 1 * scale.x, 1 * scale.y, 1 * scale.z );
 
@@ -608,7 +663,7 @@ public:
 
 
 
-	i32 fill( vox::Plane<vox::Cubit> *pPlane, std::vector<VertPosNormalUV> *pVerts, std::vector<u32> *pIndices, vox::CubitArr *const pCubit, const typename TCHUNK::CPos chunkPos, const cb::Vec3 worldPos, const cb::Vec3 scale )
+	i32 fill( vox::Plane<vox::Cubit> *pPlane, std::vector<VertPosNormalColorUV> *pVerts, std::vector<u32> *pIndices, vox::CubitArr *const pCubit, const typename TCHUNK::CPos chunkPos, const cb::Vec3 worldPos, const cb::Vec3 scale )
 	{
 		//std::vector<VertPosNormalUV> verts;
 		//std::vector<u32> indices;
@@ -630,24 +685,22 @@ public:
 			{
 				for( i32 x = 1; x < pCubit->k_edgeSize - 1; ++x )
 				{
-					const auto pos = TCHUNK::LPos( x, y, z );
+					const auto lPos = TCHUNK::LPos( x, y, z );
 
-					const u16 posX = pCubit->m_arr.m_arr[pCubit->m_arr.index( pos.x + 1, pos.y + 0, pos.z + 0 )];
-					const u16 negX = pCubit->m_arr.m_arr[pCubit->m_arr.index( pos.x - 1, pos.y + 0, pos.z + 0 )];
-					const u16 posY = pCubit->m_arr.m_arr[pCubit->m_arr.index( pos.x + 0, pos.y + 1, pos.z + 0 )];
-					const u16 negY = pCubit->m_arr.m_arr[pCubit->m_arr.index( pos.x + 0, pos.y - 1, pos.z + 0 )];
-					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( pos.x + 0, pos.y + 0, pos.z + 1 )];
-					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( pos.x + 0, pos.y + 0, pos.z - 1 )];
+					const u16 posX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 negX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 posY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
+					const u16 negY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
+					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
+					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
 
-					cube( pCubit, pVerts, pIndices, pos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
+					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 
 				}
 			}
 		}
 
-		//*
-		const i32 zSmall = 0;
-		const i32 zBig = pCubit->k_edgeSize - 1;
+		// TODO PERF Dont use get_slow, just grab the nearby chunks.  
 
 		const auto vPosX = TCHUNK::GPos( 1, 0, 0 );
 		const auto vNegX = TCHUNK::GPos( -1, 0, 0 );
@@ -656,20 +709,53 @@ public:
 		const auto vPosZ = TCHUNK::GPos( 0, 0, 1 );
 		const auto vNegZ = TCHUNK::GPos( 0, 0, -1 );
 
-		for( i32 y = 0; y < pCubit->k_edgeSize; ++y )
+
+		const i32 zSmall = 0;
+		const i32 zBig = pCubit->k_edgeSize - 1;
+		const i32 ySmall = 0;
+		const i32 yBig = pCubit->k_edgeSize - 1;
+		const i32 xSmall = 0;
+		const i32 xBig = pCubit->k_edgeSize - 1;
+
+		//*
+
+		const auto cNegZ = chunkPos - TCHUNK::CPos( 0, 0, 1 );
+		const auto negZOpt = pPlane->get( cNegZ );
+		const auto cPosZ = chunkPos + TCHUNK::CPos( 0, 0, 1 );
+		const auto posZOpt = pPlane->get( cPosZ );
+
+		const auto cNegY = chunkPos - TCHUNK::CPos( 0, 1, 0 );
+		const auto negYOpt = pPlane->get( cNegY );
+		const auto cPosY = chunkPos + TCHUNK::CPos( 0, 1, 0 );
+		const auto posYOpt = pPlane->get( cPosY );
+
+		const auto cNegX = chunkPos - TCHUNK::CPos( 1, 0, 0 );
+		const auto negXOpt = pPlane->get( cNegX );
+		const auto cPosX = chunkPos + TCHUNK::CPos( 1, 0, 0 );
+		const auto posXOpt = pPlane->get( cPosX );
+
+		for( i32 y = 1; y < pCubit->k_edgeSize - 1; ++y )
 		{
-			for( i32 x = 0; x < pCubit->k_edgeSize; ++x )
+			for( i32 x = 1; x < pCubit->k_edgeSize - 1; ++x )
 			{
 				{
 					const auto lPos = TCHUNK::LPos( x, y, zSmall );
 					const auto gPos = chunkPos + lPos;
 
-					const u16 posX = pPlane->get_slow( gPos + vPosX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 negX = pPlane->get_slow( gPos + vNegX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 posY = pPlane->get_slow( gPos + vPosY ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
-					const u16 negY = pPlane->get_slow( gPos + vNegY ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
-					const u16 posZ = pPlane->get_slow( gPos + vPosZ ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
-					const u16 negZ = pPlane->get_slow( gPos + vNegZ ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
+					const auto lNZPos = TCHUNK::LPos( x, y, zBig );
+
+					const u16 posX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 negX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 posY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
+					const u16 negY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
+					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
+					//const u16 negZ = pPlane->get_slow( gPos + vNegZ ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
+					u16 negZ = 0;
+					if( negZOpt.has_value() )
+					{
+						const auto chunk = negZOpt.value();
+						negZ = chunk->get_slow( lNZPos );
+					}
 
 					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 				}
@@ -678,12 +764,23 @@ public:
 					const auto lPos = TCHUNK::LPos( x, y, zBig );
 					const auto gPos = chunkPos + lPos;
 
-					const u16 posX = pPlane->get_slow( gPos + vPosX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 negX = pPlane->get_slow( gPos + vNegX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 posY = pPlane->get_slow( gPos + vPosY ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
-					const u16 negY = pPlane->get_slow( gPos + vNegY ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
-					const u16 posZ = pPlane->get_slow( gPos + vPosZ ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
-					const u16 negZ = pPlane->get_slow( gPos + vNegZ ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
+					const auto lPZPos = TCHUNK::LPos( x, y, zSmall );
+
+					const u16 posX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 negX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 posY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
+					const u16 negY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
+					//const u16 posZ = pPlane->get_slow( gPos + vPosZ ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
+					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
+
+					u16 posZ = 0;
+					if( posZOpt.has_value() )
+					{
+						const auto chunk = posZOpt.value();
+						posZ = chunk->get_slow( lPZPos );
+					}
+
+
 
 					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 				}
@@ -694,23 +791,33 @@ public:
 		//*/
 
 		//*
-		const i32 ySmall = 0;
-		const i32 yBig = pCubit->k_edgeSize - 1;
+
+
 
 		for( i32 z = 1; z < pCubit->k_edgeSize - 1; ++z )
 		{
-			for( i32 x = 0; x < pCubit->k_edgeSize - 0; ++x )
+			for( i32 x = 1; x < pCubit->k_edgeSize - 1; ++x )
 			{
 				{
 					const auto lPos = TCHUNK::LPos( x, ySmall, z );
 					const auto gPos = chunkPos + lPos;
 
-					const u16 posX = pPlane->get_slow( gPos + vPosX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 negX = pPlane->get_slow( gPos + vNegX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 posY = pPlane->get_slow( gPos + vPosY ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
-					const u16 negY = pPlane->get_slow( gPos + vNegY ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
+					const auto lNYPos = TCHUNK::LPos( x, yBig, z );
+
+					const u16 posX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 negX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 posY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
+					//const u16 negY = pPlane->get_slow( gPos + vNegY ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
 					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
 					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
+
+					u16 negY = 0;
+					if( negYOpt.has_value() )
+					{
+						const auto chunk = negYOpt.value();
+						negY = chunk->get_slow( lNYPos );
+					}
+
 
 					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 				}
@@ -719,12 +826,22 @@ public:
 					const auto lPos = TCHUNK::LPos( x, yBig, z );
 					const auto gPos = chunkPos + lPos;
 
-					const u16 posX = pPlane->get_slow( gPos + vPosX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 negX = pPlane->get_slow( gPos + vNegX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 posY = pPlane->get_slow( gPos + vPosY ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
-					const u16 negY = pPlane->get_slow( gPos + vNegY ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
+					const auto lPYPos = TCHUNK::LPos( x, ySmall, z );
+
+					const u16 posX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 negX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
+					//const u16 posY = pPlane->get_slow( gPos + vPosY ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
+					const u16 negY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
 					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
 					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
+
+					u16 posY = 0;
+					if( posYOpt.has_value() )
+					{
+						const auto chunk = posYOpt.value();
+						posY = chunk->get_slow( lPYPos );
+					}
+
 
 					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 				}
@@ -735,8 +852,8 @@ public:
 		//*/
 
 		//*
-		const i32 xSmall = 0;
-		const i32 xBig = pCubit->k_edgeSize - 1;
+
+
 
 		for( i32 z = 1; z < pCubit->k_edgeSize - 1; ++z )
 		{
@@ -746,12 +863,21 @@ public:
 					const auto lPos = TCHUNK::LPos( xSmall, y, z );
 					const auto gPos = chunkPos + lPos;
 
-					const u16 posX = pPlane->get_slow( gPos + vPosX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 negX = pPlane->get_slow( gPos + vNegX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
+					const auto lNXPos = TCHUNK::LPos( xBig, y, z );
+
+					const u16 posX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
+					//const u16 negX = pPlane->get_slow( gPos + vNegX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
 					const u16 posY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
 					const u16 negY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
 					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
 					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
+
+					u16 negX = 0;
+					if( negXOpt.has_value() )
+					{
+						const auto chunk = negXOpt.value();
+						negX = chunk->get_slow( lNXPos );
+					}
 
 					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 				}
@@ -760,12 +886,22 @@ public:
 					const auto lPos = TCHUNK::LPos( xBig, y, z );
 					const auto gPos = chunkPos + lPos;
 
-					const u16 posX = pPlane->get_slow( gPos + vPosX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 negX = pPlane->get_slow( gPos + vNegX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
+					const auto lPXPos = TCHUNK::LPos( xSmall, y, z );
+
+					//const u16 posX = pPlane->get_slow( gPos + vPosX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 negX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
 					const u16 posY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
 					const u16 negY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
 					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
 					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
+
+
+					u16 posX = 0;
+					if( posXOpt.has_value() )
+					{
+						const auto chunk = posXOpt.value();
+						posX = chunk->get_slow( lPXPos );
+					}
 
 					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 				}
@@ -807,7 +943,7 @@ public:
 
 //*/
 
-void vox::CubitArr::genGeo( Plane<Cubit> *pPlane, const CPos pos, std::vector<VertPosNormalUV> *pVerts, std::vector<u32> *pIndices )
+void vox::CubitArr::genGeo( Plane<Cubit> *pPlane, const CPos pos, std::vector<VertPosNormalColorUV> *pVerts, std::vector<u32> *pIndices )
 {
 	const auto pGeo = new ChunkMesh<Cubit>();
 
@@ -857,7 +993,7 @@ static i32 s_maxY = 100;
 
 static std::vector<vox::Cubit::CPos> s_chunksToMake;
 #ifdef DEBUG
-static i32 s_chunksPerTick = 1;
+static i32 s_chunksPerTick = 2;
 static i32 s_maxX = 30;
 static i32 s_maxY = 30;
 #else
@@ -885,6 +1021,7 @@ bool vox::CubitPlane::genWorld( const cb::Vec3 pos )
 	{
 		//srand();
 
+		//Get rid of the first bunch of random numbers.  LCG random has some bad behaviour at first.
 		for( auto i = 0; i < 1000; ++i )
 		{
 			rand();
@@ -1021,7 +1158,7 @@ bool vox::CubitPlane::genWorld( const cb::Vec3 pos )
 
 struct VertsIndices
 {
-	std::vector<VertPosNormalUV> Verts;
+	std::vector<VertPosNormalColorUV> Verts;
 	std::vector<u32> Indices;
 };
 
@@ -1029,7 +1166,7 @@ static i32 s_chunkCount = 0;
 static i32 s_triCount = 0;
 
 #ifdef DEBUG
-static const i32 k_maxChunks = 1;
+static const i32 k_maxChunks = 16;
 #else
 static const i32 k_maxChunks = 64;
 #endif
@@ -1060,6 +1197,8 @@ bool vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 
 	if( !generated ) return false;
 
+	static i32 s_periodicCheck = 0;
+
 	const auto timeWorldgen = Timer<>::execution( [&]() {
 
 
@@ -1072,18 +1211,29 @@ bool vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 		}
 
 
+		const auto timeWorldgen = Timer<>::execution( [&]() {
+			enki::TaskSet task( generated,
+				[&chunks, this, &vertsIndices]( enki::TaskSetPartition range, uint32_t threadnum ) {
+					const auto timeBrace = Timer<>::execution( [&]() {
+						for( u32 i = range.start; i < range.end; ++i )
+						{
+								chunks[i].Chunk->genGeo( this, chunks[i].Pos, &vertsIndices[i].Verts, &vertsIndices[i].Indices );
+						}
+						} );
 
-		enki::TaskSet task( generated,
-			[&chunks, this, &vertsIndices]( enki::TaskSetPartition range, uint32_t threadnum ) {
-				for( u32 i = range.start; i < range.end; ++i )
-				{
-					chunks[i].Chunk->genGeo( this, chunks[i].Pos, &vertsIndices[i].Verts, &vertsIndices[i].Indices );
-				}
-			} );
+						//This isnt safe for multiple threads, but the occasional issue isnt a huge deal
+						if( ( ( ++s_periodicCheck ) & 0xff ) == 0xff )
+						{
+							const auto timeBraceF = (f32)timeBrace;
 
-		PhamApp::Info().Task.AddTaskSetToPipe( &task );
-		PhamApp::Info().Task.WaitforTask( &task );
+							lprintf( "Mesher in %.3f ms\n", timeBraceF / 1000.0f );
+						}
 
+				} );
+
+			PhamApp::Info().Task.AddTaskSetToPipe( &task );
+			PhamApp::Info().Task.WaitforTask( &task );
+		} );
 
 
 
@@ -1093,7 +1243,7 @@ bool vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 
 			++s_chunkCount;
 
-			const auto bufVerts = ResDGBufVertex::createRaw( (u32)( vertIndex.Verts.size() * sizeof( VertPosNormalUV ) ), vertIndex.Verts.data() );
+			const auto bufVerts = ResDGBufVertex::createRaw( (u32)( vertIndex.Verts.size() * sizeof( VertPosNormalColorUV ) ), vertIndex.Verts.data() );
 
 			const auto bufIndices = ResDGBufIndex::createRaw( (u32)( vertIndex.Indices.size() * sizeof( u32 ) ), vertIndex.Indices.data() );
 

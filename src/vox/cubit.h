@@ -6,7 +6,7 @@
 
 #pragma once
 
-struct VertPosNormalUV;
+struct VertPosNormalColorUV;
 
 namespace vox
 {
@@ -23,7 +23,7 @@ namespace vox
 		using Chunk::Chunk;
 
 		virtual bool genWorld( Plane<Cubit> *pPlane, const CPos pos );
-		virtual void genGeo( Plane<Cubit> * pPlane, const CPos pos, std::vector<VertPosNormalUV> *pVerts, std::vector<u32> *pIndices );
+		virtual void genGeo( Plane<Cubit> * pPlane, const CPos pos, std::vector<VertPosNormalColorUV> *pVerts, std::vector<u32> *pIndices );
 
 		bool m_generated = false;
 
@@ -44,7 +44,7 @@ namespace vox
 		virtual u8 get_slow( LPos pos ) override;
 
 		virtual bool genWorld( Plane<Cubit> *pPlane, CPos pos ) override;
-		virtual void genGeo( Plane<Cubit> * pPlane, const CPos pos, std::vector<VertPosNormalUV> *pVerts, std::vector<u32> *pIndices ) override;
+		virtual void genGeo( Plane<Cubit> * pPlane, const CPos pos, std::vector<VertPosNormalColorUV> *pVerts, std::vector<u32> *pIndices ) override;
 
 		virtual void genCollision( Plane<Cubit> *pPlane, CPos pos );
 
