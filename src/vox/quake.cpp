@@ -7,7 +7,7 @@
 #include "../stdafx.h"
 
 
-#include "cubit.h"
+#include "Quake.h"
 #include <res/ResDGBuffer.h>
 #include <res/ResDGLayout.h>
 #include <res/ResDGPipelineState.h>
@@ -18,7 +18,7 @@
 
 namespace cb
 {
-	inline String autoArgConvert( const vox::Cubit::LPos &pos )
+	inline String autoArgConvert( const vox::Quake::LPos &pos )
 	{
 		char buffer[256];
 		snprintf( buffer, 256, "%i, %i, %i", pos.x, pos.y, pos.z );
@@ -29,37 +29,37 @@ namespace cb
 } 
 
 
-cb::Vec3 vox::FramePlane<vox::Cubit>::m_translation = cb::Vec3( 0.0f, 0.0f, 0.0f );
-cb::Vec3 vox::FramePlane<vox::Cubit>::m_scaleFactor = cb::Vec3( 0.25f, 0.25f, 0.25f );
-cb::Vec3 vox::FramePlane<vox::Cubit>::m_invScaleFactor = cb::Vec3( 4.0f, 4.0f, 4.0f );
+cb::Vec3 vox::FramePlane<vox::Quake>::m_translation = cb::Vec3( 0.0f, 0.0f, 0.0f );
+cb::Vec3 vox::FramePlane<vox::Quake>::m_scaleFactor = cb::Vec3( vox::c_sizeQuake, vox::c_sizeQuake, vox::c_sizeQuake );
+cb::Vec3 vox::FramePlane<vox::Quake>::m_invScaleFactor = cb::Vec3( vox::c_sizeQuakeInv, vox::c_sizeQuakeInv, vox::c_sizeQuakeInv );
 
 static float s_shiftValue = 1.0f;
 
 
-void vox::CubitArr::set_slow( u8 v, LPos pos )
+void vox::QuakeArr::set_slow( u8 v, LPos pos )
 {
 	ASSERT( false && "Unused right now" );
 }
 
-u8 vox::CubitArr::get_slow( LPos pos )
+u8 vox::QuakeArr::get_slow( LPos pos )
 {
 	return m_arr.m_arr[m_arr.index( pos )];
 }
 
-bool vox::Cubit::genWorld( Plane<Cubit> *pPlane, const CPos pos )
+bool vox::Quake::genWorld( Plane<Quake> *pPlane, const CPos pos )
 {
 	return false;
 }
 
 
 //*
-void vox::Cubit::genGeo( Plane<Cubit> *pPlane, const CPos pos, std::vector<VertPosNormalColorUV> *pVerts, std::vector<u32> *pIndices )
+void vox::Quake::genGeo( Plane<Quake> *pPlane, const CPos pos, std::vector<VertPosNormalColorUV> *pVerts, std::vector<u32> *pIndices )
 {
 }
 //*/
 
 
-void vox::CubitPlane::collide( const cb::Segment &seg, cb::SegmentResults *pRes )
+void vox::QuakePlane::collide( const cb::Segment &seg, cb::SegmentResults *pRes )
 {
 	cb::AxialBox segmentBox;
 	segmentBox.SetEnclosing( seg );
@@ -67,18 +67,18 @@ void vox::CubitPlane::collide( const cb::Segment &seg, cb::SegmentResults *pRes 
 	//8 at the WORST case for any small segment. 
 	//We should likely build a collideLarge or somesuch for huge segments 
 	//relative to the 
-	std::array< Cubit::Ptr, 16 > overlapping;
+	std::array< Quake::Ptr, 16 > overlapping;
 	i32 count = 0;
 
 	const auto min = segmentBox.GetMin();
 	const auto max = segmentBox.GetMax();
 
 	// TODO Combine these?  Go directly from worldpos to 
-	const auto gMin = Cubit::GPos::from( min ) + Cubit::GPos(-1,-1,-1 );
-	const auto gMax = Cubit::GPos::from( max ) + Cubit::GPos( 1, 1, 1 );
+	const auto gMin = Quake::GPos::from( min ) + Quake::GPos(-1,-1,-1 );
+	const auto gMax = Quake::GPos::from( max ) + Quake::GPos( 1, 1, 1 );
 
-	const auto cMin = Cubit::CPos::from( gMin );
-	const auto cMax = Cubit::CPos::from( gMax );
+	const auto cMin = Quake::CPos::from( gMin );
+	const auto cMax = Quake::CPos::from( gMax );
 
 	findOverlapping( cMin, cMax, &overlapping, &count );
 
@@ -86,13 +86,13 @@ void vox::CubitPlane::collide( const cb::Segment &seg, cb::SegmentResults *pRes 
 
 	for( i32 i = 0; i < count; ++i )
 	{
-		Cubit::Ptr chunk = overlapping[i];
+		Quake::Ptr chunk = overlapping[i];
 
-		const auto lMinRaw = Cubit::LPos::from( chunk->m_cPos, gMin );
-		const auto lMaxRaw = Cubit::LPos::from( chunk->m_cPos, gMax );
+		const auto lMinRaw = Quake::LPos::from( chunk->m_cPos, gMin );
+		const auto lMaxRaw = Quake::LPos::from( chunk->m_cPos, gMax );
 
-		const auto lMin = Cubit::LPos::MakeMax( lMinRaw, Cubit::LPos( 0, 0, 0 ) );
-		const auto lMax = Cubit::LPos::MakeMin( lMaxRaw, Cubit::LMax - Cubit::LPos( 1, 1, 1 ) );
+		const auto lMin = Quake::LPos::MakeMax( lMinRaw, Quake::LPos( 0, 0, 0 ) );
+		const auto lMax = Quake::LPos::MakeMin( lMaxRaw, Quake::LMax - Quake::LPos( 1, 1, 1 ) );
 
 
 		std::vector<cb::AxialBox> boxes;
@@ -125,7 +125,7 @@ void vox::CubitPlane::collide( const cb::Segment &seg, cb::SegmentResults *pRes 
 			{
 				for( i32 ix = lMin.x; ix < lMax.x; ++ix )
 				{
-					const Cubit::LPos pos( ix, iy, iz );
+					const Quake::LPos pos( ix, iy, iz );
 
 
 				}
@@ -135,18 +135,18 @@ void vox::CubitPlane::collide( const cb::Segment &seg, cb::SegmentResults *pRes 
 
 }
 
-void vox::CubitPlane::genAxialBoxes( Cubit::Ptr chunk, const i32 iz, const Cubit::LPos lMin, const Cubit::LPos lMax, std::vector<cb::AxialBox> *pBoxes )
+void vox::QuakePlane::genAxialBoxes( Quake::Ptr chunk, const i32 iz, const Quake::LPos lMin, const Quake::LPos lMax, std::vector<cb::AxialBox> *pBoxes )
 {
 	for( i32 iy = lMin.y; iy <= lMax.y; ++iy )
 	{
 		for( i32 ix = lMin.x; ix <= lMax.x; ++ix )
 		{
-			const Cubit::LPos pos( ix, iy, iz );
+			const Quake::LPos pos( ix, iy, iz );
 
-			const Cubit *pChunk = chunk.get();
+			const Quake *pChunk = chunk.get();
 
 			// PORT ISSUE.  Any change to our types will need to take this into account
-			const CubitArr *pChunkArr = static_cast<const CubitArr *>( pChunk );
+			const QuakeArr *pChunkArr = static_cast<const QuakeArr *>( pChunk );
 
 			const auto arrIndex = pChunkArr->m_faces.index( pos );
 
@@ -157,7 +157,7 @@ void vox::CubitPlane::genAxialBoxes( Cubit::Ptr chunk, const i32 iz, const Cubit
 			//These are bools, so convert the occasional 2 branches into a jump
 			if( hasFaces & hasType )
 			{
-				const auto gPos = Cubit::GPos::from( chunk->m_cPos, pos );
+				const auto gPos = Quake::GPos::from( chunk->m_cPos, pos );
 				const auto wPos = gPos.toWorld();
 
 				// PORT ISSUE, make 0.25 generic
@@ -175,7 +175,7 @@ void vox::CubitPlane::genAxialBoxes( Cubit::Ptr chunk, const i32 iz, const Cubit
 
 
 template< size_t size >
-void vox::CubitPlane::findOverlapping( const Cubit::CPos min, const Cubit::CPos max, std::array< Cubit::Ptr, size > *pArr, i32 *pCount )
+void vox::QuakePlane::findOverlapping( const Quake::CPos min, const Quake::CPos max, std::array< Quake::Ptr, size > *pArr, i32 *pCount )
 {
 
 	i32 index = 0;
@@ -186,7 +186,7 @@ void vox::CubitPlane::findOverlapping( const Cubit::CPos min, const Cubit::CPos 
 		{
 			for( auto cx = min.x; cx <= max.x; ++cx )
 			{
-				const auto cPos = Cubit::CPos( cx, cy, cz );
+				const auto cPos = Quake::CPos( cx, cy, cz );
 
 				const auto ptr = m_sparse.find( cPos );
 
@@ -235,104 +235,10 @@ static f32 s_fractalMultXY = 1.0f / 512.0f;
 static f32 s_fractalMultZ  = 1.0f / 128.0f;
 
 
-u8 vox::CubitArr::genPoint( const f32 worldX, const f32 worldY, const f32 worldZ, const f32 perlinX, const f32 perlinY, const f32 perlinZ )
-{
-	//*
-	const f32 roughnessMapRaw = ( noise.fractal( 3, perlinX + 1000.0f, perlinY + 1000.0f ) + 1.0f ) * 0.4f;
-
-	const f32 roughnessMap = std::clamp( roughnessMapRaw, 0.0f, 1.0f );
-
-	const size_t octaves = (size_t)( roughnessMap * 16.0f ) + 1;
-
-	const f32 rawPerlinValue = noise.fractal( octaves, perlinX, perlinY, perlinZ );
-
-	const f32 fadeMapRaw = ( noise.fractal( 3, perlinX + 2000.0f, perlinY + 2000.0f ) + 1.0f ) * 0.4f;
-
-	const f32 fadeMapClamped = 1.0f - std::clamp( fadeMapRaw, 0.0f, 1.0f );
-
-	const f32 fadeMap = fadeMapClamped * fadeMapClamped * fadeMapClamped;
-
-	const f32 fadeMapShifted = fadeMap - 0.5f;
-
-	const f32 zFade = ( (worldZ)*fadeMap ) / ( 256.0f * ( ( fadeMap + 1 ) * 4.0f ) );
-
-	const f32 perlinValue = zFade + rawPerlinValue + perlinZ - 1;
-	/*/
-
-	const i32 valX = ( ( ( cubeWorldX ) / 64 ) & 1 );
-	const i32 valY = ( ( ( cubeWorldY ) / 64 ) & 1 );
-
-	const f32 val = (f32)(valX ^ valY);
-
-	const auto perlinValue = (f32)(cubeWorldZ / 128.0f) + val * (1.0f / 16.0f);
-	//*/
-
-	const i32 rockMod = cast<i32>( noise.fractal( 3, perlinX + 4500.0f, perlinY + 4500.0f ) * 4.0f );
-
-
-	const auto isLand = perlinValue < 0.8f;
-
-	//hasValues |= isLand;
-
-	const auto landType = cast<i32>( ( worldZ - 100.0f ) * 0.1f ) + rockMod + isLand;
-
-	const auto blockType = cast<u8>( isLand ) * std::clamp( landType, 1, 20 );
-
-	/*
-	static i32 s_sampleBlockType = 0;
-
-	if( blockType && ( s_sampleBlockType++ & 0xff ) == 0xff )
-	{
-		lprintf( "WorldSample BT %i  RM %i %0.2f\n", blockType, rockMod, worldZ );
-	}
-	//*/
-
-
-	return (u8)blockType;
-}
-
-
-
-bool vox::CubitArr::genWorld( Plane<Cubit> *pPlane, const CPos pos )
+bool vox::QuakeArr::genWorld( Plane<Quake> *pPlane, const CPos pos )
 {
 
 	bool hasValues = false;
-
-
-	for( i32 z = 0; z < k_edgeSize; z+=4 )
-	{
-		const i32 cubeWorldZ = m_gPos.z + z;
-		const f32 worldZ = (f32)cubeWorldZ + 100.0f;
-
-		const f32 perlinZ = worldZ * s_fractalMultZ;
-
-		for( i32 y = 0; y < k_edgeSize; y+=4 )
-		{
-			const i32 cubeWorldY = m_gPos.y + y;
-			const f32 worldY = (f32)cubeWorldY;
-
-			const f32 perlinY = worldY * s_fractalMultXY;
-
-			for( i32 x = 0; x < k_edgeSize; x+=4 )
-			{
-				const i32 index = m_arr.index( x, y, z );
-
-				const i32 cubeWorldX = m_gPos.x + x;
-				const f32 worldX = (f32)cubeWorldX;
-
-				const f32 perlinX = ( worldX + s_shiftValue ) * s_fractalMultXY;
-
-				const auto blockType = genPoint( worldX, worldY, worldZ, perlinX, perlinY, perlinZ );
-
-				hasValues |= blockType != 0;
-			}
-		}
-	}
-
-	if( !hasValues )
-	{
-		return hasValues;
-	}
 
 	for( i32 z = 0; z < k_edgeSize; ++z )
 	{
@@ -357,7 +263,6 @@ bool vox::CubitArr::genWorld( Plane<Cubit> *pPlane, const CPos pos )
 
 				const f32 perlinX = (worldX + s_shiftValue) * s_fractalMultXY;
 
-#if 0
 				//*
 				const f32 roughnessMapRaw = ( noise.fractal( 3, perlinX + 1000.0f, perlinY + 1000.0f ) + 1.0f ) * 0.4f;
 
@@ -407,9 +312,6 @@ bool vox::CubitArr::genWorld( Plane<Cubit> *pPlane, const CPos pos )
 					lprintf( "WorldSample BT %i  RM %i %0.2f\n", blockType, rockMod, worldZ );
 				}
 				//*/
-#endif
-
-				const auto blockType = genPoint( worldX, worldY, worldZ, perlinX, perlinY, perlinZ );
 
 				m_arr.m_arr[index] = blockType;
 			}
@@ -742,7 +644,7 @@ public:
 	}
 
 	void cube(
-		vox::CubitArr *const pCubit,
+		vox::QuakeArr *const pQuake,
 		std::vector<VertPosNormalColorUV> *const pVerts,
 		std::vector<u32> *const pIndices,
 		const typename TCHUNK::LPos pos,
@@ -756,9 +658,9 @@ public:
 		const u16 negZ
 	)
 	{
-		const i32 index = pCubit->m_arr.index( pos );
+		const i32 index = pQuake->m_arr.index( pos );
 
-		const auto cur = pCubit->m_arr.m_arr[index];
+		const auto cur = pQuake->m_arr.m_arr[index];
 
 		const auto l = cb::Vec3( (f32)pos.x, (f32)pos.y, (f32)pos.z );
 
@@ -794,8 +696,8 @@ public:
 
 		const auto h = l + cb::Vec3( 1 * scale.x, 1 * scale.y, 1 * scale.z );
 
-		pCubit->m_faces.index( pos );
-		pCubit->m_faces.m_arr[index] = cast<u8>( faces );
+		pQuake->m_faces.index( pos );
+		pQuake->m_faces.m_arr[index] = cast<u8>( faces );
 
 		if( iFaces )
 		{
@@ -810,7 +712,7 @@ public:
 
 
 
-	i32 fill( vox::Plane<vox::Cubit> *pPlane, std::vector<VertPosNormalColorUV> *pVerts, std::vector<u32> *pIndices, vox::CubitArr *const pCubit, const typename TCHUNK::CPos chunkPos, const cb::Vec3 worldPos, const cb::Vec3 scale )
+	i32 fill( vox::Plane<vox::Quake> *pPlane, std::vector<VertPosNormalColorUV> *pVerts, std::vector<u32> *pIndices, vox::QuakeArr *const pQuake, const typename TCHUNK::CPos chunkPos, const cb::Vec3 worldPos, const cb::Vec3 scale )
 	{
 		//std::vector<VertPosNormalUV> verts;
 		//std::vector<u32> indices;
@@ -826,22 +728,22 @@ public:
 		const auto uv10 = cb::Vec2( 1, 0 );
 		const auto uv11 = cb::Vec2( 1, 1 );
 
-		for( i32 z = 1; z < pCubit->k_edgeSize - 1; ++z )
+		for( i32 z = 1; z < pQuake->k_edgeSize - 1; ++z )
 		{
-			for( i32 y = 1; y < pCubit->k_edgeSize - 1; ++y )
+			for( i32 y = 1; y < pQuake->k_edgeSize - 1; ++y )
 			{
-				for( i32 x = 1; x < pCubit->k_edgeSize - 1; ++x )
+				for( i32 x = 1; x < pQuake->k_edgeSize - 1; ++x )
 				{
 					const auto lPos = TCHUNK::LPos( x, y, z );
 
-					const u16 posX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 negX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 posY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
-					const u16 negY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
-					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
-					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
+					const u16 posX = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 negX = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 posY = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
+					const u16 negY = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
+					const u16 posZ = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
+					const u16 negZ = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
 
-					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
+					cube( pQuake, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 
 				}
 			}
@@ -858,11 +760,11 @@ public:
 
 
 		const i32 zSmall = 0;
-		const i32 zBig = pCubit->k_edgeSize - 1;
+		const i32 zBig = pQuake->k_edgeSize - 1;
 		const i32 ySmall = 0;
-		const i32 yBig = pCubit->k_edgeSize - 1;
+		const i32 yBig = pQuake->k_edgeSize - 1;
 		const i32 xSmall = 0;
-		const i32 xBig = pCubit->k_edgeSize - 1;
+		const i32 xBig = pQuake->k_edgeSize - 1;
 
 		//*
 
@@ -881,9 +783,9 @@ public:
 		const auto cPosX = chunkPos + TCHUNK::CPos( 1, 0, 0 );
 		const auto posXOpt = pPlane->get( cPosX );
 
-		for( i32 y = 1; y < pCubit->k_edgeSize - 1; ++y )
+		for( i32 y = 1; y < pQuake->k_edgeSize - 1; ++y )
 		{
-			for( i32 x = 1; x < pCubit->k_edgeSize - 1; ++x )
+			for( i32 x = 1; x < pQuake->k_edgeSize - 1; ++x )
 			{
 				{
 					const auto lPos = TCHUNK::LPos( x, y, zSmall );
@@ -891,12 +793,12 @@ public:
 
 					const auto lNZPos = TCHUNK::LPos( x, y, zBig );
 
-					const u16 posX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 negX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 posY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
-					const u16 negY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
-					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
-					//const u16 negZ = pPlane->get_slow( gPos + vNegZ ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
+					const u16 posX = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 negX = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 posY = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
+					const u16 negY = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
+					const u16 posZ = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
+					//const u16 negZ = pPlane->get_slow( gPos + vNegZ ); //pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
 					u16 negZ = 0;
 					if( negZOpt.has_value() )
 					{
@@ -904,7 +806,7 @@ public:
 						negZ = chunk->get_slow( lNZPos );
 					}
 
-					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
+					cube( pQuake, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 				}
 
 				{
@@ -913,12 +815,12 @@ public:
 
 					const auto lPZPos = TCHUNK::LPos( x, y, zSmall );
 
-					const u16 posX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 negX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 posY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
-					const u16 negY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
-					//const u16 posZ = pPlane->get_slow( gPos + vPosZ ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
-					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
+					const u16 posX = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 negX = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 posY = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
+					const u16 negY = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
+					//const u16 posZ = pPlane->get_slow( gPos + vPosZ ); //pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
+					const u16 negZ = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
 
 					u16 posZ = 0;
 					if( posZOpt.has_value() )
@@ -929,7 +831,7 @@ public:
 
 
 
-					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
+					cube( pQuake, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 				}
 
 
@@ -941,9 +843,9 @@ public:
 
 
 
-		for( i32 z = 1; z < pCubit->k_edgeSize - 1; ++z )
+		for( i32 z = 1; z < pQuake->k_edgeSize - 1; ++z )
 		{
-			for( i32 x = 1; x < pCubit->k_edgeSize - 1; ++x )
+			for( i32 x = 1; x < pQuake->k_edgeSize - 1; ++x )
 			{
 				{
 					const auto lPos = TCHUNK::LPos( x, ySmall, z );
@@ -951,12 +853,12 @@ public:
 
 					const auto lNYPos = TCHUNK::LPos( x, yBig, z );
 
-					const u16 posX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 negX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 posY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
-					//const u16 negY = pPlane->get_slow( gPos + vNegY ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
-					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
-					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
+					const u16 posX = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 negX = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 posY = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
+					//const u16 negY = pPlane->get_slow( gPos + vNegY ); //pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
+					const u16 posZ = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
+					const u16 negZ = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
 
 					u16 negY = 0;
 					if( negYOpt.has_value() )
@@ -966,7 +868,7 @@ public:
 					}
 
 
-					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
+					cube( pQuake, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 				}
 
 				{
@@ -975,12 +877,12 @@ public:
 
 					const auto lPYPos = TCHUNK::LPos( x, ySmall, z );
 
-					const u16 posX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 negX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
-					//const u16 posY = pPlane->get_slow( gPos + vPosY ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
-					const u16 negY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
-					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
-					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
+					const u16 posX = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 negX = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
+					//const u16 posY = pPlane->get_slow( gPos + vPosY ); //pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
+					const u16 negY = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
+					const u16 posZ = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
+					const u16 negZ = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
 
 					u16 posY = 0;
 					if( posYOpt.has_value() )
@@ -990,7 +892,7 @@ public:
 					}
 
 
-					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
+					cube( pQuake, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 				}
 
 
@@ -1002,9 +904,9 @@ public:
 
 
 
-		for( i32 z = 1; z < pCubit->k_edgeSize - 1; ++z )
+		for( i32 z = 1; z < pQuake->k_edgeSize - 1; ++z )
 		{
-			for( i32 y = 1; y < pCubit->k_edgeSize - 1; ++y )
+			for( i32 y = 1; y < pQuake->k_edgeSize - 1; ++y )
 			{
 				{
 					const auto lPos = TCHUNK::LPos( xSmall, y, z );
@@ -1012,12 +914,12 @@ public:
 
 					const auto lNXPos = TCHUNK::LPos( xBig, y, z );
 
-					const u16 posX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
-					//const u16 negX = pPlane->get_slow( gPos + vNegX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 posY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
-					const u16 negY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
-					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
-					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
+					const u16 posX = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
+					//const u16 negX = pPlane->get_slow( gPos + vNegX ); //pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 posY = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
+					const u16 negY = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
+					const u16 posZ = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
+					const u16 negZ = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
 
 					u16 negX = 0;
 					if( negXOpt.has_value() )
@@ -1026,7 +928,7 @@ public:
 						negX = chunk->get_slow( lNXPos );
 					}
 
-					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
+					cube( pQuake, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 				}
 
 				{
@@ -1035,12 +937,12 @@ public:
 
 					const auto lPXPos = TCHUNK::LPos( xSmall, y, z );
 
-					//const u16 posX = pPlane->get_slow( gPos + vPosX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 negX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
-					const u16 posY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
-					const u16 negY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
-					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
-					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
+					//const u16 posX = pPlane->get_slow( gPos + vPosX ); //pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 negX = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
+					const u16 posY = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
+					const u16 negY = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
+					const u16 posZ = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
+					const u16 negZ = pQuake->m_arr.m_arr[pQuake->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
 
 
 					u16 posX = 0;
@@ -1050,7 +952,7 @@ public:
 						posX = chunk->get_slow( lPXPos );
 					}
 
-					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
+					cube( pQuake, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 				}
 			}
 		}
@@ -1090,41 +992,36 @@ public:
 
 //*/
 
-void vox::CubitArr::genGeo( Plane<Cubit> *pPlane, const CPos pos, std::vector<VertPosNormalColorUV> *pVerts, std::vector<u32> *pIndices )
+void vox::QuakeArr::genGeo( Plane<Quake> *pPlane, const CPos pos, std::vector<VertPosNormalColorUV> *pVerts, std::vector<u32> *pIndices )
 {
-	const auto pGeo = new ChunkMesh<Cubit>();
+	const auto pGeo = new ChunkMesh<Quake>();
 
 	const auto worldPosInt = GPos::from( pos );
 
 	const auto worldPosRaw = cb::Vec3( (f32)worldPosInt.x, (f32)worldPosInt.y, (f32)worldPosInt.z );
 
-	const auto worldPosScaled_old = cb::Vec3(
-		worldPosRaw.x * FramePlane<Cubit>::m_scaleFactor.x,
-		worldPosRaw.y * FramePlane<Cubit>::m_scaleFactor.y,
-		worldPosRaw.z * FramePlane<Cubit>::m_scaleFactor.z );
+	const auto worldPosScaled = cb::Vec3(
+		worldPosRaw.x * FramePlane<Quake>::m_scaleFactor.x,
+		worldPosRaw.y * FramePlane<Quake>::m_scaleFactor.y,
+		worldPosRaw.z * FramePlane<Quake>::m_scaleFactor.z );
 
-	const cb::Vec3 worldPosScaled_new = mult( worldPosRaw, FramePlane<Cubit>::m_scaleFactor );
+	const auto worldPos = worldPosScaled + FramePlane<Quake>::m_translation;
 
-	const auto worldPosScaled = worldPosScaled_new;
-
-	const auto worldPos = worldPosScaled + FramePlane<Cubit>::m_translation;
-
-	const auto vertCount = pGeo->fill( pPlane, pVerts, pIndices, this, pos, worldPos, FramePlane<Cubit>::m_scaleFactor );
+	const auto vertCount = pGeo->fill( pPlane, pVerts, pIndices, this, pos, worldPos, FramePlane<Quake>::m_scaleFactor );
 
 	if( vertCount == 0 )
 		return;
 }
 
-void vox::CubitArr::genCollision( Plane<Cubit> *pPlane, CPos pos )
+void vox::QuakeArr::genCollision( Plane<Quake> *pPlane, CPos pos )
 {
 	//Placeholder.  Do nothing for now
 }
 
-
 struct PosChunk
 {
-	vox::Cubit::CPos	Pos;
-	vox::Cubit::Ptr		Chunk;
+	vox::Quake::CPos	Pos;
+	vox::Quake::Ptr		Chunk;
 };
 
 
@@ -1143,7 +1040,7 @@ static i32 s_maxY = 100;
 #endif
 */
 
-static std::vector<vox::Cubit::CPos> s_chunksToMake;
+static std::vector<vox::Quake::CPos> s_chunksToMake;
 #ifdef DEBUG
 static i32 s_chunksPerTick = 2;
 static i32 s_maxX = 30;
@@ -1156,14 +1053,14 @@ static i32 s_maxY = 100;
 
 
 
-bool vox::CubitPlane::genWorld( const cb::Vec3 pos )
+bool vox::QuakePlane::genWorld( const cb::Vec3 pos )
 {
 
 	if( s_chunksPerTick == 0 ) return false;
 
 	const auto gPos = from( pos );
 
-	const auto v = vox::Cubit::CPos::from( gPos );
+	const auto v = vox::Quake::CPos::from( gPos );
 
 	const cb::Vec3i startingChunkPos( v.x, v.y, v.z );
 
@@ -1194,7 +1091,7 @@ bool vox::CubitPlane::genWorld( const cb::Vec3 pos )
 
 					cbChunkPos += cb::Vec3i( x, y, z );
 
-					const vox::Cubit::CPos chunkPos( cbChunkPos.x, cbChunkPos.y, cbChunkPos.z );
+					const vox::Quake::CPos chunkPos( cbChunkPos.x, cbChunkPos.y, cbChunkPos.z );
 
 					s_chunksToMake.push_back( chunkPos );
 				}
@@ -1238,24 +1135,24 @@ bool vox::CubitPlane::genWorld( const cb::Vec3 pos )
 
 					//cbChunkPos += cb::Vec3i( x, y, z );
 
-					const vox::Cubit::CPos chunkPos( cbChunkPos.x, cbChunkPos.y, cbChunkPos.z );
+					const vox::Quake::CPos chunkPos( cbChunkPos.x, cbChunkPos.y, cbChunkPos.z );
 
-					const auto cubit = TChunk::Ptr( new CubitArr( chunkPos ) );
+					const auto Quake = TChunk::Ptr( new QuakeArr( chunkPos ) );
 
-					//cubit->m_translation = translation;
-					//cubit->m_scaleFactor = scaleFactor;
+					//Quake->m_translation = translation;
+					//Quake->m_scaleFactor = scaleFactor;
 
-					const bool hasValue = cubit->genWorld( nullptr, chunkPos );
+					const bool hasValue = Quake->genWorld( nullptr, chunkPos );
 
 					//const auto hashFn = std::hash<CPos>();
 					//const auto hash = hashFn( chunkPos );
 
 					if( hasValue )
 					{
-						posChunk.Chunk = cubit;
+						posChunk.Chunk = Quake;
 					}
 
-					//chunks[threadnum].push_back( { chunkPos, cubit } );
+					//chunks[threadnum].push_back( { chunkPos, Quake } );
 				}
 			}
 		} );
@@ -1290,16 +1187,16 @@ bool vox::CubitPlane::genWorld( const cb::Vec3 pos )
 
 				const CPos chunkPos( cbChunkPos.x, cbChunkPos.y, cbChunkPos.z );
 
-				const auto cubit = TChunk::Ptr( new CubitArr( chunkPos ) );
+				const auto Quake = TChunk::Ptr( new QuakeArr( chunkPos ) );
 
-				cubit->genWorld( this, chunkPos );
+				Quake->genWorld( this, chunkPos );
 
 				//const auto hashFn = std::hash<CPos>();
 				//const auto hash = hashFn( chunkPos );
 
-				chunks[1].push_back( { chunkPos, cubit } );
+				chunks[1].push_back( { chunkPos, Quake } );
 
-				//m_sparse[chunkPos] = cubit;
+				//m_sparse[chunkPos] = Quake;
 			}
 		}
 	}
@@ -1324,7 +1221,7 @@ static const i32 k_maxChunks = 64;
 #endif
 
 //*
-bool vox::CubitPlane::genGeo( const cb::Vec3 inPos )
+bool vox::QuakePlane::genGeo( const cb::Vec3 inPos )
 {
 	i32 generated = 0;
 	std::array<PosChunk, k_maxChunks> chunks;
@@ -1351,7 +1248,7 @@ bool vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 
 	static i32 s_periodicCheck = 0;
 
-	//const auto timeWorldgen = Timer<>::execution( [&]() {
+	const auto timeWorldgen = Timer<>::execution( [&]() {
 
 
 		for( int i = 0; i < generated; ++i )
@@ -1362,39 +1259,30 @@ bool vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 			//m_genColl[chunks[i].Pos] = chunks[i].Chunk;
 		}
 
-		//std::atomic<i32> threadCount = 0;
-		i32 threadCount = 0;
 
-		threadCount++;
-
-		//const auto timeWorldgen = Timer<>::execution( [&]() {
-			enki::TaskSet taskGen( generated,
-				[&chunks, this, &vertsIndices, &threadCount]( enki::TaskSetPartition range, uint32_t threadnum ) {
-					//const auto timeBrace = Timer<>::execution( [&]() {
-
-					threadCount++;
-
+		const auto timeWorldgen = Timer<>::execution( [&]() {
+			enki::TaskSet task( generated,
+				[&chunks, this, &vertsIndices]( enki::TaskSetPartition range, uint32_t threadnum ) {
+					const auto timeBrace = Timer<>::execution( [&]() {
 						for( u32 i = range.start; i < range.end; ++i )
 						{
 								chunks[i].Chunk->genGeo( this, chunks[i].Pos, &vertsIndices[i].Verts, &vertsIndices[i].Indices );
 						}
-					} );
+						} );
 
 						//This isnt safe for multiple threads, but the occasional issue isnt a huge deal
-						if( ( ( ++s_periodicCheck ) & 0x0f ) == 0x0f )
+						if( ( ( ++s_periodicCheck ) & 0xff ) == 0xff )
 						{
-							//const auto timeBraceF = (f32)timeBrace;
+							const auto timeBraceF = (f32)timeBrace;
 
-							//lprintf( "Mesher in %.3f ms\n", timeBraceF / 1000.0f );
-							lprintf( "Generated %i\n", generated/*.load()*/ );
-							lprintf( "Threads %i\n", threadCount/*.load()*/ );
+							lprintf( "Mesher in %.3f ms\n", timeBraceF / 1000.0f );
 						}
 
-				//} );
+				} );
 
-			PhamApp::Info().Task.AddTaskSetToPipe( &taskGen );
-			PhamApp::Info().Task.WaitforTask( &taskGen );
-		//} );
+			PhamApp::Info().Task.AddTaskSetToPipe( &task );
+			PhamApp::Info().Task.WaitforTask( &task );
+		} );
 
 
 
@@ -1428,15 +1316,14 @@ bool vox::CubitPlane::genGeo( const cb::Vec3 inPos )
 			DGRenderer::Inst().m_rsVoxels->add( frame, geo );
 		}
 
-		//} );
+		} );
 
-	/*
+
 	{
 		const auto timeBraceF = (f32)timeWorldgen;
 
 		lprintf( "timeWorldgen %.3f ms\n", timeBraceF / 1000.0f );
 	}
-	*/
 
 
 	lprintf( "Generated %i chunks %i Triangles\n", s_chunkCount, s_triCount );

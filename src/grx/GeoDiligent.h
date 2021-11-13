@@ -96,6 +96,9 @@ public:
 
 private:
 	virtual void render( RenderContext *pRC, const cb::Frame3 &frame );
+
+	dg::ITexture *m_pTex = nullptr;
+
 };
 
 PtrDef( GeoDiligent );

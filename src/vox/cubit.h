@@ -48,6 +48,10 @@ namespace vox
 
 		virtual void genCollision( Plane<Cubit> *pPlane, CPos pos );
 
+
+		u8 genPoint( const f32 worldX, const f32 worldY, const f32 worldZ, const f32 perlinX, const f32 perlinY, const f32 perlinZ );
+
+
 		StorageArr<Cubit> m_arr;
 
 		// TODO Fix this hack.  This works for a 1:1 situation, but we need a general case solution.

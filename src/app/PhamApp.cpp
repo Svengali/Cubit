@@ -317,7 +317,7 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 	m_Camera.SetSpeedUpScales( 0.25f, 20.0f );
 
-
+	//TODO CONFIG Get this from config
 	ent::EntityId::initStartingEntityId( 1024 );
 
 	dg::SampleBase::Initialize( InitInfo );
@@ -331,7 +331,7 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 	m_Camera.SetProjAttribs( NearPlane, FarPlane, AspectRatio, dg::PI_F / 4.f,
 		m_pSwapChain->GetDesc().PreTransform, m_pDevice->GetDeviceInfo().IsGLDevice() );
 
-
+	// TODO CONFIG 
 	m_Camera.SetReferenceAxes( dg::float3( 1.0f, 0.0f, 0.0f ), dg::float3( 0.0f, 0.0f, 1.0f ), true );
 
 	m_Camera.SetPos( dg::float3( 1.71f, 3.84f, 10.90f ) );
@@ -1051,8 +1051,9 @@ void PhamApp::Render()
 
 void PhamApp::Update( double CurrTime, double dt )
 {
-
 	SampleBase::Update( CurrTime, dt );
+
+	ResourceMgr::Tick();
 
 	//*
 	if( m_continueWorldgen )

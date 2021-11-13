@@ -46,5 +46,14 @@ ResDGTexture::~ResDGTexture( void )
 
 void ResDGTexture::load( const char *const pFilename )
 {
+	dg::TextureLoadInfo loadInfo;
+	loadInfo.IsSRGB = true;
+
+	dg::ITexture *pTexture = nullptr;
+	dg::CreateTextureFromFile( pFilename, loadInfo, PhamApp::Info().Device(), &pTexture );
+
+	m_texture = pTexture;
+	m_texView = m_texture->GetDefaultView( dg::TEXTURE_VIEW_SHADER_RESOURCE );
+
 
 }

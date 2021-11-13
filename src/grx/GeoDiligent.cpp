@@ -63,14 +63,23 @@ GeoDiligent::GeoDiligent( const ent::EntityId id, const GeoDiligentCfgPtr &cfg )
 
 	if( !m_cfg->m_pso->m_srb )
 	{
+		//lprintf( "GeoDiligent SRB is null 0x%8p\n", (void *)this );
+
+		m_pTex = m_cfg->m_texture->Texture().RawPtr();
+
 		// Since we are using mutable variable, we must create a shader resource binding object
 		// http://diligentgraphics.com/2016/03/23/resource-binding-model-in-diligent-engine-2-0/
 		m_cfg->m_pso->m_pso->CreateShaderResourceBinding( &m_cfg->m_pso->m_srb, true );
 
 		m_cfg->m_pso->m_srb->GetVariableByName( dg::SHADER_TYPE_PIXEL, "g_Texture" )->Set( m_cfg->m_texture->View() );
 
-		PhamApp::Info().Barrier( dg::StateTransitionDesc( m_cfg->m_texture->Texture().RawPtr(), dg::RESOURCE_STATE_UNKNOWN, dg::RESOURCE_STATE_SHADER_RESOURCE, false ) );
+		PhamApp::Info().Barrier( dg::StateTransitionDesc( m_pTex, dg::RESOURCE_STATE_UNKNOWN, dg::RESOURCE_STATE_SHADER_RESOURCE, false ) );
+	}
+	else
+	{
+		//lprintf( "GeoDiligent SRB is NOT null 0x%8p\n", (void *)this );
 
+		m_pTex = m_cfg->m_texture->Texture().RawPtr();
 	}
 }
 
@@ -85,6 +94,25 @@ void GeoDiligent::load( const char *const pFilename )
 
 void GeoDiligent::renderDiligent( RCDiligent *pRC, const cb::Frame3 &frame )
 {
+
+	dg::ITexture *pOldTex = m_cfg->m_texture->Texture().RawPtr();
+
+	if( m_pTex != pOldTex )
+	{
+		lprintf( "GeoDiligent m_pTex != pOldTex 0x%8p\n", (void *)this );
+
+		m_pTex = pOldTex;
+
+		m_cfg->m_pso->m_srb = nullptr;
+
+		m_cfg->m_pso->m_pso->CreateShaderResourceBinding( &m_cfg->m_pso->m_srb, true );
+
+		m_cfg->m_pso->m_srb->GetVariableByName( dg::SHADER_TYPE_PIXEL, "g_Texture" )->Set( m_cfg->m_texture->View() );
+
+		//PhamApp::Info().Barrier( dg::StateTransitionDesc( m_pTex, dg::RESOURCE_STATE_UNKNOWN, dg::RESOURCE_STATE_SHADER_RESOURCE, false ) );
+
+	}
+
 
 	const cb::Mat4 mat( frame );
 
