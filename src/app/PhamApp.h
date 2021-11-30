@@ -33,6 +33,7 @@ public:
 	static PhamApp &Info();
 
 
+	PhamApp();
 	~PhamApp();
 
 	virtual void Initialize( const dg::SampleInitInfo &InitInfo ) override final;

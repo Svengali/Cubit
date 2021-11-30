@@ -302,7 +302,7 @@ bool vox::QuakeArr::genWorld( Plane<Quake> *pPlane, const CPos pos )
 
 				const auto landType = cast<i32>( ( worldZ - 100.0f ) * 0.1f ) + rockMod + isLand;
 
-				const auto blockType = cast<u8>( isLand ) * std::clamp( landType, 1, 20 );
+				const u8 blockType = cast<u8>( (u8)isLand * std::clamp( landType, 1, 20 ) );
 
 				/*
 				static i32 s_sampleBlockType = 0;

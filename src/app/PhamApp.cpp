@@ -73,6 +73,15 @@ PhamApp &PhamApp::Info()
 
 
 
+PhamApp::PhamApp()
+{
+	cb::LogOpen( nullptr, nullptr );
+
+	lprintf( "Starting up Cubit\n" );
+	lprintf( "Test\n" );
+
+}
+
 PhamApp::~PhamApp()
 {
 	ed::DestroyEditor( g_Context );
@@ -279,11 +288,6 @@ void Style_DarkGraphite()
 
 void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 {
-	cb::LogOpen( nullptr, nullptr );
-
-	lprintf( "Starting up Cubit\n" );
-	lprintf( "Test\n" );
-
 	auto now = std::chrono::system_clock::now();
 	std::time_t ctimeNow = std::chrono::system_clock::to_time_t( now );
 
@@ -304,7 +308,7 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 	PhamApp::Info().Task.Initialize( RCDiligent::k_maxThreads );
 
 
-
+	/* Threading test
 	enki::TaskSet task( 1024,
 		[]( enki::TaskSetPartition range, uint32_t threadnum ) {
 			lprintf( "Thread %d, start %d, end %d\n", threadnum, range.start, range.end );
@@ -313,7 +317,7 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 	PhamApp::Info().Task.AddTaskSetToPipe( &task );
 	PhamApp::Info().Task.WaitforTask( &task );
-
+	//*/
 
 	m_Camera.SetSpeedUpScales( 0.25f, 20.0f );
 
@@ -436,12 +440,12 @@ void PhamApp::Initialize( const dg::SampleInitInfo &InitInfo )
 
 		const auto pos = cb::Vec3::zero;
 
-		GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/tank.xml" );
+		GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/bullet.xml" );
 		GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( id, cfg ) );
 
 		auto rot = cb::Mat3( cb::Mat3::eIdentity );
 
-		f32 uniform = cast<f32>( rand() % 0xff ) / 255.0f;
+		//f32 uniform = cast<f32>( rand() % 0xff ) / 255.0f;
 
 		cb::SetZRotation( &rot, CB_PIf / 4.0f );
 
@@ -595,7 +599,7 @@ void PhamApp::spawnBallisticsFrame()
 {
 #ifdef _DEBUG
 	// We do 2 sets of these, so double it
-	const i32 k_maxMovingObjects = 20;
+	const i32 k_maxMovingObjects = 1000;
 #else
 	// We do 2 sets of these, so double it
 	const i32 k_maxMovingObjects = 20000;
@@ -620,12 +624,12 @@ void PhamApp::spawnBallisticsFrame()
 
 			const auto pos = cb::MakeRandomInBox( center, size );
 
-			GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/tank.xml" );
+			GeoDiligentCfgPtr cfg = ResourceMgr::GetResource<GeoDiligentCfg>( "config/geo/bullet.xml" );
 			GeoDiligentPtr geo = GeoDiligentPtr( new GeoDiligent( id, cfg ) );
 
 			auto rot = cb::Mat3( cb::Mat3::eIdentity );
 
-			f32 speed = cast<f32>( rand() ) * invRandMaxF;
+			//f32 speed = cast<f32>( rand() ) * invRandMaxF;
 			f32 rotUF = cast<f32>( rand() ) * invRandMaxF;
 
 			cb::SetZRotation( &rot, 2 * CB_PIf * rotUF );
@@ -670,7 +674,7 @@ void PhamApp::spawnBallisticsFrame()
 
 			auto rot = cb::Mat3( cb::Mat3::eIdentity );
 
-			f32 speed = cast<f32>( rand() ) * invRandMaxF;
+			//f32 speed = cast<f32>( rand() ) * invRandMaxF;
 			f32 rotUF = cast<f32>( rand() ) * invRandMaxF;
 
 			cb::SetZRotation( &rot, 2 * CB_PIf * rotUF );

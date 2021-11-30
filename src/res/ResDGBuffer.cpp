@@ -35,7 +35,7 @@ ResDGBufferPtr ResDGBuffer::create( const i32 size, const std::string &desc )
 	/*/
 	dg::BufferDesc CBDesc;
 	CBDesc.Name = desc.c_str();
-	CBDesc.uiSizeInBytes = size;
+	CBDesc.Size = size;
 	CBDesc.Usage = dg::USAGE_DYNAMIC;
 	CBDesc.BindFlags = dg::BIND_UNIFORM_BUFFER;
 
@@ -44,7 +44,7 @@ ResDGBufferPtr ResDGBuffer::create( const i32 size, const std::string &desc )
 
 	auto bufferPtr = dg::RefCntAutoPtr( pBuffer );
 
-	PhamApp::Info().Barrier( dg::StateTransitionDesc( pBuffer, dg::RESOURCE_STATE_UNKNOWN, dg::RESOURCE_STATE_CONSTANT_BUFFER, false ) );
+	PhamApp::Info().Barrier( dg::StateTransitionDesc( pBuffer, dg::RESOURCE_STATE_UNKNOWN, dg::RESOURCE_STATE_CONSTANT_BUFFER ) );
 
 	return ResDGBuffer::create( bufferPtr );
 }
@@ -82,7 +82,7 @@ ResDGBufVertexPtr ResDGBufVertex::createRaw( const u32 dataSize, void *const pDa
 	// TODO CONFIG
 	VertBuffDesc.BindFlags = dg::BIND_VERTEX_BUFFER;
 
-	VertBuffDesc.uiSizeInBytes = dataSize;
+	VertBuffDesc.Size = dataSize;
 
 	dg::BufferData VBData;
 	VBData.pData = pData;
@@ -91,7 +91,7 @@ ResDGBufVertexPtr ResDGBufVertex::createRaw( const u32 dataSize, void *const pDa
 	dg::RefCntAutoPtr<dg::IBuffer> buffer;
 	PhamApp::Info().Device()->CreateBuffer( VertBuffDesc, &VBData, &buffer );
 
-	PhamApp::Info().Barrier( dg::StateTransitionDesc( buffer.RawPtr(), dg::RESOURCE_STATE_UNKNOWN, dg::RESOURCE_STATE_VERTEX_BUFFER, false ) );
+	PhamApp::Info().Barrier( dg::StateTransitionDesc( buffer.RawPtr(), dg::RESOURCE_STATE_UNKNOWN, dg::RESOURCE_STATE_VERTEX_BUFFER ) );
 
 	auto bufVertex = ResDGBufVertexPtr( new ResDGBufVertex( buffer ) );
 
@@ -133,7 +133,7 @@ ResDGBufIndexPtr ResDGBufIndex::createRaw( const u32 dataSize, void *const pData
 	IndBuffDesc.Name = "Unknown Index Buffer";
 	IndBuffDesc.Usage = dg::USAGE_IMMUTABLE;
 	IndBuffDesc.BindFlags = dg::BIND_INDEX_BUFFER;
-	IndBuffDesc.uiSizeInBytes = dataSize;
+	IndBuffDesc.Size = dataSize;
 	dg::BufferData IBData;
 	IBData.pData = pData;
 	IBData.DataSize = dataSize;
@@ -141,7 +141,7 @@ ResDGBufIndexPtr ResDGBufIndex::createRaw( const u32 dataSize, void *const pData
 	dg::RefCntAutoPtr<dg::IBuffer> buffer;
 	PhamApp::Info().Device()->CreateBuffer( IndBuffDesc, &IBData, &buffer );
 
-	PhamApp::Info().Barrier( dg::StateTransitionDesc( buffer.RawPtr(), dg::RESOURCE_STATE_UNKNOWN, dg::RESOURCE_STATE_INDEX_BUFFER, false ) );
+	PhamApp::Info().Barrier( dg::StateTransitionDesc( buffer.RawPtr(), dg::RESOURCE_STATE_UNKNOWN, dg::RESOURCE_STATE_INDEX_BUFFER ) );
 
 	auto bufIndex = ResDGBufIndexPtr( new ResDGBufIndex( buffer ) );
 
@@ -192,7 +192,7 @@ ResourcePtr ResDGBufferCreator::create() const
 	//CreateUniformBuffer( PhamApp::Info().Device(), size, desc.c_str(), &pBuffer );
 
 	dg::BufferDesc BuffDesc;
-	BuffDesc.uiSizeInBytes = sizeof( dg::float4x4 );
+	BuffDesc.Size = sizeof( dg::float4x4 );
 	BuffDesc.Usage = dg::USAGE_DYNAMIC;
 	BuffDesc.BindFlags = dg::BIND_UNIFORM_BUFFER;
 	BuffDesc.CPUAccessFlags = dg::CPU_ACCESS_WRITE;
@@ -202,7 +202,7 @@ ResourcePtr ResDGBufferCreator::create() const
 	/*/
 	dg::BufferDesc CBDesc;
 	CBDesc.Name = desc.c_str();
-	CBDesc.uiSizeInBytes = size;
+	CBDesc.Size = size;
 	CBDesc.Usage = dg::USAGE_DEFAULT;
 	CBDesc.BindFlags = dg::BIND_UNIFORM_BUFFER;
 	//CBDesc.CPUAccessFlags = dg::CPU_ACCESS_WRITE;
@@ -215,7 +215,7 @@ ResourcePtr ResDGBufferCreator::create() const
 
 		auto bufferPtr = dg::RefCntAutoPtr( pBuffer );
 
-		PhamApp::Info().Barrier( dg::StateTransitionDesc( pBuffer, dg::RESOURCE_STATE_UNKNOWN, dg::RESOURCE_STATE_CONSTANT_BUFFER, false ) );
+		PhamApp::Info().Barrier( dg::StateTransitionDesc( pBuffer, dg::RESOURCE_STATE_UNKNOWN, dg::RESOURCE_STATE_CONSTANT_BUFFER ) );
 
 		return ResDGBuffer::create( bufferPtr );
 	}

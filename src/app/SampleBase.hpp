@@ -100,7 +100,7 @@ public:
 
     enki::TaskScheduler Task;
 
-    void Barrier( StateTransitionDesc &desc )
+    void Barrier( StateTransitionDesc &&desc )
     {
       std::lock_guard<std::mutex> guard(Mutex);
 

@@ -90,7 +90,7 @@ ResDGBufVertexPtr grx::gen::createCenteredCubeVertices( const float s )
   VertBuffDesc.Name          = "Cube vertex buffer";
   VertBuffDesc.Usage         = dg::USAGE_STATIC;
   VertBuffDesc.BindFlags     = dg::BIND_VERTEX_BUFFER;
-  VertBuffDesc.uiSizeInBytes = sizeof( CubeVerts );
+  VertBuffDesc.Size = sizeof( CubeVerts );
 
   dg::BufferData VBData;
   VBData.pData    = CubeVerts;
@@ -194,7 +194,7 @@ ResDGBufVertexPtr grx::gen::createArbitraryCube( const cb::Vec3 size, const cb::
   VertBuffDesc.Name          = "Cube vertex buffer";
   VertBuffDesc.Usage         = dg::USAGE_STATIC;
   VertBuffDesc.BindFlags     = dg::BIND_VERTEX_BUFFER;
-  VertBuffDesc.uiSizeInBytes = sizeof( CubeVerts );
+  VertBuffDesc.Size = sizeof( CubeVerts );
 
   dg::BufferData VBData;
   VBData.pData    = CubeVerts;
@@ -232,7 +232,7 @@ ResDGBufIndexPtr  grx::gen::createCenteredCubeIndicies()
   IndBuffDesc.Name          = "Cube index buffer";
   IndBuffDesc.Usage         = dg::USAGE_DEFAULT;
   IndBuffDesc.BindFlags     = dg::BIND_INDEX_BUFFER;
-  IndBuffDesc.uiSizeInBytes = sizeof( indicies );
+  IndBuffDesc.Size = sizeof( indicies );
   dg::BufferData IBData;
   IBData.pData    = indicies;
   IBData.DataSize = sizeof( indicies );

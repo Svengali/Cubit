@@ -130,6 +130,7 @@ void FreefallPlane::updateBlocks( double dt )
 							{
 								*pDstAccel = cb::Vec3::zero;
 								*pDstVel = cb::Vec3::zero;
+								pDstFm->SetTranslation( srcPos );
 							}
 
 							/*

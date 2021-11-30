@@ -231,11 +231,11 @@ void vox::CubitPlane::findOverlapping( const Cubit::CPos min, const Cubit::CPos 
 
 
 static SimplexNoise noise;
-static f32 s_fractalMultXY = 1.0f / 512.0f;
+static f32 s_fractalMultXY = 1.0f / 2048.0f;
 static f32 s_fractalMultZ  = 1.0f / 128.0f;
 
 
-u8 vox::CubitArr::genPoint( const f32 worldX, const f32 worldY, const f32 worldZ, const f32 perlinX, const f32 perlinY, const f32 perlinZ )
+u8 vox::CubitArr::genPoint( const f32 threshold, const f32 worldX, const f32 worldY, const f32 worldZ, const f32 perlinX, const f32 perlinY, const f32 perlinZ )
 {
 	//*
 	const f32 roughnessMapRaw = ( noise.fractal( 3, perlinX + 1000.0f, perlinY + 1000.0f ) + 1.0f ) * 0.4f;
@@ -256,6 +256,8 @@ u8 vox::CubitArr::genPoint( const f32 worldX, const f32 worldY, const f32 worldZ
 
 	const f32 zFade = ( (worldZ)*fadeMap ) / ( 256.0f * ( ( fadeMap + 1 ) * 4.0f ) );
 
+
+
 	const f32 perlinValue = zFade + rawPerlinValue + perlinZ - 1;
 	/*/
 
@@ -267,16 +269,16 @@ u8 vox::CubitArr::genPoint( const f32 worldX, const f32 worldY, const f32 worldZ
 	const auto perlinValue = (f32)(cubeWorldZ / 128.0f) + val * (1.0f / 16.0f);
 	//*/
 
-	const i32 rockMod = cast<i32>( noise.fractal( 3, perlinX + 4500.0f, perlinY + 4500.0f ) * 4.0f );
+	const i32 rockMod = cast<i32>( noise.fractal( 3, perlinX + 4500.0f, perlinY + 4500.0f ) * 8.0f );
 
 
-	const auto isLand = perlinValue < 0.8f;
+	const auto isLand = perlinValue < threshold; //0.8f;
 
 	//hasValues |= isLand;
 
-	const auto landType = cast<i32>( ( worldZ - 100.0f ) * 0.1f ) + rockMod + isLand;
+	const auto landType = cast<i32>( ( worldZ - 100.0f ) * 0.6f ) + rockMod + isLand;
 
-	const auto blockType = cast<u8>( isLand ) * std::clamp( landType, 1, 20 );
+	const auto blockType = cast<u8>( isLand ) * std::clamp( landType, 1, 50 );
 
 	/*
 	static i32 s_sampleBlockType = 0;
@@ -299,21 +301,21 @@ bool vox::CubitArr::genWorld( Plane<Cubit> *pPlane, const CPos pos )
 	bool hasValues = false;
 
 
-	for( i32 z = 0; z < k_edgeSize; z+=4 )
+	for( i32 z = 0; z < k_edgeSize; z+=8 )
 	{
 		const i32 cubeWorldZ = m_gPos.z + z;
 		const f32 worldZ = (f32)cubeWorldZ + 100.0f;
 
 		const f32 perlinZ = worldZ * s_fractalMultZ;
 
-		for( i32 y = 0; y < k_edgeSize; y+=4 )
+		for( i32 y = 0; y < k_edgeSize; y+=8 )
 		{
 			const i32 cubeWorldY = m_gPos.y + y;
 			const f32 worldY = (f32)cubeWorldY;
 
 			const f32 perlinY = worldY * s_fractalMultXY;
 
-			for( i32 x = 0; x < k_edgeSize; x+=4 )
+			for( i32 x = 0; x < k_edgeSize; x+=8 )
 			{
 				const i32 index = m_arr.index( x, y, z );
 
@@ -322,7 +324,7 @@ bool vox::CubitArr::genWorld( Plane<Cubit> *pPlane, const CPos pos )
 
 				const f32 perlinX = ( worldX + s_shiftValue ) * s_fractalMultXY;
 
-				const auto blockType = genPoint( worldX, worldY, worldZ, perlinX, perlinY, perlinZ );
+				const auto blockType = genPoint( 0.8f, worldX, worldY, worldZ, perlinX, perlinY, perlinZ );
 
 				hasValues |= blockType != 0;
 			}
@@ -333,6 +335,8 @@ bool vox::CubitArr::genWorld( Plane<Cubit> *pPlane, const CPos pos )
 	{
 		return hasValues;
 	}
+
+	u8 lastFrame = (u8)-1;
 
 	for( i32 z = 0; z < k_edgeSize; ++z )
 	{
@@ -409,7 +413,12 @@ bool vox::CubitArr::genWorld( Plane<Cubit> *pPlane, const CPos pos )
 				//*/
 #endif
 
-				const auto blockType = genPoint( worldX, worldY, worldZ, perlinX, perlinY, perlinZ );
+				const auto blockType = genPoint( 0.8f, worldX, worldY, worldZ, perlinX, perlinY, perlinZ );
+
+				if( lastFrame != blockType )
+				{
+					lastFrame = blockType;
+				}
 
 				m_arr.m_arr[index] = blockType;
 			}
@@ -657,38 +666,113 @@ public:
 
 	}
 
+	//*
+	cb::Vec4 s_cubeTypeColors[55] = {
+
+		cb::Vec4( 1, 0, 1, 0 ),
+		//
+		cb::Vec4( 235.0f / 255.0f, 202.0f / 255.0f, 151.0f / 255.0f, 0 ),
+		cb::Vec4( 245.0f / 255.0f, 202.0f / 255.0f, 161.0f / 255.0f, 0 ),
+		cb::Vec4( 225.0f / 255.0f, 192.0f / 255.0f, 131.0f / 255.0f, 0 ),
+		cb::Vec4( 235.0f / 255.0f, 212.0f / 255.0f, 151.0f / 255.0f, 0 ),
+		cb::Vec4( 245.0f / 255.0f, 182.0f / 255.0f, 151.0f / 255.0f, 0 ),
+		//
+		cb::Vec4( 235.0f / 255.0f, 202.0f / 255.0f, 151.0f / 255.0f, 0 ),
+		cb::Vec4( 245.0f / 255.0f, 202.0f / 255.0f, 161.0f / 255.0f, 0 ),
+		cb::Vec4( 225.0f / 255.0f, 192.0f / 255.0f, 131.0f / 255.0f, 0 ),
+		cb::Vec4( 235.0f / 255.0f, 212.0f / 255.0f, 151.0f / 255.0f, 0 ),
+		cb::Vec4( 245.0f / 255.0f, 182.0f / 255.0f, 151.0f / 255.0f, 0 ),
+		//
+		cb::Vec4( 228.0f / 255.0f, 177.0f / 255.0f, 103.0f / 255.0f, 0 ),
+		cb::Vec4( 248.0f / 255.0f, 157.0f / 255.0f, 103.0f / 255.0f, 0 ),
+		cb::Vec4( 228.0f / 255.0f, 177.0f / 255.0f, 103.0f / 255.0f, 0 ),
+		cb::Vec4( 218.0f / 255.0f, 157.0f / 255.0f, 103.0f / 255.0f, 0 ),
+		cb::Vec4( 208.0f / 255.0f, 137.0f / 255.0f, 103.0f / 255.0f, 0 ),
+//
+		cb::Vec4( 183.0f / 255.0f, 102.0f / 255.0f,  27.0f / 255.0f, 0 ),
+		cb::Vec4( 163.0f / 255.0f,  82.0f / 255.0f,  37.0f / 255.0f, 0 ),
+		cb::Vec4( 173.0f / 255.0f,  92.0f / 255.0f,  67.0f / 255.0f, 0 ),
+		cb::Vec4( 163.0f / 255.0f,  72.0f / 255.0f,  57.0f / 255.0f, 0 ),
+		cb::Vec4( 143.0f / 255.0f,  92.0f / 255.0f,  77.0f / 255.0f, 0 ),
+//
+		cb::Vec4( 163.0f / 255.0f, 106.0f / 255.0f, 103.0f / 255.0f, 0 ),
+		cb::Vec4( 193.0f / 255.0f, 136.0f / 255.0f, 133.0f / 255.0f, 0 ),
+		cb::Vec4( 183.0f / 255.0f, 126.0f / 255.0f, 113.0f / 255.0f, 0 ),
+		cb::Vec4( 203.0f / 255.0f, 156.0f / 255.0f, 123.0f / 255.0f, 0 ),
+		cb::Vec4( 239.0f / 255.0f, 166.0f / 255.0f, 133.0f / 255.0f, 0 ),
+		//
+		cb::Vec4( 235.0f / 255.0f, 202.0f / 255.0f, 151.0f / 255.0f, 0 ),
+		cb::Vec4( 245.0f / 255.0f, 202.0f / 255.0f, 161.0f / 255.0f, 0 ),
+		cb::Vec4( 225.0f / 255.0f, 192.0f / 255.0f, 131.0f / 255.0f, 0 ),
+		cb::Vec4( 235.0f / 255.0f, 212.0f / 255.0f, 151.0f / 255.0f, 0 ),
+		cb::Vec4( 245.0f / 255.0f, 182.0f / 255.0f, 151.0f / 255.0f, 0 ),
+		//
+		cb::Vec4( 235.0f / 255.0f, 202.0f / 255.0f, 151.0f / 255.0f, 0 ),
+		cb::Vec4( 245.0f / 255.0f, 202.0f / 255.0f, 161.0f / 255.0f, 0 ),
+		cb::Vec4( 225.0f / 255.0f, 192.0f / 255.0f, 131.0f / 255.0f, 0 ),
+		cb::Vec4( 235.0f / 255.0f, 212.0f / 255.0f, 151.0f / 255.0f, 0 ),
+		cb::Vec4( 245.0f / 255.0f, 182.0f / 255.0f, 151.0f / 255.0f, 0 ),
+		//
+		cb::Vec4( 228.0f / 255.0f, 177.0f / 255.0f, 103.0f / 255.0f, 0 ),
+		cb::Vec4( 248.0f / 255.0f, 157.0f / 255.0f, 103.0f / 255.0f, 0 ),
+		cb::Vec4( 228.0f / 255.0f, 177.0f / 255.0f, 103.0f / 255.0f, 0 ),
+		cb::Vec4( 218.0f / 255.0f, 157.0f / 255.0f, 103.0f / 255.0f, 0 ),
+		cb::Vec4( 208.0f / 255.0f, 137.0f / 255.0f, 103.0f / 255.0f, 0 ),
+		//
+		cb::Vec4( 183.0f / 255.0f, 102.0f / 255.0f,  27.0f / 255.0f, 0 ),
+		cb::Vec4( 163.0f / 255.0f,  82.0f / 255.0f,  37.0f / 255.0f, 0 ),
+		cb::Vec4( 173.0f / 255.0f,  92.0f / 255.0f,  67.0f / 255.0f, 0 ),
+		cb::Vec4( 163.0f / 255.0f,  72.0f / 255.0f,  57.0f / 255.0f, 0 ),
+		cb::Vec4( 143.0f / 255.0f,  92.0f / 255.0f,  77.0f / 255.0f, 0 ),
+		//
+		cb::Vec4( 163.0f / 255.0f, 106.0f / 255.0f, 103.0f / 255.0f, 0 ),
+		cb::Vec4( 193.0f / 255.0f, 136.0f / 255.0f, 133.0f / 255.0f, 0 ),
+		cb::Vec4( 183.0f / 255.0f, 126.0f / 255.0f, 113.0f / 255.0f, 0 ),
+		cb::Vec4( 203.0f / 255.0f, 156.0f / 255.0f, 123.0f / 255.0f, 0 ),
+		cb::Vec4( 239.0f / 255.0f, 166.0f / 255.0f, 133.0f / 255.0f, 0 ),
+		//
+		cb::Vec4( 0.0f, 0.8f, 0.0f, 0 ),
+		cb::Vec4( 0.0f, 0.5f, 0.0f, 0 ),
+		cb::Vec4( 0.0f, 0.6f, 0.0f, 0 ),
+		cb::Vec4( 0.0f, 0.7f, 0.0f, 0 ),
+	};
+	//*/
+
+	/*
 	cb::Vec4 s_cubeTypeColors[30] = {
-/**/cb::Vec4( 1, 0, 1, 0 ),
+
+		cb::Vec4( 1.0f, 0.0f, 1.0f, 0 ),
+		//				 .0f	 .0f	 .0f
 		cb::Vec4( 1.0f, 0.0f, 0.0f, 0 ),
 		cb::Vec4( 0.8f, 0.0f, 0.0f, 0 ),
-		cb::Vec4( 0.9f, 0.0f, 0.0f, 0 ),
-		cb::Vec4( 0.7f, 0.0f, 0.0f, 0 ),
-/**/cb::Vec4(0.5f, 0.0f, 0.0f, 0),
 		cb::Vec4( 0.6f, 0.0f, 0.0f, 0 ),
+		cb::Vec4( 0.4f, 0.0f, 0.0f, 0 ),
+		cb::Vec4( 0.2f, 0.0f, 0.0f, 0 ),
+		//				 .0f	 .0f	 .0f
 		cb::Vec4( 0.0f, 1.0f, 0.0f, 0 ),
-		cb::Vec4( 0.0f, 0.7f, 0.0f, 0 ),
-		cb::Vec4( 0.0f, 0.9f, 0.0f, 0 ),
-/**/cb::Vec4( 0.0f, 0.8f, 0.0f, 0 ),
-		cb::Vec4( 0.0f, 0.5f, 0.0f, 0 ),
-		cb::Vec4( 0.0f, 0.6f, 0.0f, 0 ),
-		cb::Vec4( 0.0f, 0.7f, 0.0f, 0 ),
-		cb::Vec4( 0.0f, 0.9f, 0.0f, 0 ),
-/**/cb::Vec4( 0.0f, 0.8f, 0.0f, 0 ),
-		cb::Vec4( 0.0f, 0.5f, 0.0f, 0 ),
-		cb::Vec4( 0.0f, 0.6f, 0.0f, 0 ),
-		cb::Vec4( 0.0f, 1.0f, 0.0f, 0 ),
-		cb::Vec4( 0.0f, 0.7f, 0.0f, 0 ),
-/**/cb::Vec4( 0.0f, 0.9f, 0.0f, 0 ),
 		cb::Vec4( 0.0f, 0.8f, 0.0f, 0 ),
-		cb::Vec4( 0.0f, 0.5f, 0.0f, 0 ),
 		cb::Vec4( 0.0f, 0.6f, 0.0f, 0 ),
-		cb::Vec4( 0.0f, 0.7f, 0.0f, 0 ),
-		cb::Vec4( 0.0f, 0.9f, 0.0f, 0 ),
-		cb::Vec4( 0.0f, 0.8f, 0.0f, 0 ),
-		cb::Vec4( 0.0f, 0.9f, 0.0f, 0 ),
-		cb::Vec4( 0.0f, 0.8f, 0.0f, 0 ),
-		cb::Vec4( 1.0f, 1.0f, 1.0f, 0 ),
+		cb::Vec4( 0.0f, 0.4f, 0.0f, 0 ),
+		cb::Vec4( 0.0f, 0.2f, 0.0f, 0 ),
+		//				 .0f	 .0f	 .0f
+		cb::Vec4( 0.0f, 0.0f, 1.0f, 0 ),
+		cb::Vec4( 0.0f, 0.0f, 0.8f, 0 ),
+		cb::Vec4( 0.0f, 0.0f, 0.6f, 0 ),
+		cb::Vec4( 0.0f, 0.0f, 0.4f, 0 ),
+		cb::Vec4( 0.0f, 0.0f, 0.2f, 0 ),
+		//				 .0f	 .0f	 .0f
+		cb::Vec4( 1.0f, 1.0f, 0.0f, 0 ),
+		cb::Vec4( 0.8f, 0.8f, 0.0f, 0 ),
+		cb::Vec4( 0.6f, 0.6f, 0.0f, 0 ),
+		cb::Vec4( 0.4f, 0.4f, 0.0f, 0 ),
+		cb::Vec4( 0.2f, 0.2f, 0.0f, 0 ),
+		//				 .0f	 .0f	 .0f
+		cb::Vec4( 0.0f, 1.0f, 1.0f, 0 ),
+		cb::Vec4( 0.0f, 0.8f, 0.8f, 0 ),
+		cb::Vec4( 0.0f, 0.6f, 0.6f, 0 ),
+		cb::Vec4( 0.0f, 0.4f, 0.4f, 0 ),
 	};
+	//*/
 
 
 	void pushSingleCube( Faces faces, u8 cubeType, std::vector<VertPosNormalColorUV> *const pVerts, std::vector<u32> *const pInd, const cb::Vec3 pos, const cb::Vec3 scale )
@@ -808,7 +892,36 @@ public:
 
 	}
 
+	const vox::Cubit::GPos vPosX = vox::Cubit::GPos(  1,  0,  0 );
+	const vox::Cubit::GPos vNegX = vox::Cubit::GPos( -1,  0,  0 );
+	const vox::Cubit::GPos vPosY = vox::Cubit::GPos(  0,  1,  0 );
+	const vox::Cubit::GPos vNegY = vox::Cubit::GPos(  0, -1,  0 );
+	const vox::Cubit::GPos vPosZ = vox::Cubit::GPos(  0,  0,  1 );
+	const vox::Cubit::GPos vNegZ = vox::Cubit::GPos(  0,  0, -1 );
 
+
+	void getCubeInfo( vox::Plane<vox::Cubit> *pPlane, const typename TCHUNK::GPos gPos, u16 *pPosX, u16 *pNegX, u16 *pPosY, u16 *pNegY, u16 *pPosZ, u16 *pNegZ )
+	{
+		const auto posX = gPos + vPosX;
+		*pPosX = pPlane->get_slow( posX );
+
+		const auto negX = gPos + vNegX;
+		*pNegX = pPlane->get_slow( negX );
+
+		const auto posY = gPos + vPosY;
+		*pPosY = pPlane->get_slow( posY );
+
+		const auto negY = gPos + vNegY;
+		*pNegY = pPlane->get_slow( negY );
+
+
+		const auto posZ = gPos + vPosZ;
+		*pPosZ = pPlane->get_slow( posZ );
+
+		const auto negZ = gPos + vNegZ;
+		*pNegZ = pPlane->get_slow( negZ );
+
+	}
 
 	i32 fill( vox::Plane<vox::Cubit> *pPlane, std::vector<VertPosNormalColorUV> *pVerts, std::vector<u32> *pIndices, vox::CubitArr *const pCubit, const typename TCHUNK::CPos chunkPos, const cb::Vec3 worldPos, const cb::Vec3 scale )
 	{
@@ -826,6 +939,7 @@ public:
 		const auto uv10 = cb::Vec2( 1, 0 );
 		const auto uv11 = cb::Vec2( 1, 1 );
 
+		//CUBE Center
 		for( i32 z = 1; z < pCubit->k_edgeSize - 1; ++z )
 		{
 			for( i32 y = 1; y < pCubit->k_edgeSize - 1; ++y )
@@ -849,12 +963,6 @@ public:
 
 		// TODO PERF Dont use get_slow, just grab the nearby chunks.  
 
-		const auto vPosX = TCHUNK::GPos( 1, 0, 0 );
-		const auto vNegX = TCHUNK::GPos( -1, 0, 0 );
-		const auto vPosY = TCHUNK::GPos( 0, 1, 0 );
-		const auto vNegY = TCHUNK::GPos( 0, -1, 0 );
-		const auto vPosZ = TCHUNK::GPos( 0, 0, 1 );
-		const auto vNegZ = TCHUNK::GPos( 0, 0, -1 );
 
 
 		const i32 zSmall = 0;
@@ -881,6 +989,7 @@ public:
 		const auto cPosX = chunkPos + TCHUNK::CPos( 1, 0, 0 );
 		const auto posXOpt = pPlane->get( cPosX );
 
+		//XY Faces
 		for( i32 y = 1; y < pCubit->k_edgeSize - 1; ++y )
 		{
 			for( i32 x = 1; x < pCubit->k_edgeSize - 1; ++x )
@@ -940,7 +1049,7 @@ public:
 		//*
 
 
-
+		//XZ Faces
 		for( i32 z = 1; z < pCubit->k_edgeSize - 1; ++z )
 		{
 			for( i32 x = 1; x < pCubit->k_edgeSize - 1; ++x )
@@ -998,10 +1107,7 @@ public:
 		}
 		//*/
 
-		//*
-
-
-
+		//YZ Faces
 		for( i32 z = 1; z < pCubit->k_edgeSize - 1; ++z )
 		{
 			for( i32 y = 1; y < pCubit->k_edgeSize - 1; ++y )
@@ -1010,10 +1116,10 @@ public:
 					const auto lPos = TCHUNK::LPos( xSmall, y, z );
 					const auto gPos = chunkPos + lPos;
 
-					const auto lNXPos = TCHUNK::LPos( xBig, y, z );
+					const auto lNXPos = TCHUNK::LPos( yBig, y, z );
 
 					const u16 posX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
-					//const u16 negX = pPlane->get_slow( gPos + vNegX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
+					//const u16 negX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
 					const u16 posY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
 					const u16 negY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
 					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
@@ -1026,6 +1132,7 @@ public:
 						negX = chunk->get_slow( lNXPos );
 					}
 
+
 					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 				}
 
@@ -1035,13 +1142,12 @@ public:
 
 					const auto lPXPos = TCHUNK::LPos( xSmall, y, z );
 
-					//const u16 posX = pPlane->get_slow( gPos + vPosX ); //pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
+					//const u16 posX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 1, lPos.y + 0, lPos.z + 0 )];
 					const u16 negX = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x - 1, lPos.y + 0, lPos.z + 0 )];
 					const u16 posY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 1, lPos.z + 0 )];
 					const u16 negY = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y - 1, lPos.z + 0 )];
 					const u16 posZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z + 1 )];
 					const u16 negZ = pCubit->m_arr.m_arr[pCubit->m_arr.index( lPos.x + 0, lPos.y + 0, lPos.z - 1 )];
-
 
 					u16 posX = 0;
 					if( posXOpt.has_value() )
@@ -1050,11 +1156,221 @@ public:
 						posX = chunk->get_slow( lPXPos );
 					}
 
+
 					cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
 				}
+
+
 			}
 		}
 		//*/
+
+
+		//*
+		// Edges
+		for( i32 i = 0; i < pCubit->k_edgeSize; ++i )
+		{
+			{
+				const auto lPos = TCHUNK::LPos( xSmall, ySmall, i );
+				const auto gPos = chunkPos + lPos;
+
+				u16 posX = 0;
+				u16 negX = 0;
+				u16 posY = 0;
+				u16 negY = 0;
+				u16 posZ = 0;
+				u16 negZ = 0;
+
+				getCubeInfo( pPlane, gPos, &posX, &negX, &posY, &negY, &posZ, &negZ );
+
+				cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
+			}
+
+			{
+				const auto lPos = TCHUNK::LPos( xSmall, yBig, i );
+				const auto gPos = chunkPos + lPos;
+
+				u16 posX = 0;
+				u16 negX = 0;
+				u16 posY = 0;
+				u16 negY = 0;
+				u16 posZ = 0;
+				u16 negZ = 0;
+
+				getCubeInfo( pPlane, gPos, &posX, &negX, &posY, &negY, &posZ, &negZ );
+
+				cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
+			}
+
+			{
+				const auto lPos = TCHUNK::LPos( xBig, ySmall, i );
+				const auto gPos = chunkPos + lPos;
+
+				u16 posX = 0;
+				u16 negX = 0;
+				u16 posY = 0;
+				u16 negY = 0;
+				u16 posZ = 0;
+				u16 negZ = 0;
+
+				getCubeInfo( pPlane, gPos, &posX, &negX, &posY, &negY, &posZ, &negZ );
+
+				cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
+			}
+
+			{
+				const auto lPos = TCHUNK::LPos( xBig, yBig, i );
+				const auto gPos = chunkPos + lPos;
+
+				u16 posX = 0;
+				u16 negX = 0;
+				u16 posY = 0;
+				u16 negY = 0;
+				u16 posZ = 0;
+				u16 negZ = 0;
+
+				getCubeInfo( pPlane, gPos, &posX, &negX, &posY, &negY, &posZ, &negZ );
+
+				cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
+			}
+
+
+			{
+				const auto lPos = TCHUNK::LPos( xSmall, i, zSmall );
+				const auto gPos = chunkPos + lPos;
+
+				u16 posX = 0;
+				u16 negX = 0;
+				u16 posY = 0;
+				u16 negY = 0;
+				u16 posZ = 0;
+				u16 negZ = 0;
+
+				getCubeInfo( pPlane, gPos, &posX, &negX, &posY, &negY, &posZ, &negZ );
+
+				cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
+			}
+
+			{
+				const auto lPos = TCHUNK::LPos( xSmall, i, zBig );
+				const auto gPos = chunkPos + lPos;
+
+				u16 posX = 0;
+				u16 negX = 0;
+				u16 posY = 0;
+				u16 negY = 0;
+				u16 posZ = 0;
+				u16 negZ = 0;
+
+				getCubeInfo( pPlane, gPos, &posX, &negX, &posY, &negY, &posZ, &negZ );
+
+				cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
+			}
+
+			{
+				const auto lPos = TCHUNK::LPos( xBig, i, zSmall );
+				const auto gPos = chunkPos + lPos;
+
+				u16 posX = 0;
+				u16 negX = 0;
+				u16 posY = 0;
+				u16 negY = 0;
+				u16 posZ = 0;
+				u16 negZ = 0;
+
+				getCubeInfo( pPlane, gPos, &posX, &negX, &posY, &negY, &posZ, &negZ );
+
+				cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
+			}
+
+			{
+				const auto lPos = TCHUNK::LPos( xBig, i, zBig );
+				const auto gPos = chunkPos + lPos;
+
+				u16 posX = 0;
+				u16 negX = 0;
+				u16 posY = 0;
+				u16 negY = 0;
+				u16 posZ = 0;
+				u16 negZ = 0;
+
+				getCubeInfo( pPlane, gPos, &posX, &negX, &posY, &negY, &posZ, &negZ );
+
+				cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
+			}
+
+
+			{
+				const auto lPos = TCHUNK::LPos( i, ySmall, zSmall );
+				const auto gPos = chunkPos + lPos;
+
+				u16 posX = 0;
+				u16 negX = 0;
+				u16 posY = 0;
+				u16 negY = 0;
+				u16 posZ = 0;
+				u16 negZ = 0;
+
+				getCubeInfo( pPlane, gPos, &posX, &negX, &posY, &negY, &posZ, &negZ );
+
+				cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
+			}
+
+			{
+				const auto lPos = TCHUNK::LPos( i, ySmall, zBig );
+				const auto gPos = chunkPos + lPos;
+
+				u16 posX = 0;
+				u16 negX = 0;
+				u16 posY = 0;
+				u16 negY = 0;
+				u16 posZ = 0;
+				u16 negZ = 0;
+
+				getCubeInfo( pPlane, gPos, &posX, &negX, &posY, &negY, &posZ, &negZ );
+
+				cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
+			}
+
+			{
+				const auto lPos = TCHUNK::LPos( i, yBig, zSmall );
+				const auto gPos = chunkPos + lPos;
+
+				u16 posX = 0;
+				u16 negX = 0;
+				u16 posY = 0;
+				u16 negY = 0;
+				u16 posZ = 0;
+				u16 negZ = 0;
+
+				getCubeInfo( pPlane, gPos, &posX, &negX, &posY, &negY, &posZ, &negZ );
+
+				cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
+			}
+
+			{
+				const auto lPos = TCHUNK::LPos( i, yBig, zBig );
+				const auto gPos = chunkPos + lPos;
+
+				u16 posX = 0;
+				u16 negX = 0;
+				u16 posY = 0;
+				u16 negY = 0;
+				u16 posZ = 0;
+				u16 negZ = 0;
+
+				getCubeInfo( pPlane, gPos, &posX, &negX, &posY, &negY, &posZ, &negZ );
+
+				cube( pCubit, pVerts, pIndices, lPos, worldPos, scale, posX, negX, posY, negY, posZ, negZ );
+			}
+		}
+		//*/
+
+
+
+
+
+
 
 		if( pVerts->size() == 0 )
 			return 0;

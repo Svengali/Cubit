@@ -141,7 +141,7 @@ void GeoDiligent::renderDiligent( RCDiligent *pRC, const cb::Frame3 &frame )
 
 
 	// Bind vertex and index buffers
-	u32   offset = 0;
+	u64   offset = 0;
 	dg::IBuffer *pBuffs[] = { m_cfg->m_vertexBuf->Buffer().RawPtr() };
 	pRC->m_devContext->SetVertexBuffers( 0, 1, pBuffs, &offset, dg::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, dg::SET_VERTEX_BUFFERS_FLAG_RESET );
 	pRC->m_devContext->SetIndexBuffer( m_cfg->m_indexBuf->Buffer().RawPtr(), 0, dg::RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
